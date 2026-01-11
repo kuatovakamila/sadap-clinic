@@ -34,20 +34,40 @@ const ProfilePage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // First check localStorage for custom auth
+        const storedUser = localStorage.getItem("user");
         
-        if (!user) {
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          
+          // Get profile from database using user id
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", userData.id)
+            .single();
+
+          setProfile(profileData || userData);
+          setLoading(false);
+          return;
+        }
+
+        // Fallback to Supabase auth
+        const { data: { user: supaUser } } = await supabase.auth.getUser();
+        
+        if (!supaUser) {
           router.push("/auth");
           return;
         }
 
-        setUser(user);
+        setUser(supaUser);
 
         // Получить профиль из БД
         const { data: profileData } = await supabase
           .from("profiles")
           .select("*")
-          .eq("id", user.id)
+          .eq("id", supaUser.id)
           .single();
 
         setProfile(profileData);
@@ -63,6 +83,9 @@ const ProfilePage = () => {
   }, [router]);
 
   const handleLogout = async () => {
+    // Clear localStorage
+    localStorage.removeItem("user");
+    // Also sign out from Supabase if there's a session
     await supabase.auth.signOut();
     router.push("/");
   };

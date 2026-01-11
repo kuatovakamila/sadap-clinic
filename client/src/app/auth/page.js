@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import { supabase } from "@/lib/supabase";
 
 const AuthPage = () => {
   const router = useRouter();
@@ -36,18 +35,24 @@ const AuthPage = () => {
         throw new Error("Введите ваше ФИО");
       }
 
-      const cleanPhone = phone.startsWith("+") ? phone : `+${phone.replace(/\D/g, "")}`;
-
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: cleanPhone,
-        options: {
-          data: mode === "register" ? {
-            full_name: fullName,
-          } : {},
+      // Call our custom API to send OTP via Infobip
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          phone: phone,
+          fullName: fullName,
+          mode: mode,
+        }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Ошибка отправки кода");
+      }
 
       setSuccess("Код отправлен! Проверьте SMS.");
       setStep("verify");
@@ -64,27 +69,26 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const cleanPhone = phone.startsWith("+") ? phone : `+${phone.replace(/\D/g, "")}`;
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: cleanPhone,
-        token: otp,
-        type: "sms",
+      // Call our custom API to verify OTP
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: phone,
+          code: otp,
+        }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
 
-      // При регистрации создаем/обновляем профиль
-      if (mode === "register") {
-        const { error: profileError } = await supabase.from("profiles").upsert({
-          id: data.user.id,
-          phone: cleanPhone,
-          full_name: fullName,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (profileError) throw profileError;
+      if (!response.ok) {
+        throw new Error(data.error || "Неверный код");
       }
+
+      // Store user info in localStorage for now
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       setSuccess(mode === "login" ? "Вход выполнен успешно!" : "Регистрация завершена!");
       router.push("/profile");
