@@ -39,43 +39,31 @@ export async function POST(request) {
       attempts: 0,
     });
 
-    // Send SMS via Infobip
-    const infobipUrl = `${process.env.INFOBIP_API_URL}/sms/2/text/advanced`;
-    
-    const smsResponse = await fetch(infobipUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `App ${process.env.INFOBIP_API_KEY}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            destinations: [{ to: cleanPhone.replace("+", "") }],
-            from: process.env.INFOBIP_SENDER || "SADAP",
-            text: `Ваш код подтверждения SADAP Clinic: ${otp}. Код действителен 5 минут.`,
-          },
-        ],
-      }),
-    });
+    // Send SMS via SMSC.kz
+    console.log("=== SENDING OTP via SMSC.kz ===");
+    console.log("Phone:", cleanPhone);
+    console.log("OTP:", otp);
 
+    // SMSC.kz API - using HTTP GET method
+    const smscLogin = process.env.SMSC_LOGIN;
+    const smscPassword = process.env.SMSC_PASSWORD;
+    const message = `Kod podtverzhdeniya SADAP Clinic: ${otp}`;
+    const phoneNumber = cleanPhone.replace("+", "");
+
+    const smscUrl = `https://smsc.kz/sys/send.php?login=${encodeURIComponent(smscLogin)}&psw=${encodeURIComponent(smscPassword)}&phones=${phoneNumber}&mes=${encodeURIComponent(message)}&fmt=3&charset=utf-8`;
+
+    console.log("SMSC URL (without password):", smscUrl.replace(smscPassword, "***"));
+
+    const smsResponse = await fetch(smscUrl);
     const smsResult = await smsResponse.json();
+    
+    console.log("SMSC response:", JSON.stringify(smsResult, null, 2));
 
-    if (!smsResponse.ok) {
-      console.error("Infobip error:", smsResult);
+    // SMSC.kz returns { id: X, cnt: Y } on success, or { error: "message", error_code: N } on failure
+    if (smsResult.error) {
+      console.error("SMSC error:", smsResult);
       return NextResponse.json(
-        { error: "Ошибка отправки SMS. Попробуйте позже." },
-        { status: 500 }
-      );
-    }
-
-    // Check if message was accepted
-    const messageStatus = smsResult.messages?.[0]?.status;
-    if (messageStatus?.groupId > 3) {
-      console.error("SMS delivery failed:", messageStatus);
-      return NextResponse.json(
-        { error: `Ошибка доставки SMS: ${messageStatus?.description || "Неизвестная ошибка"}` },
+        { error: `Ошибка отправки SMS: ${smsResult.error}` },
         { status: 500 }
       );
     }
