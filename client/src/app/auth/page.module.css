@@ -19,6 +19,50 @@
   justify-content: center;
 }
 
+.logoContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logoImage {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.logoTitle {
+  font-size: 64px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  letter-spacing: 8px;
+}
+
+.logoSubtitle {
+  font-size: 24px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 5px 0 0 0;
+  letter-spacing: 12px;
+}
+
+.logoTagline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 20px;
+}
+
+.phonePrefix {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  padding-right: 8px;
+  border-right: 2px solid #e2e8f0;
+  margin-right: 12px;
+}
+
 .rightPanel {
   flex: 1;
   background: #f8fafc;

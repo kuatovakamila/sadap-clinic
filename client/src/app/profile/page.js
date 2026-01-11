@@ -91,7 +91,14 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div className={styles.pageWrapper}>Загрузка...</div>;
+    return (
+      <div className={styles.loadingWrapper}>
+        <div className={styles.loadingContent}>
+          <div className={styles.spinner}></div>
+          <p className={styles.loadingText}>Загрузка...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -152,59 +159,37 @@ const ProfilePage = () => {
           <div className={styles.contentContainer}>
             <h1 className={styles.pageTitle}>Личный кабинет</h1>
 
-          {/* User Info Card */}
-          <div className={styles.userInfoCard}>
-            <h2 className={styles.cardTitle}>Мой профиль</h2>
-            <div className={styles.userInfo}>
-              <div className={styles.infoRow}>
-                <span className={styles.label}>ФИО:</span>
-                <span className={styles.value}>{profile?.full_name || "—"}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Номер телефона:</span>
-                <span className={styles.value}>{user?.phone || "—"}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Email:</span>
-                <span className={styles.value}>{user?.email || "—"}</span>
-              </div>
-            </div>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              Выйти из аккаунта
-            </button>
-          </div>
-
             {/* Profile Card */}
             <div className={styles.profileCard}>
               <div className={styles.profileInfo}>
-                <h2 className={styles.profileName}>Ахметов Айдар Серикович</h2>
+                <h2 className={styles.profileName}>{profile?.full_name || user?.user_metadata?.full_name || "Пользователь"}</h2>
 
                 <div className={styles.profileDetails}>
                   <div className={styles.profileField}>
-                    <span className={styles.fieldLabel}>Дата рождения:</span>
-                    <span className={styles.fieldValue}>15.03.1980</span>
-                  </div>
-
-                  <div className={styles.profileField}>
                     <span className={styles.fieldLabel}>Телефон:</span>
-                    <span className={styles.fieldValue}>+7 123 456 7890</span>
+                    <span className={styles.fieldValue}>{user?.phone || profile?.phone || "—"}</span>
                   </div>
 
                   <div className={styles.profileField}>
-                    <span className={styles.fieldLabel}>Адрес:</span>
-                    <span className={styles.fieldValue}>ул. Советская</span>
+                    <span className={styles.fieldLabel}>Email:</span>
+                    <span className={styles.fieldValue}>{user?.email || profile?.email || "—"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className={styles.profileAvatar}>
-                <Image
-                  src="/services/doctor.png"
-                  alt="Profile"
-                  width={120}
-                  height={120}
-                  className={styles.avatarImage}
-                />
+              <div className={styles.profileRight}>
+                <div className={styles.profileAvatar}>
+                  <Image
+                    src="/services/doctor.png"
+                    alt="Profile"
+                    width={120}
+                    height={120}
+                    className={styles.avatarImage}
+                  />
+                </div>
+                <button onClick={handleLogout} className={styles.logoutButtonSmall}>
+                  Выйти
+                </button>
               </div>
             </div>
 

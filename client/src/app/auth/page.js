@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import styles from "./page.module.css";
 
 const AuthPage = () => {
@@ -35,14 +36,15 @@ const AuthPage = () => {
         throw new Error("Введите ваше ФИО");
       }
 
-      // Call our custom API to send OTP via Infobip
+      // Call our custom API to send OTP via SMSC
+      const fullPhone = "+7" + phone.replace(/\D/g, ""); // Add +7 prefix and clean non-digits
       const response = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: phone,
+          phone: fullPhone,
           fullName: fullName,
           mode: mode,
         }),
@@ -70,13 +72,14 @@ const AuthPage = () => {
 
     try {
       // Call our custom API to verify OTP
+      const fullPhone = "+7" + phone.replace(/\D/g, "");
       const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: phone,
+          phone: fullPhone,
           code: otp,
         }),
       });
@@ -110,10 +113,17 @@ const AuthPage = () => {
     <div className={styles.container}>
       <div className={styles.leftPanel}>
         <div className={styles.logo}>
-          <svg viewBox="0 0 200 60" fill="white" style={{width: '200px', height: 'auto'}}>
-            <text x="10" y="40" fontSize="32" fontWeight="bold">SADAP</text>
-            <text x="10" y="55" fontSize="14">CLINIC</text>
-          </svg>
+          <div className={styles.logoContent}>
+            <Image 
+              src="/big-logo.png" 
+              alt="SADAP Clinic" 
+              width={300} 
+              height={300}
+              className={styles.logoImage}
+              priority
+            />
+            <p className={styles.logoTagline}>Ваше здоровье — наш приоритет</p>
+          </div>
         </div>
       </div>
 
@@ -132,13 +142,8 @@ const AuthPage = () => {
 
             <form onSubmit={handleSendOTP} className={styles.form}>
               <div className={styles.inputGroup}>
-                <span className={styles.icon}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                    <line x1="12" y1="18" x2="12" y2="18"/>
-                  </svg>
-                </span>
-                <input type="tel" placeholder="Номер телефона" value={phone} onChange={handlePhoneChange} className={styles.input} required />
+                <span className={styles.phonePrefix}>+7</span>
+                <input type="tel" placeholder="(XXX) XXX-XX-XX" value={phone} onChange={handlePhoneChange} className={styles.input} required />
               </div>
 
               {mode === "register" && (
