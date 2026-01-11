@@ -1,0 +1,10 @@
+{
+  "name": "sadap-clinic",
+  "version": "1.0.0",
+  "scripts": {
+    "install": "cd client && npm install --legacy-peer-deps",
+    "build": "cd client && npm run build",
+    "dev": "cd client && npm run dev",
+    "start": "cd client && npm run start"
+  }
+}
