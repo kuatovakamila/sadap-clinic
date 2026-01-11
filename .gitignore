@@ -3,3 +3,5 @@ client/.next
 client/.env
 client/package-lock.json
 sources
+.vercel
+.env*.local
