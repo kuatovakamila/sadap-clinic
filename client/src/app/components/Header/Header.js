@@ -25,11 +25,23 @@ export default function Header({
   navItems = ["Записаться на прием", "Выбрать врача", "О клинике", "Личный кабинет"],
   showAccountButton = false,
   fixed = false,
+  onAppointmentClick = null,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
+
+  const handleNavClick = (item, e) => {
+    console.log("Nav clicked:", item, "onAppointmentClick:", !!onAppointmentClick);
+    if (item === "Записаться на прием" && onAppointmentClick) {
+      e.preventDefault();
+      closeMenu();
+      onAppointmentClick();
+    } else {
+      closeMenu();
+    }
+  };
 
   return (
     <header className={`${styles.header} ${fixed ? styles.headerFixed : ""}`}>
@@ -63,7 +75,7 @@ export default function Header({
                 <Link
                   href={getNavUrl(item)}
                   className={styles.navLink}
-                  onClick={closeMenu}
+                  onClick={(e) => handleNavClick(item, e)}
                 >
                   {item}
                 </Link>

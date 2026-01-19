@@ -519,6 +519,7 @@ const DoctorDetailPage = () => {
         navItems={["Записаться на прием", "Выбрать врача", "О клинике", "Личный кабинет"]}
         showAccountButton={false}
         fixed={true}
+        onAppointmentClick={handleAppointmentClick}
       />
 
       {/* Main Content */}
@@ -710,17 +711,93 @@ const DoctorDetailPage = () => {
 
       {/* Модальное окно записи на прием */}
       {showAppointmentModal && (
-        <div className={styles.modal} onClick={() => setShowAppointmentModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={() => setShowAppointmentModal(false)}>×</button>
-            <h2 className={styles.modalTitle}>Записаться на прием</h2>
-            <p className={styles.modalDoctor}>Врач: {doctorData.name}</p>
-            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm}>
+        <div 
+          className={styles.modal} 
+          onClick={() => setShowAppointmentModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999
+          }}
+        >
+          <div 
+            className={styles.modalContent} 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: isMobile ? '25px 20px' : '50px',
+              maxWidth: isMobile ? '95%' : '650px',
+              width: '95%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              position: 'relative',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <button 
+              className={styles.modalClose} 
+              onClick={() => setShowAppointmentModal(false)}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '25px',
+                background: 'none',
+                border: 'none',
+                fontSize: '28px',
+                cursor: 'pointer',
+                color: '#666',
+                width: '35px',
+                height: '35px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >×</button>
+            <h2 
+              className={styles.modalTitle}
+              style={{
+                fontFamily: 'var(--font-montserrat), sans-serif',
+                fontWeight: '700',
+                fontSize: isMobile ? '22px' : '28px',
+                color: '#0c3465',
+                margin: '0 0 15px 0',
+                textAlign: 'center'
+              }}
+            >Записаться на прием</h2>
+            <p 
+              className={styles.modalDoctor}
+              style={{
+                fontFamily: 'var(--font-montserrat), sans-serif',
+                fontWeight: '600',
+                fontSize: isMobile ? '14px' : '18px',
+                color: '#666',
+                margin: '0 0 35px 0',
+                textAlign: 'center'
+              }}
+            >Врач: {doctorData.name}</p>
+            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
               <input 
                 type="text" 
                 name="name"
                 placeholder="Ваше ФИО" 
-                className={styles.formInput} 
+                className={styles.formInput}
+                style={{
+                  width: '100%',
+                  padding: '14px 18px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-montserrat), sans-serif',
+                  boxSizing: 'border-box'
+                }}
                 required 
                 disabled={isSubmitting}
               />
@@ -728,7 +805,16 @@ const DoctorDetailPage = () => {
                 type="tel" 
                 name="phone"
                 placeholder="Телефон" 
-                className={styles.formInput} 
+                className={styles.formInput}
+                style={{
+                  width: '100%',
+                  padding: '14px 18px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-montserrat), sans-serif',
+                  boxSizing: 'border-box'
+                }}
                 required 
                 disabled={isSubmitting}
               />
@@ -741,7 +827,17 @@ const DoctorDetailPage = () => {
               />
               <select 
                 name="time"
-                className={styles.formInput} 
+                className={styles.formInput}
+                style={{
+                  width: '100%',
+                  padding: '14px 18px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-montserrat), sans-serif',
+                  boxSizing: 'border-box',
+                  background: 'white'
+                }}
                 required
                 disabled={isSubmitting}
               >
@@ -757,11 +853,34 @@ const DoctorDetailPage = () => {
                 name="reason"
                 placeholder="Причина обращения (необязательно)" 
                 className={styles.formTextarea}
+                style={{
+                  width: '100%',
+                  padding: '14px 18px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-montserrat), sans-serif',
+                  boxSizing: 'border-box',
+                  minHeight: '100px',
+                  resize: 'vertical'
+                }}
                 disabled={isSubmitting}
               ></textarea>
               <button 
                 type="submit" 
                 className={styles.formSubmit}
+                style={{
+                  background: '#0c3465',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '70px',
+                  padding: '16px 35px',
+                  fontFamily: 'var(--font-montserrat), sans-serif',
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Отправка..." : "Записаться"}
