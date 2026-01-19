@@ -150,6 +150,19 @@ const DoctorDetailPage = () => {
     setShowAppointmentModal(true);
   };
 
+  const handleDateInput = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+    
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + '.' + value.substring(2);
+    }
+    if (value.length >= 5) {
+      value = value.substring(0, 5) + '.' + value.substring(5, 9);
+    }
+    
+    e.target.value = value;
+  };
+
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
     
@@ -159,17 +172,49 @@ const DoctorDetailPage = () => {
       return;
     }
 
+    const formData = new FormData(e.target);
+    const dateValue = formData.get("date");
+    
+    // Validate and convert Russian date format (dd.mm.yyyy) to ISO format
+    if (dateValue) {
+      const dateMatch = dateValue.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+      if (!dateMatch) {
+        alert("Пожалуйста, введите дату в формате дд.мм.гггг");
+        return;
+      }
+      
+      const [, day, month, year] = dateMatch;
+      const appointmentDate = `${year}-${month}-${day}`;
+      
+      // Check if date is valid and not in the past
+      const selectedDate = new Date(appointmentDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        alert("Нельзя выбрать прошедшую дату");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
       const formData = new FormData(e.target);
+      const dateValue = formData.get("date");
+      
+      // Convert Russian date format to ISO format
+      const dateMatch = dateValue.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+      const [, day, month, year] = dateMatch;
+      const isoDate = `${year}-${month}-${day}`;
+      
       const appointmentData = {
         userId: currentUser.id,
         doctorSlug: params.slug,
         doctorName: doctorData.name,
         patientName: formData.get("name"),
         patientPhone: formData.get("phone"),
-        appointmentDate: formData.get("date"),
+        appointmentDate: isoDate,
         appointmentTime: formData.get("time"),
         reason: formData.get("reason") || ""
       };
@@ -417,12 +462,12 @@ const DoctorDetailPage = () => {
 
       {/* Модальное окно записи на прием */}
       {showAppointmentModal && (
-        <div className={styles.modal} onClick={() => setShowAppointmentModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={() => setShowAppointmentModal(false)}>×</button>
-            <h2 className={styles.modalTitle}>Записаться на прием</h2>
-            <p className={styles.modalDoctor}>Врач: {doctorData.name}</p>
-            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm}>
+        <div className={styles.modal} onClick={() => setShowAppointmentModal(false)} style={{position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '1000'}}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{background: 'white', borderRadius: '16px', padding: '40px', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto', position: 'relative'}}>
+            <button className={styles.modalClose} onClick={() => setShowAppointmentModal(false)} style={{position: 'absolute', top: '15px', right: '20px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#666', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>×</button>
+            <h2 className={styles.modalTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '24px', color: '#0c3465', margin: '0 0 10px 0', textAlign: 'center'}}>Записаться на прием</h2>
+            <p className={styles.modalDoctor} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: '16px', color: '#666', margin: '0 0 30px 0', textAlign: 'center'}}>Врач: {doctorData.name}</p>
+            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
               <input 
                 type="text" 
                 name="name"
@@ -430,6 +475,7 @@ const DoctorDetailPage = () => {
                 className={styles.formInput} 
                 required 
                 disabled={isSubmitting}
+                style={{width: '100%', padding: '12px 15px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '14px', transition: 'border-color 0.3s'}}
               />
               <input 
                 type="tel" 
@@ -438,19 +484,27 @@ const DoctorDetailPage = () => {
                 className={styles.formInput} 
                 required 
                 disabled={isSubmitting}
+                style={{width: '100%', padding: '12px 15px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '14px', transition: 'border-color 0.3s'}}
               />
               <input 
-                type="date" 
+                type="text" 
                 name="date"
+                placeholder="Дата (дд.мм.гггг)"
                 className={styles.formInput} 
                 required 
                 disabled={isSubmitting}
+                pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}"
+                title="Введите дату в формате дд.мм.гггг"
+                maxLength="10"
+                onInput={handleDateInput}
+                style={{width: '100%', padding: '12px 15px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '14px', transition: 'border-color 0.3s'}}
               />
               <select 
                 name="time"
                 className={styles.formInput} 
                 required
                 disabled={isSubmitting}
+                style={{width: '100%', padding: '12px 15px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '14px', transition: 'border-color 0.3s'}}
               >
                 <option value="">Выберите время</option>
                 <option value="09:00">09:00</option>
@@ -465,11 +519,13 @@ const DoctorDetailPage = () => {
                 placeholder="Причина обращения (необязательно)" 
                 className={styles.formTextarea}
                 disabled={isSubmitting}
+                style={{width: '100%', padding: '12px 15px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '14px', minHeight: '80px', resize: 'vertical', transition: 'border-color 0.3s'}}
               ></textarea>
               <button 
                 type="submit" 
                 className={styles.formSubmit}
                 disabled={isSubmitting}
+                style={{background: '#0c3465', color: 'white', border: 'none', borderRadius: '70px', padding: '12px 30px', fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: '15px', cursor: 'pointer', transition: 'all 0.3s'}}
               >
                 {isSubmitting ? "Отправка..." : "Записаться"}
               </button>
