@@ -8,6 +8,23 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import RussianDatePicker from "../../components/RussianDatePicker/RussianDatePicker";
 
+// Хук для определения мобильного устройства
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return isMobile;
+};
+
 // Данные врачей
 const doctorsDatabase = {
   "zhunisova-perizat": {
@@ -87,6 +104,7 @@ const reviewsData = [
 const DoctorDetailPage = () => {
   const params = useParams();
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -215,8 +233,288 @@ const DoctorDetailPage = () => {
     return null;
   }
 
+  // Responsive styles
+  const responsiveStyles = {
+    pageWrapper: {
+      minHeight: '100vh',
+      background: '#f8f9fa'
+    },
+    main: {
+      padding: isMobile ? '100px 0 40px' : '200px 0 80px',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: isMobile ? '0 15px' : '0 40px',
+      width: '100%',
+      boxSizing: 'border-box'
+    },
+    pageTitle: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '700',
+      fontSize: isMobile ? '24px' : '36px',
+      lineHeight: '1.2em',
+      letterSpacing: '0.05em',
+      color: '#0b3364',
+      textAlign: 'center',
+      margin: isMobile ? '0 0 20px 0' : '0 0 30px 0'
+    },
+    doctorCard: {
+      background: '#ffffff',
+      borderRadius: isMobile ? '12px' : '16px',
+      padding: isMobile ? '20px' : '50px 60px',
+      marginBottom: isMobile ? '30px' : '60px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+    },
+    doctorMainInfo: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : 'auto 1fr',
+      gap: isMobile ? '20px' : '40px',
+      alignItems: 'start',
+      textAlign: isMobile ? 'center' : 'left'
+    },
+    doctorLeftSection: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: isMobile ? '15px' : '20px',
+      alignItems: isMobile ? 'center' : 'flex-start'
+    },
+    doctorAvatar: {
+      width: isMobile ? '100px' : '120px',
+      height: isMobile ? '100px' : '135px',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      background: '#e6e4e5',
+      flexShrink: '0'
+    },
+    avatarImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover'
+    },
+    doctorDetails: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      width: '100%',
+      alignItems: isMobile ? 'center' : 'flex-start'
+    },
+    doctorName: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '700',
+      fontSize: isMobile ? '20px' : '24px',
+      lineHeight: '1.3em',
+      color: '#0c3465',
+      margin: '0'
+    },
+    doctorPosition: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '400',
+      fontSize: isMobile ? '14px' : '18px',
+      lineHeight: '1.3em',
+      letterSpacing: '0.05em',
+      color: '#000000',
+      margin: '0'
+    },
+    doctorRating: {
+      display: 'flex',
+      gap: '2px',
+      marginTop: '4px'
+    },
+    star: {
+      color: '#ffa800',
+      fontSize: isMobile ? '14px' : '16px'
+    },
+    appointmentButton: {
+      width: isMobile ? '160px' : '200px',
+      height: isMobile ? '40px' : '45px',
+      background: '#00326f',
+      border: 'none',
+      borderRadius: '25px',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+      marginTop: '8px'
+    },
+    appointmentText: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '700',
+      fontSize: isMobile ? '12px' : '14px',
+      lineHeight: '1.2em',
+      letterSpacing: '0.05em',
+      color: '#ffffff',
+      textAlign: 'center'
+    },
+    doctorAdditionalInfo: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: isMobile ? '15px' : '20px'
+    },
+    infoBlock: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px'
+    },
+    infoTitle: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '700',
+      fontSize: isMobile ? '14px' : '16px',
+      lineHeight: '1.3em',
+      letterSpacing: '0.05em',
+      color: '#0c3465',
+      margin: '0'
+    },
+    infoText: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '400',
+      fontSize: isMobile ? '12px' : '14px',
+      lineHeight: '1.4em',
+      letterSpacing: '0.05em',
+      color: '#000000',
+      margin: '0'
+    },
+    directionsList: {
+      listStyle: 'none',
+      padding: '0',
+      margin: '8px 0 0 0',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '6px'
+    },
+    directionItem: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '400',
+      fontSize: isMobile ? '12px' : '14px',
+      lineHeight: '1.4em',
+      color: '#000000',
+      paddingLeft: '15px',
+      position: 'relative'
+    },
+    tagsWrapper: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: isMobile ? '6px' : '8px',
+      marginTop: '8px'
+    },
+    tag: {
+      background: '#e8f2ff',
+      border: '1px solid #0c3465',
+      borderRadius: '15px',
+      padding: isMobile ? '4px 8px' : '6px 14px',
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '500',
+      fontSize: isMobile ? '11px' : '13px',
+      color: '#0c3465',
+      whiteSpace: 'nowrap'
+    },
+    certificatesGrid: {
+      display: 'flex',
+      gap: isMobile ? '8px' : '12px',
+      marginTop: '10px',
+      flexWrap: 'wrap',
+      justifyContent: isMobile ? 'center' : 'flex-start'
+    },
+    certificateItem: {
+      width: isMobile ? '70px' : '100px',
+      height: isMobile ? '90px' : '140px',
+      borderRadius: '6px',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      transition: 'transform 0.3s'
+    },
+    certificateNote: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '400',
+      fontSize: '12px',
+      lineHeight: '1.219em',
+      letterSpacing: '0.05em',
+      color: '#989898',
+      margin: '8px 0 0 0',
+      textAlign: isMobile ? 'center' : 'left'
+    },
+    reviewsCard: {
+      background: '#00326f',
+      borderRadius: isMobile ? '12px' : '16px',
+      padding: isMobile ? '20px 15px' : '39px 85px',
+      position: 'relative'
+    },
+    reviewsTitle: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '700',
+      fontSize: isMobile ? '20px' : '25px',
+      lineHeight: '1.219em',
+      letterSpacing: '0.05em',
+      color: '#ffffff',
+      margin: isMobile ? '0 0 15px 0' : '0 0 24px 0',
+      textAlign: isMobile ? 'center' : 'left'
+    },
+    reviewsContent: {
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      gap: isMobile ? '20px' : '45px',
+      alignItems: 'flex-start'
+    },
+    videoContainer: {
+      width: isMobile ? '100%' : '504px',
+      height: isMobile ? '200px' : '308px',
+      flexShrink: '0',
+      borderRadius: '5px',
+      overflow: 'hidden',
+      background: '#000'
+    },
+    reviewsGrid: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      flex: '1'
+    },
+    reviewItem: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      padding: isMobile ? '12px' : '0'
+    },
+    reviewHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: isMobile ? '10px' : '8px'
+    },
+    reviewAvatar: {
+      width: isMobile ? '40px' : '50px',
+      height: isMobile ? '40px' : '50px',
+      borderRadius: '30px',
+      overflow: 'hidden',
+      flexShrink: '0'
+    },
+    reviewName: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '600',
+      fontSize: isMobile ? '14px' : '20px',
+      lineHeight: '1.219',
+      letterSpacing: '0.05em',
+      color: '#ffffff',
+      margin: '0'
+    },
+    reviewStar: {
+      color: '#ffa800',
+      fontSize: isMobile ? '12px' : '19px'
+    },
+    reviewText: {
+      fontFamily: 'var(--font-montserrat), sans-serif',
+      fontWeight: '400',
+      fontSize: isMobile ? '12px' : '15px',
+      lineHeight: '1.4em',
+      letterSpacing: '0.05em',
+      color: '#ffffff',
+      fontStyle: 'italic',
+      margin: '0'
+    }
+  };
+
   return (
-    <div className={styles.pageWrapper} style={{minHeight: '100vh', background: '#f8f9fa'}}>
+    <div className={styles.pageWrapper} style={responsiveStyles.pageWrapper}>
       <Header 
         navItems={["Записаться на прием", "Выбрать врача", "О клинике", "Личный кабинет"]}
         showAccountButton={false}
@@ -224,82 +522,84 @@ const DoctorDetailPage = () => {
       />
 
       {/* Main Content */}
-      <main className={styles.main}>
-        <div className={styles.container}>
+      <main className={styles.main} style={responsiveStyles.main}>
+        <div className={styles.container} style={responsiveStyles.container}>
           {/* Page Title */}
-          <h1 className={styles.pageTitle}>Подробнее о враче</h1>
+          <h1 className={styles.pageTitle} style={responsiveStyles.pageTitle}>Подробнее о враче</h1>
 
           {/* Doctor Info Card */}
-          <div className={styles.doctorCard}>
-            <div className={styles.doctorMainInfo}>
-              <div className={styles.doctorLeftSection}>
-                <div className={styles.doctorAvatar}>
+          <div className={styles.doctorCard} style={responsiveStyles.doctorCard}>
+            <div className={styles.doctorMainInfo} style={responsiveStyles.doctorMainInfo}>
+              <div className={styles.doctorLeftSection} style={responsiveStyles.doctorLeftSection}>
+                <div className={styles.doctorAvatar} style={responsiveStyles.doctorAvatar}>
                   <Image
                     src={doctorData.avatar}
                     alt={doctorData.name}
                     width={129}
                     height={145}
                     className={styles.avatarImage}
+                    style={responsiveStyles.avatarImage}
                   />
                 </div>
 
-                <div className={styles.doctorDetails}>
-                  <h2 className={styles.doctorName}>{doctorData.name}</h2>
-                  <p className={styles.doctorPosition}>{doctorData.position}</p>
+                <div className={styles.doctorDetails} style={responsiveStyles.doctorDetails}>
+                  <h2 className={styles.doctorName} style={responsiveStyles.doctorName}>{doctorData.name}</h2>
+                  <p className={styles.doctorPosition} style={responsiveStyles.doctorPosition}>{doctorData.position}</p>
 
-                  <div className={styles.doctorRating}>
+                  <div className={styles.doctorRating} style={responsiveStyles.doctorRating}>
                     {[...Array(doctorData.rating)].map((_, i) => (
-                      <span key={i} className={styles.star}>★</span>
+                      <span key={i} className={styles.star} style={responsiveStyles.star}>★</span>
                     ))}
                   </div>
 
-                  <button className={styles.appointmentButton} onClick={handleAppointmentClick}>
-                    <span className={styles.appointmentText}>Записаться на прием</span>
+                  <button className={styles.appointmentButton} style={responsiveStyles.appointmentButton} onClick={handleAppointmentClick}>
+                    <span className={styles.appointmentText} style={responsiveStyles.appointmentText}>Записаться на прием</span>
                   </button>
                 </div>
               </div>
 
-              <div className={styles.doctorAdditionalInfo}>
-                <div className={styles.infoBlock}>
-                  <h3 className={styles.infoTitle}>Образование</h3>
-                  <p className={styles.infoText}>{doctorData.education}</p>
+              <div className={styles.doctorAdditionalInfo} style={responsiveStyles.doctorAdditionalInfo}>
+                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Образование</h3>
+                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.education}</p>
                 </div>
 
-                <div className={styles.infoBlock}>
-                  <h3 className={styles.infoTitle}>Стаж</h3>
-                  <p className={styles.infoText}>{doctorData.experience}</p>
+                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Стаж</h3>
+                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.experience}</p>
                 </div>
 
-                <div className={styles.infoBlock}>
-                  <h3 className={styles.infoTitle}>Время приема</h3>
-                  <p className={styles.infoText}>{doctorData.workingHours}</p>
+                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Время приема</h3>
+                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.workingHours}</p>
                 </div>
 
-                <div className={styles.infoBlock}>
-                  <h3 className={styles.infoTitle}>Направления</h3>
-                  <ul className={styles.directionsList}>
+                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Направления</h3>
+                  <ul className={styles.directionsList} style={responsiveStyles.directionsList}>
                     {doctorData.directions.map((direction, index) => (
-                      <li key={index} className={styles.directionItem}>{direction}</li>
+                      <li key={index} className={styles.directionItem} style={responsiveStyles.directionItem}>{direction}</li>
                     ))}
                   </ul>
                 </div>
 
-                <div className={styles.infoBlock}>
-                  <h3 className={styles.infoTitle}>Специализация по заболеваниям</h3>
-                  <div className={styles.tagsWrapper}>
+                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Специализация по заболеваниям</h3>
+                  <div className={styles.tagsWrapper} style={responsiveStyles.tagsWrapper}>
                     {doctorData.treatmentTags.map((tag, index) => (
-                      <span key={index} className={styles.tag}>{tag}</span>
+                      <span key={index} className={styles.tag} style={responsiveStyles.tag}>{tag}</span>
                     ))}
                   </div>
                 </div>
 
-                <div className={styles.infoBlock}>
-                  <h3 className={styles.infoTitle}>Сертификаты и лицензии</h3>
-                  <div className={styles.certificatesGrid}>
+                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Сертификаты и лицензии</h3>
+                  <div className={styles.certificatesGrid} style={responsiveStyles.certificatesGrid}>
                     {doctorData.certificates.map((cert, index) => (
                       <div
                         key={index}
                         className={styles.certificateItem}
+                        style={responsiveStyles.certificateItem}
                         onClick={() => openCertificate(cert)}
                       >
                         <Image
@@ -312,7 +612,7 @@ const DoctorDetailPage = () => {
                       </div>
                     ))}
                   </div>
-                  <p className={styles.certificateNote}>
+                  <p className={styles.certificateNote} style={responsiveStyles.certificateNote}>
                     Нажмите на сертификат чтобы увидеть подробнее
                   </p>
                 </div>
@@ -321,11 +621,11 @@ const DoctorDetailPage = () => {
           </div>
 
           {/* Reviews Section */}
-          <div className={styles.reviewsCard}>
-            <h2 className={styles.reviewsTitle}>Отзывы</h2>
+          <div className={styles.reviewsCard} style={responsiveStyles.reviewsCard}>
+            <h2 className={styles.reviewsTitle} style={responsiveStyles.reviewsTitle}>Отзывы</h2>
 
-            <div className={styles.reviewsContent}>
-              <div className={styles.videoContainer}>
+            <div className={styles.reviewsContent} style={responsiveStyles.reviewsContent}>
+              <div className={styles.videoContainer} style={responsiveStyles.videoContainer}>
                 <iframe
                   width="100%"
                   height="100%"
@@ -338,11 +638,11 @@ const DoctorDetailPage = () => {
                 ></iframe>
               </div>
 
-              <div className={styles.reviewsGrid}>
+              <div className={styles.reviewsGrid} style={responsiveStyles.reviewsGrid}>
                 {reviewsData.map((review, index) => (
-                  <div key={index} className={styles.reviewItem}>
-                    <div className={styles.reviewHeader}>
-                      <div className={styles.reviewAvatar}>
+                  <div key={index} className={styles.reviewItem} style={responsiveStyles.reviewItem}>
+                    <div className={styles.reviewHeader} style={responsiveStyles.reviewHeader}>
+                      <div className={styles.reviewAvatar} style={responsiveStyles.reviewAvatar}>
                         <Image
                           src={review.avatar}
                           alt={review.name}
@@ -352,23 +652,19 @@ const DoctorDetailPage = () => {
                         />
                       </div>
                       <div className={styles.reviewInfo}>
-                        <h3 className={styles.reviewName}>{review.name}</h3>
+                        <h3 className={styles.reviewName} style={responsiveStyles.reviewName}>{review.name}</h3>
                         <div className={styles.reviewRating}>
                           {[...Array(review.rating)].map((_, i) => (
-                            <span key={i} className={styles.reviewStar}>★</span>
+                            <span key={i} className={styles.reviewStar} style={responsiveStyles.reviewStar}>★</span>
                           ))}
                         </div>
                       </div>
                     </div>
-                    <p className={styles.reviewText}>"{review.text}"</p>
+                    <p className={styles.reviewText} style={responsiveStyles.reviewText}>"{review.text}"</p>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* <div className={styles.scrollbarContainer}>
-              <div className={styles.scrollbar}></div>
-            </div> */}
           </div>
         </div>
       </main>
