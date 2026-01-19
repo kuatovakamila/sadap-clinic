@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
+import RussianDatePicker from "../components/RussianDatePicker/RussianDatePicker";
 
 const doctorsData = [
   {
@@ -57,6 +58,7 @@ const DoctorsPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState("");
 
   // Проверка авторизации
   useEffect(() => {
@@ -282,12 +284,12 @@ const DoctorsPage = () => {
                 required 
                 disabled={isSubmitting}
               />
-              <input 
-                type="date" 
+              <RussianDatePicker 
                 name="date"
-                className={styles.formInput} 
-                required 
+                value={appointmentDate}
+                onChange={setAppointmentDate}
                 disabled={isSubmitting}
+                required
               />
               <select 
                 name="time"
