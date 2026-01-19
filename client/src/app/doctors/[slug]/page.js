@@ -224,33 +224,32 @@ const DoctorDetailPage = () => {
       />
 
       {/* Main Content */}
-      <main className={styles.main} style={{padding: '200px 0 80px', minHeight: '100vh', display: 'flex', flexDirection: 'column'}}>
-        <div className={styles.container} style={{maxWidth: '1200px', margin: '0 auto', padding: '0 40px'}}>
+      <main className={styles.main}>
+        <div className={styles.container}>
           {/* Page Title */}
-          <h1 className={styles.pageTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '36px', lineHeight: '1.2em', letterSpacing: '0.05em', color: '#0b3364', textAlign: 'center', margin: '0 0 30px 0'}}>Подробнее о враче</h1>
+          <h1 className={styles.pageTitle}>Подробнее о враче</h1>
 
           {/* Doctor Info Card */}
-          <div className={styles.doctorCard} style={{background: '#ffffff', borderRadius: '16px', padding: '50px 60px', marginBottom: '60px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'}}>
-            <div className={styles.doctorMainInfo} style={{display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '40px', alignItems: 'start'}}>
-              <div className={styles.doctorLeftSection} style={{display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'flex-start'}}>
-                <div className={styles.doctorAvatar} style={{width: '120px', height: '135px', borderRadius: '12px', overflow: 'hidden', background: '#e6e4e5', flexShrink: '0'}}>
+          <div className={styles.doctorCard}>
+            <div className={styles.doctorMainInfo}>
+              <div className={styles.doctorLeftSection}>
+                <div className={styles.doctorAvatar}>
                   <Image
                     src={doctorData.avatar}
                     alt={doctorData.name}
                     width={129}
                     height={145}
                     className={styles.avatarImage}
-                    style={{width: '100%', height: '100%', objectFit: 'cover'}}
                   />
                 </div>
 
-                <div className={styles.doctorDetails} style={{display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', alignItems: 'flex-start'}}>
-                  <h2 className={styles.doctorName} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '24px', lineHeight: '1.3em', color: '#0c3465', margin: '0'}}>{doctorData.name}</h2>
-                  <p className={styles.doctorPosition} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '18px', lineHeight: '1.3em', letterSpacing: '0.05em', color: '#000000', margin: '0'}}>{doctorData.position}</p>
+                <div className={styles.doctorDetails}>
+                  <h2 className={styles.doctorName}>{doctorData.name}</h2>
+                  <p className={styles.doctorPosition}>{doctorData.position}</p>
 
-                  <div className={styles.doctorRating} style={{display: 'flex', gap: '2px', marginTop: '4px'}}>
+                  <div className={styles.doctorRating}>
                     {[...Array(doctorData.rating)].map((_, i) => (
-                      <span key={i} className={styles.star} style={{color: '#ffa800', fontSize: '16px'}}>★</span>
+                      <span key={i} className={styles.star}>★</span>
                     ))}
                   </div>
 
@@ -260,27 +259,27 @@ const DoctorDetailPage = () => {
                 </div>
               </div>
 
-              <div className={styles.doctorAdditionalInfo} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                <div className={styles.infoBlock} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <h3 className={styles.infoTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '16px', lineHeight: '1.3em', letterSpacing: '0.05em', color: '#0c3465', margin: '0'}}>Образование</h3>
-                  <p className={styles.infoText} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '14px', lineHeight: '1.4em', letterSpacing: '0.05em', color: '#000000', margin: '0'}}>{doctorData.education}</p>
+              <div className={styles.doctorAdditionalInfo}>
+                <div className={styles.infoBlock}>
+                  <h3 className={styles.infoTitle}>Образование</h3>
+                  <p className={styles.infoText}>{doctorData.education}</p>
                 </div>
 
-                <div className={styles.infoBlock} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <h3 className={styles.infoTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '16px', lineHeight: '1.3em', letterSpacing: '0.05em', color: '#0c3465', margin: '0'}}>Стаж</h3>
-                  <p className={styles.infoText} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '14px', lineHeight: '1.4em', letterSpacing: '0.05em', color: '#000000', margin: '0'}}>{doctorData.experience}</p>
+                <div className={styles.infoBlock}>
+                  <h3 className={styles.infoTitle}>Стаж</h3>
+                  <p className={styles.infoText}>{doctorData.experience}</p>
                 </div>
 
-                <div className={styles.infoBlock} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <h3 className={styles.infoTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '16px', lineHeight: '1.3em', letterSpacing: '0.05em', color: '#0c3465', margin: '0'}}>Время приема</h3>
-                  <p className={styles.infoText} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '14px', lineHeight: '1.4em', letterSpacing: '0.05em', color: '#000000', margin: '0'}}>{doctorData.workingHours}</p>
+                <div className={styles.infoBlock}>
+                  <h3 className={styles.infoTitle}>Время приема</h3>
+                  <p className={styles.infoText}>{doctorData.workingHours}</p>
                 </div>
 
-                <div className={styles.infoBlock} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <h3 className={styles.infoTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '16px', lineHeight: '1.3em', letterSpacing: '0.05em', color: '#0c3465', margin: '0'}}>Направления</h3>
-                  <ul className={styles.directionsList} style={{listStyle: 'none', padding: '0', margin: '8px 0 0 0', display: 'flex', flexDirection: 'column', gap: '6px'}}>
+                <div className={styles.infoBlock}>
+                  <h3 className={styles.infoTitle}>Направления</h3>
+                  <ul className={styles.directionsList}>
                     {doctorData.directions.map((direction, index) => (
-                      <li key={index} className={styles.directionItem} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '14px', lineHeight: '1.4em', color: '#000000', paddingLeft: '15px', position: 'relative'}}>{direction}</li>
+                      <li key={index} className={styles.directionItem}>{direction}</li>
                     ))}
                   </ul>
                 </div>
@@ -294,15 +293,14 @@ const DoctorDetailPage = () => {
                   </div>
                 </div>
 
-                <div className={styles.infoBlock} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <h3 className={styles.infoTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '16px', lineHeight: '1.3em', letterSpacing: '0.05em', color: '#0c3465', margin: '0'}}>Сертификаты и лицензии</h3>
-                  <div className={styles.certificatesGrid} style={{display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap'}}>
+                <div className={styles.infoBlock}>
+                  <h3 className={styles.infoTitle}>Сертификаты и лицензии</h3>
+                  <div className={styles.certificatesGrid}>
                     {doctorData.certificates.map((cert, index) => (
                       <div
                         key={index}
                         className={styles.certificateItem}
                         onClick={() => openCertificate(cert)}
-                        style={{width: '100px', height: '140px', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.3s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}
                       >
                         <Image
                           src={cert}
@@ -310,12 +308,11 @@ const DoctorDetailPage = () => {
                           width={100}
                           height={140}
                           className={styles.certificateImage}
-                          style={{width: '100%', height: '100%', objectFit: 'cover'}}
                         />
                       </div>
                     ))}
                   </div>
-                  <p className={styles.certificateNote} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '12px', lineHeight: '1.219em', letterSpacing: '0.05em', color: '#989898', margin: '8px 0 0 0'}}>
+                  <p className={styles.certificateNote}>
                     Нажмите на сертификат чтобы увидеть подробнее
                   </p>
                 </div>
@@ -324,11 +321,11 @@ const DoctorDetailPage = () => {
           </div>
 
           {/* Reviews Section */}
-          <div className={styles.reviewsCard} style={{background: '#ffffff', borderRadius: '16px', padding: '50px 60px', marginTop: '50px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'}}>
-            <h2 className={styles.reviewsTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '1.2em', letterSpacing: '0.05em', color: '#0b3364', textAlign: 'center', margin: '0 0 40px 0'}}>Отзывы</h2>
+          <div className={styles.reviewsCard}>
+            <h2 className={styles.reviewsTitle}>Отзывы</h2>
 
-            <div className={styles.reviewsContent} style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', alignItems: 'start'}}>
-              <div className={styles.videoContainer} style={{width: '100%', height: '300px', borderRadius: '12px', overflow: 'hidden'}}>
+            <div className={styles.reviewsContent}>
+              <div className={styles.videoContainer}>
                 <iframe
                   width="100%"
                   height="100%"
@@ -338,34 +335,32 @@ const DoctorDetailPage = () => {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className={styles.videoIframe}
-                  style={{width: '100%', height: '100%', border: 'none'}}
                 ></iframe>
               </div>
 
-              <div className={styles.reviewsGrid} style={{display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '300px', overflowY: 'auto'}}>
+              <div className={styles.reviewsGrid}>
                 {reviewsData.map((review, index) => (
-                  <div key={index} className={styles.reviewItem} style={{background: '#f8f9fa', borderRadius: '12px', padding: '20px 24px'}}>
-                    <div className={styles.reviewHeader} style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '12px'}}>
-                      <div className={styles.reviewAvatar} style={{width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', flexShrink: '0'}}>
+                  <div key={index} className={styles.reviewItem}>
+                    <div className={styles.reviewHeader}>
+                      <div className={styles.reviewAvatar}>
                         <Image
                           src={review.avatar}
                           alt={review.name}
                           width={50}
                           height={50}
                           className={styles.reviewAvatarImage}
-                          style={{width: '100%', height: '100%', objectFit: 'cover'}}
                         />
                       </div>
-                      <div className={styles.reviewInfo} style={{flex: '1'}}>
-                        <h3 className={styles.reviewName} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: '16px', lineHeight: '1.2em', color: '#0c3465', margin: '0 0 4px 0'}}>{review.name}</h3>
-                        <div className={styles.reviewRating} style={{display: 'flex', gap: '2px'}}>
+                      <div className={styles.reviewInfo}>
+                        <h3 className={styles.reviewName}>{review.name}</h3>
+                        <div className={styles.reviewRating}>
                           {[...Array(review.rating)].map((_, i) => (
-                            <span key={i} className={styles.reviewStar} style={{color: '#ffa800', fontSize: '14px'}}>★</span>
+                            <span key={i} className={styles.reviewStar}>★</span>
                           ))}
                         </div>
                       </div>
                     </div>
-                    <p className={styles.reviewText} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '400', fontSize: '14px', lineHeight: '1.4em', color: '#666666', margin: '0'}}>"{review.text}"</p>
+                    <p className={styles.reviewText}>"{review.text}"</p>
                   </div>
                 ))}
               </div>
