@@ -1,11 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./book.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 
-const BookAppointmentPage = () => {
+// Separate component for the form content that uses useSearchParams
+const BookingFormContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -132,6 +133,116 @@ const BookAppointmentPage = () => {
   const minDate = tomorrow.toISOString().split('T')[0];
 
   return (
+    <>
+      <div className={styles.backButton} onClick={() => router.back()}>
+        ← Назад
+      </div>
+
+      <h1 className={styles.title}>Запись на прием</h1>
+      
+      <div className={styles.doctorInfo}>
+        <h2 className={styles.doctorName}>{doctorName}</h2>
+        <p className={styles.doctorPosition}>{doctorPosition}</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="name">
+            Ваше имя *
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className={styles.input}
+            required
+          />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="phone">
+            Телефон *
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            className={styles.input}
+            placeholder="+7 (___) ___-__-__"
+            required
+          />
+        </div>
+
+        <div className={styles.formRow}>
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="date">
+              Дата приема *
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={formData.date}
+              onChange={handleInputChange}
+              className={styles.input}
+              min={minDate}
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="time">
+              Время приема *
+            </label>
+            <select
+              id="time"
+              name="time"
+              value={formData.time}
+              onChange={handleInputChange}
+              className={styles.select}
+              required
+            >
+              <option value="">Выберите время</option>
+              {timeSlots.map(time => (
+                <option key={time} value={time}>{time}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="reason">
+            Причина обращения (необязательно)
+          </label>
+          <textarea
+            id="reason"
+            name="reason"
+            value={formData.reason}
+            onChange={handleInputChange}
+            className={styles.textarea}
+            rows="4"
+            placeholder="Опишите причину вашего обращения..."
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          className={styles.submitButton}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Отправка..." : "Записаться на прием"}
+        </button>
+      </form>
+    </>
+  );
+};
+
+const BookAppointmentPage = () => {
+  return (
     <div className={styles.pageWrapper}>
       <Header 
         navItems={["Записаться на прием", "Выбрать врача", "О клинике", "Личный кабинет"]}
@@ -141,109 +252,9 @@ const BookAppointmentPage = () => {
 
       <main className={styles.main}>
         <div className={styles.container}>
-          <div className={styles.backButton} onClick={() => router.back()}>
-            ← Назад
-          </div>
-
-          <h1 className={styles.title}>Запись на прием</h1>
-          
-          <div className={styles.doctorInfo}>
-            <h2 className={styles.doctorName}>{doctorName}</h2>
-            <p className={styles.doctorPosition}>{doctorPosition}</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="name">
-                Ваше имя *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="phone">
-                Телефон *
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className={styles.input}
-                placeholder="+7 (___) ___-__-__"
-                required
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label className={styles.label} htmlFor="date">
-                  Дата приема *
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  min={minDate}
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label} htmlFor="time">
-                  Время приема *
-                </label>
-                <select
-                  id="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleInputChange}
-                  className={styles.select}
-                  required
-                >
-                  <option value="">Выберите время</option>
-                  {timeSlots.map(time => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="reason">
-                Причина обращения (необязательно)
-              </label>
-              <textarea
-                id="reason"
-                name="reason"
-                value={formData.reason}
-                onChange={handleInputChange}
-                className={styles.textarea}
-                rows="4"
-                placeholder="Опишите причину вашего обращения..."
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className={styles.submitButton}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Отправка..." : "Записаться на прием"}
-            </button>
-          </form>
+          <Suspense fallback={<div>Загрузка...</div>}>
+            <BookingFormContent />
+          </Suspense>
         </div>
       </main>
 
