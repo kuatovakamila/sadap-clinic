@@ -1,7 +1,11 @@
 {
-  "framework": "nextjs",
-  "installCommand": "cd client && npm install --legacy-peer-deps",
-  "buildCommand": "cd client && npm run build",
+  "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "client/.next",
-  "rootDirectory": "client"
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ]
 }
