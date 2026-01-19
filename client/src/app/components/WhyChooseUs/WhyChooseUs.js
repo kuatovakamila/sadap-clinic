@@ -21,8 +21,8 @@ const WhyChooseUs = () => {
                 <Image
                   src={feature.icon}
                   alt={feature.title}
-                  width={128}
-                  height={128}
+                  width={80}
+                  height={80}
                   className={styles.featureImage}
                 />
               </div>
