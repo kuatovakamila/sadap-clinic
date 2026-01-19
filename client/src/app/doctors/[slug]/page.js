@@ -147,7 +147,9 @@ const DoctorDetailPage = () => {
       return;
     }
     
-    setShowAppointmentModal(true);
+    // Навигация на страницу записи с информацией о враче
+    const bookingUrl = `/appointments/book?doctor=${params.slug}&doctorName=${encodeURIComponent(doctorData.name)}&doctorPosition=${encodeURIComponent(doctorData.position)}`;
+    router.push(bookingUrl);
   };
 
   const handleAppointmentSubmit = async (e) => {

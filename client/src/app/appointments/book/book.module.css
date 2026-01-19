@@ -1,0 +1,181 @@
+.pageWrapper {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.main {
+  padding: 200px 0 80px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.backButton {
+  color: #0b3364;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+.backButton:hover {
+  color: #1e5a96;
+}
+
+.title {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.2em;
+  letter-spacing: 0.05em;
+  color: #0b3364;
+  text-align: center;
+  margin: 0 0 40px 0;
+}
+
+.doctorInfo {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctorName {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.3em;
+  color: #0c3465;
+  margin: 0 0 8px 0;
+}
+
+.doctorPosition {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: #666666;
+  margin: 0;
+}
+
+.form {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.label {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #0b3364;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+  background: #ffffff;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #0b3364;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 16px 32px;
+  background: #00326f;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #04326b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 50, 111, 0.3);
+}
+
+.submitButton:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 150px 0 60px;
+  }
+
+  .container {
+    padding: 0 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .form {
+    padding: 30px 20px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .doctorInfo {
+    padding: 20px;
+  }
+
+  .doctorName {
+    font-size: 20px;
+  }
+
+  .doctorPosition {
+    font-size: 16px;
+  }
+}
