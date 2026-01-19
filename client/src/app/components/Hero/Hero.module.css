@@ -21,17 +21,17 @@
 .heroTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 40px;
+  font-size: 28px;
   line-height: 1.219;
   letter-spacing: 0.02em;
   color: #ffffff;
-  margin: 0 0 11px;
+  margin: 0 0 8px;
 }
 
 .heroSubtitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 600;
-  font-size: 20px;
+  font-size: 14px;
   line-height: 1.219;
   letter-spacing: 0.02em;
   color: #ffffff;
@@ -83,7 +83,7 @@
 .buttonText {
   font-family: "Inter", var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 19px;
+  font-size: 14px;
   line-height: 74px;
   letter-spacing: 0.05em;
   text-transform: uppercase;

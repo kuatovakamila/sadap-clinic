@@ -35,7 +35,7 @@
 .statNumber {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 50px;
+  font-size: 32px;
   line-height: 1.219;
   letter-spacing: 0.05em;
   text-align: center;
@@ -46,7 +46,7 @@
 .statText {
   font-family: "Stolzl", var(--font-montserrat), sans-serif;
   font-weight: 400;
-  font-size: 20px;
+  font-size: 14px;
   line-height: 1.2;
   letter-spacing: 0.05em;
   text-align: center;

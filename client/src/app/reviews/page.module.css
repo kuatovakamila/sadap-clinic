@@ -36,7 +36,7 @@
 .heroTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
+  font-size: 32px;
   line-height: 1.219em;
   letter-spacing: 0.05em;
   color: #ffffff;
@@ -46,7 +46,7 @@
 .heroDescription {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 400;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1.25em;
   letter-spacing: 0.05em;
   color: #ffffff;
@@ -126,7 +126,7 @@
 .philosophyTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
+  font-size: 32px;
   line-height: 1.219em;
   letter-spacing: 0.05em;
   color: #00326f;
@@ -136,7 +136,7 @@
 .philosophySubtitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 400;
-  font-size: 30px;
+  font-size: 20px;
   line-height: 1.15em;
   letter-spacing: 0.05em;
   color: #000000;
@@ -156,7 +156,7 @@
 .teamTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
+  font-size: 28px;
   line-height: 0.896em;
   letter-spacing: 0.05em;
   color: #0b3364;
@@ -252,7 +252,7 @@
 .certificatesTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 40px;
+  font-size: 28px;
   line-height: 1.075em;
   letter-spacing: 0.05em;
   color: #ffffff;
@@ -268,7 +268,7 @@
 .certificatesText p {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 500;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.219em;
   letter-spacing: 0.05em;
   color: #ffffff;
@@ -289,7 +289,7 @@
 .partnersTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
+  font-size: 28px;
   line-height: 0.896em;
   letter-spacing: 0.05em;
   color: #0b3364;

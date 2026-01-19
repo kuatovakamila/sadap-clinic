@@ -1,52 +1,122 @@
 "use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
-
-const appointmentsData = [
-  {
-    id: 1,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  },
-  {
-    id: 2,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  },
-  {
-    id: 3,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  },
-  {
-    id: 4,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  },
-  {
-    id: 5,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  },
-  {
-    id: 6,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  }
-];
+import { supabase } from "@/lib/supabase";
 
 const AppointmentsPage = () => {
+  const router = useRouter();
   const pathname = usePathname();
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // First check localStorage for custom auth
+        const storedUser = localStorage.getItem("user");
+        
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          
+          // Get profile from database using user id
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", userData.id)
+            .single();
+
+          setProfile(profileData || userData);
+          setLoading(false);
+          
+          // Fetch appointments for this user
+          await fetchAppointments(userData.id);
+          return;
+        }
+
+        // Fallback to Supabase auth
+        const { data: { user: supaUser } } = await supabase.auth.getUser();
+        
+        if (!supaUser) {
+          router.push("/auth");
+          return;
+        }
+
+        setUser(supaUser);
+
+        // Get profile from database
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", supaUser.id)
+          .single();
+
+        setProfile(profileData);
+        
+        // Fetch appointments for this user
+        await fetchAppointments(supaUser.id);
+      } catch (error) {
+        console.error("Auth error:", error);
+        router.push("/auth");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  const fetchAppointments = async (userId) => {
+    try {
+      setLoadingAppointments(true);
+      const response = await fetch(`/api/appointments/get?userId=${userId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setAppointments(result.appointments || []);
+      }
+    } catch (error) {
+      console.error("Error loading appointments:", error);
+    } finally {
+      setLoadingAppointments(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", { 
+      day: "numeric", 
+      month: "long", 
+      year: "numeric" 
+    });
+  };
+
+  const getStatusText = (status) => {
+    const statusMap = {
+      pending: "Ожидается",
+      confirmed: "Подтверждено", 
+      completed: "Завершено",
+      cancelled: "Отменено"
+    };
+    return statusMap[status] || status;
+  };
+
+  const handleLogout = async () => {
+    // Clear localStorage
+    localStorage.removeItem("user");
+    // Also sign out from Supabase if there's a session
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -102,37 +172,75 @@ const AppointmentsPage = () => {
           <div className={styles.contentContainer}>
             <h1 className={styles.pageTitle}>Записи</h1>
 
-            <div className={styles.appointmentsGrid}>
-              {appointmentsData.map((appointment) => (
-                <div key={appointment.id} className={styles.appointmentCard}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.dateTime}>
-                      <div className={styles.date}>{appointment.date}</div>
-                      <div className={styles.divider}></div>
-                      <div className={styles.time}>{appointment.time}</div>
+            {loading ? (
+              <div className={styles.appointmentsLoading}>
+                <div className={styles.loadingSpinner}></div>
+                <p>Загрузка...</p>
+              </div>
+            ) : !user ? (
+              <div className={styles.noAppointments}>
+                <p>Войдите в систему, чтобы увидеть свои записи</p>
+                <Link href="/auth" className={styles.bookButton}>
+                  Войти
+                </Link>
+              </div>
+            ) : loadingAppointments ? (
+              <div className={styles.appointmentsLoading}>
+                <div className={styles.loadingSpinner}></div>
+                <p>Загрузка записей...</p>
+              </div>
+            ) : appointments.length === 0 ? (
+              <div className={styles.noAppointments}>
+                <p>У вас пока нет записей</p>
+                <Link href="/doctors" className={styles.bookButton}>
+                  Записаться на прием
+                </Link>
+              </div>
+            ) : (
+              <div className={styles.appointmentsGrid}>
+                {appointments.map((appointment) => (
+                  <div key={appointment.id} className={styles.appointmentCard}>
+                    <div className={styles.cardHeader}>
+                      <div className={styles.dateTime}>
+                        <div className={styles.date}>{formatDate(appointment.appointment_date)}</div>
+                        <div className={styles.divider}></div>
+                        <div className={styles.time}>{appointment.appointment_time}</div>
+                      </div>
+                    </div>
+
+                    <div className={styles.cardBody}>
+                      <div className={styles.doctorInfo}>
+                        <span className={styles.doctorLabel}>Врач:</span>
+                        <span className={styles.doctorName}>{appointment.doctor_name}</span>
+                      </div>
+                      {appointment.reason && (
+                        <div className={styles.reasonInfo}>
+                          <span className={styles.reasonLabel}>Причина:</span>
+                          <span className={styles.reasonText}>{appointment.reason}</span>
+                        </div>
+                      )}
+                      <div className={styles.statusInfo}>
+                        <span className={styles.statusLabel}>Статус:</span>
+                        <span className={`${styles.statusText} ${styles[appointment.status]}`}>
+                          {getStatusText(appointment.status)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.cardFooter}>
+                      <button className={styles.detailsButton}>
+                        <span className={styles.buttonText}>Подробнее</span>
+                        <span className={styles.buttonIcon}>
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className={styles.cardBody}>
-                    <div className={styles.doctorInfo}>
-                      <span className={styles.doctorLabel}>Врач:</span>
-                      <span className={styles.doctorName}>{appointment.doctor}</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.cardFooter}>
-                    <button className={styles.detailsButton}>
-                      <span className={styles.buttonText}>Подробнее</span>
-                      <span className={styles.buttonIcon}>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d="M7.5 15L12.5 10L7.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* <div className={styles.scrollbar}>
               <div className={styles.scrollbarThumb}></div>

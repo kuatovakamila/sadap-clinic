@@ -9,16 +9,16 @@
 .contentWrapper {
   flex: 1;
   display: flex;
-  max-width: 1512px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  padding-top: 105px;
+  padding-top: 85px;
 }
 
 /* Sidebar */
 .sidebar {
-  width: 418px;
-  padding: 68px 30px 0;
+  width: 320px;
+  padding: 50px 20px 0;
   background: transparent;
   flex-shrink: 0;
 }
@@ -66,13 +66,12 @@
 .sidebarText {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 12px;
   line-height: 1.5em;
   color: #2d3748;
   position: relative;
   z-index: 1;
 }
-
 .sidebarItemActive .sidebarText {
   color: #ffffff;
 }
@@ -94,31 +93,31 @@
 .pageTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 40px;
+  font-size: 24px;
   line-height: 1.219em;
   letter-spacing: 0.05em;
   color: #042955;
-  margin-bottom: 47px;
+  margin-bottom: 30px;
 }
 
 /* Appointments Grid */
 .appointmentsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 25px 21px;
-  margin-bottom: 20px;
+  gap: 18px 16px;
+  margin-bottom: 16px;
 }
 
 /* Appointment Card */
 .appointmentCard {
   background: #ffffff;
-  border-radius: 10px;
-  padding: 30px 41px 39px;
+  border-radius: 8px;
+  padding: 22px 30px 28px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.3s;
-  height: 270px;
+  height: 220px;
 }
 
 .appointmentCard:hover {
@@ -127,19 +126,19 @@
 }
 
 .cardHeader {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .dateTime {
   display: flex;
   align-items: center;
-  gap: 17px;
+  gap: 10px;
 }
 
 .date {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 25px;
+  font-size: 16px;
   line-height: 1.219em;
   letter-spacing: 0.05em;
   color: #0c3465;
@@ -147,14 +146,14 @@
 
 .divider {
   width: 0;
-  height: 26px;
-  border-left: 3px solid #0c3465;
+  height: 20px;
+  border-left: 2px solid #0c3465;
 }
 
 .time {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 25px;
+  font-size: 16px;
   line-height: 1.219em;
   letter-spacing: 0.05em;
   color: #0c3465;
@@ -173,7 +172,7 @@
 .doctorLabel {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 400;
-  font-size: 13px;
+  font-size: 10px;
   line-height: 1.15em;
   letter-spacing: 0.05em;
   color: #0c3465;
@@ -182,10 +181,61 @@
 .doctorName {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 400;
-  font-size: 18px;
+  font-size: 12px;
   line-height: 1.15em;
   letter-spacing: 0.05em;
   color: #0c3465;
+}
+
+.reasonInfo, .statusInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reasonLabel, .statusLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 1.15em;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.reasonText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.15em;
+  letter-spacing: 0.05em;
+  color: #0c3465;
+}
+
+.statusText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 1.15em;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 15px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.statusText.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.statusText.confirmed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.statusText.cancelled {
+  background: #f8d7da;
+  color: #721c24;
 }
 
 .cardFooter {
@@ -200,12 +250,13 @@
   background: #0c3465;
   border: none;
   border-radius: 70px;
-  padding: 15px 20px 15px 30px;
+  padding: 10px 15px 10px 20px;
   cursor: pointer;
   transition: all 0.3s;
   width: 100%;
-  max-width: 302px;
-  gap: 15px;
+  max-width: 220px;
+  gap: 10px;
+  text-decoration: none;
 }
 
 .detailsButton:hover {
@@ -217,7 +268,7 @@
 .buttonText {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   color: #ffffff;
   flex: 1;
@@ -225,8 +276,8 @@
 }
 
 .buttonIcon {
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   display: flex;
@@ -425,4 +476,70 @@
   .buttonText {
     font-size: 14px;
   }
+}
+
+/* Loading and Empty States */
+.appointmentsLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0c3465;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.appointmentsLoading p {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.noAppointments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.noAppointments p {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 30px 0;
+}
+
+.bookButton {
+  display: inline-block;
+  background: #0c3465;
+  color: white;
+  padding: 15px 40px;
+  border-radius: 70px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.bookButton:hover {
+  background: #0a2850;
+  transform: translateY(-2px);
 }

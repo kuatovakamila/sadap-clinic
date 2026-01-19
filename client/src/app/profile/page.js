@@ -9,27 +9,14 @@ import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import { supabase } from "@/lib/supabase";
 
-const upcomingAppointments = [
-  {
-    id: 1,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  },
-  {
-    id: 2,
-    doctor: "Анна Ивановна",
-    date: "28 апреля 2024",
-    time: "18:20"
-  }
-];
-
 const ProfilePage = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -50,6 +37,9 @@ const ProfilePage = () => {
 
           setProfile(profileData || userData);
           setLoading(false);
+          
+          // Load appointments
+          loadAppointments(userData.id);
           return;
         }
 
@@ -71,6 +61,9 @@ const ProfilePage = () => {
           .single();
 
         setProfile(profileData);
+        
+        // Load appointments
+        loadAppointments(supaUser.id);
       } catch (error) {
         console.error("Auth error:", error);
         router.push("/auth");
@@ -81,6 +74,41 @@ const ProfilePage = () => {
 
     checkAuth();
   }, [router]);
+
+  const loadAppointments = async (userId) => {
+    try {
+      setLoadingAppointments(true);
+      const response = await fetch(`/api/appointments/get?userId=${userId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setAppointments(result.appointments || []);
+      }
+    } catch (error) {
+      console.error("Error loading appointments:", error);
+    } finally {
+      setLoadingAppointments(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", { 
+      day: "numeric", 
+      month: "long", 
+      year: "numeric" 
+    });
+  };
+
+  const getStatusText = (status) => {
+    const statusMap = {
+      pending: "Ожидается",
+      confirmed: "Подтверждено",
+      completed: "Завершено",
+      cancelled: "Отменено"
+    };
+    return statusMap[status] || status;
+  };
 
   const handleLogout = async () => {
     // Clear localStorage
@@ -196,37 +224,63 @@ const ProfilePage = () => {
             {/* Upcoming Appointments Section */}
             <h2 className={styles.sectionTitle}>Ближайшие записи</h2>
 
-            <div className={styles.appointmentsGrid}>
-              {upcomingAppointments.map((appointment) => (
-                <div key={appointment.id} className={styles.appointmentCard}>
-                  <div className={styles.cardHeader}>
-                    <div className={styles.dateTime}>
-                      <div className={styles.date}>{appointment.date}</div>
-                      <div className={styles.divider}></div>
-                      <div className={styles.time}>{appointment.time}</div>
+            {loadingAppointments ? (
+              <div className={styles.appointmentsLoading}>
+                <div className={styles.spinner}></div>
+                <p>Загрузка записей...</p>
+              </div>
+            ) : appointments.length === 0 ? (
+              <div className={styles.noAppointments}>
+                <p>У вас пока нет записей на прием</p>
+                <Link href="/doctors" className={styles.bookButton}>
+                  Записаться к врачу
+                </Link>
+              </div>
+            ) : (
+              <div className={styles.appointmentsGrid}>
+                {appointments.map((appointment) => (
+                  <div key={appointment.id} className={styles.appointmentCard}>
+                    <div className={styles.cardHeader}>
+                      <div className={styles.dateTime}>
+                        <div className={styles.date}>{formatDate(appointment.appointment_date)}</div>
+                        <div className={styles.divider}></div>
+                        <div className={styles.time}>{appointment.appointment_time}</div>
+                      </div>
+                      <div className={`${styles.status} ${styles[appointment.status]}`}>
+                        {getStatusText(appointment.status)}
+                      </div>
+                    </div>
+
+                    <div className={styles.cardBody}>
+                      <div className={styles.doctorInfo}>
+                        <span className={styles.doctorLabel}>Врач:</span>
+                        <span className={styles.doctorName}>{appointment.doctor_name}</span>
+                      </div>
+                      {appointment.reason && (
+                        <div className={styles.reasonInfo}>
+                          <span className={styles.reasonLabel}>Причина:</span>
+                          <span className={styles.reasonText}>{appointment.reason}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={styles.cardFooter}>
+                      <Link 
+                        href={`/doctors/${appointment.doctor_slug}`}
+                        className={styles.detailsButton}
+                      >
+                        <span className={styles.buttonText}>Подробнее</span>
+                        <span className={styles.buttonIcon}>
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      </Link>
                     </div>
                   </div>
-
-                  <div className={styles.cardBody}>
-                    <div className={styles.doctorInfo}>
-                      <span className={styles.doctorLabel}>Врач:</span>
-                      <span className={styles.doctorName}>{appointment.doctor}</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.cardFooter}>
-                    <button className={styles.detailsButton}>
-                      <span className={styles.buttonText}>Подробнее</span>
-                      <span className={styles.buttonIcon}>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d="M7.5 15L12.5 10L7.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
