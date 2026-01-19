@@ -153,11 +153,49 @@
   .calendar {
     left: -10px;
     right: -10px;
+    padding: 10px;
   }
   
   .dayCell {
     width: 28px;
     height: 28px;
     font-size: 12px;
+  }
+  
+  .monthYear {
+    font-size: 14px;
+  }
+  
+  .navButton {
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  .input {
+    padding: clamp(12px, 15px, 3vw) clamp(15px, 18px, 3vw);
+    font-size: clamp(14px, 16px, 3vw);
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar {
+    left: -15px;
+    right: -15px;
+    padding: 8px;
+  }
+  
+  .dayCell {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+  
+  .dayName {
+    font-size: 10px;
+    padding: 6px 2px;
+  }
+  
+  .monthYear {
+    font-size: 13px;
   }
 }

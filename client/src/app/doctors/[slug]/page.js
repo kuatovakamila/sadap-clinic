@@ -254,8 +254,8 @@ const DoctorDetailPage = () => {
                     ))}
                   </div>
 
-                  <button className={styles.appointmentButton} onClick={handleAppointmentClick} style={{width: '200px', height: '45px', background: '#00326f', border: 'none', borderRadius: '25px', cursor: 'pointer', transition: 'all 0.3s', marginTop: '8px'}}>
-                    <span className={styles.appointmentText} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '14px', lineHeight: '1.2em', letterSpacing: '0.05em', color: '#ffffff', textAlign: 'center'}}>Записаться на прием</span>
+                  <button className={styles.appointmentButton} onClick={handleAppointmentClick} style={{width: 'clamp(160px, 200px, 90vw)', height: '45px', background: '#00326f', border: 'none', borderRadius: '25px', cursor: 'pointer', transition: 'all 0.3s', marginTop: '8px'}}>
+                    <span className={styles.appointmentText} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: 'clamp(12px, 14px, 4vw)', lineHeight: '1.2em', letterSpacing: '0.05em', color: '#ffffff', textAlign: 'center'}}>Записаться на прием</span>
                   </button>
                 </div>
               </div>
@@ -419,12 +419,12 @@ const DoctorDetailPage = () => {
 
       {/* Модальное окно записи на прием */}
       {showAppointmentModal && (
-        <div className={styles.modal} onClick={() => setShowAppointmentModal(false)} style={{position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '1000'}}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{background: 'white', borderRadius: '16px', padding: '50px', maxWidth: '650px', width: '95%', maxHeight: '90vh', overflowY: 'auto', position: 'relative'}}>
-            <button className={styles.modalClose} onClick={() => setShowAppointmentModal(false)} style={{position: 'absolute', top: '20px', right: '25px', background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer', color: '#666', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>×</button>
-            <h2 className={styles.modalTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: '28px', color: '#0c3465', margin: '0 0 15px 0', textAlign: 'center'}}>Записаться на прием</h2>
-            <p className={styles.modalDoctor} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: '18px', color: '#666', margin: '0 0 35px 0', textAlign: 'center'}}>Врач: {doctorData.name}</p>
-            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm} style={{display: 'flex', flexDirection: 'column', gap: '25px'}}>
+        <div className={styles.modal} onClick={() => setShowAppointmentModal(false)} style={{position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '1000', padding: '10px'}}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{background: 'white', borderRadius: '16px', padding: 'clamp(25px, 50px, 5vw)', maxWidth: 'min(650px, 95vw)', width: '100%', maxHeight: '90vh', overflowY: 'auto', position: 'relative'}}>
+            <button className={styles.modalClose} onClick={() => setShowAppointmentModal(false)} style={{position: 'absolute', top: 'clamp(15px, 20px, 3vw)', right: 'clamp(20px, 25px, 4vw)', background: 'none', border: 'none', fontSize: 'clamp(24px, 28px, 5vw)', cursor: 'pointer', color: '#666', width: 'clamp(30px, 35px, 6vw)', height: 'clamp(30px, 35px, 6vw)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>×</button>
+            <h2 className={styles.modalTitle} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '700', fontSize: 'clamp(22px, 28px, 6vw)', color: '#0c3465', margin: '0 0 15px 0', textAlign: 'center'}}>Записаться на прием</h2>
+            <p className={styles.modalDoctor} style={{fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: 'clamp(15px, 18px, 4vw)', color: '#666', margin: '0 0 35px 0', textAlign: 'center'}}>Врач: {doctorData.name}</p>
+            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm} style={{display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 25px, 4vw)'}}>
               <input 
                 type="text" 
                 name="name"
@@ -432,7 +432,7 @@ const DoctorDetailPage = () => {
                 className={styles.formInput} 
                 required 
                 disabled={isSubmitting}
-                style={{width: '100%', padding: '15px 18px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '16px', transition: 'border-color 0.3s'}}
+                style={{width: '100%', padding: 'clamp(12px, 15px, 3vw) clamp(15px, 18px, 3vw)', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: 'clamp(14px, 16px, 3vw)', transition: 'border-color 0.3s'}}
               />
               <input 
                 type="tel" 
@@ -441,7 +441,7 @@ const DoctorDetailPage = () => {
                 className={styles.formInput} 
                 required 
                 disabled={isSubmitting}
-                style={{width: '100%', padding: '15px 18px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '16px', transition: 'border-color 0.3s'}}
+                style={{width: '100%', padding: 'clamp(12px, 15px, 3vw) clamp(15px, 18px, 3vw)', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: 'clamp(14px, 16px, 3vw)', transition: 'border-color 0.3s'}}
               />
               <RussianDatePicker 
                 name="date"
@@ -455,7 +455,7 @@ const DoctorDetailPage = () => {
                 className={styles.formInput} 
                 required
                 disabled={isSubmitting}
-                style={{width: '100%', padding: '15px 18px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '16px', transition: 'border-color 0.3s'}}
+                style={{width: '100%', padding: 'clamp(12px, 15px, 3vw) clamp(15px, 18px, 3vw)', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: 'clamp(14px, 16px, 3vw)', transition: 'border-color 0.3s'}}
               >
                 <option value="">Выберите время</option>
                 <option value="09:00">09:00</option>
@@ -470,13 +470,13 @@ const DoctorDetailPage = () => {
                 placeholder="Причина обращения (необязательно)" 
                 className={styles.formTextarea}
                 disabled={isSubmitting}
-                style={{width: '100%', padding: '15px 18px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: '16px', minHeight: '100px', resize: 'vertical', transition: 'border-color 0.3s'}}
+                style={{width: '100%', padding: 'clamp(12px, 15px, 3vw) clamp(15px, 18px, 3vw)', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'var(--font-montserrat), sans-serif', fontSize: 'clamp(14px, 16px, 3vw)', minHeight: 'clamp(80px, 100px, 15vw)', resize: 'vertical', transition: 'border-color 0.3s'}}
               ></textarea>
               <button 
                 type="submit" 
                 className={styles.formSubmit}
                 disabled={isSubmitting}
-                style={{background: '#0c3465', color: 'white', border: 'none', borderRadius: '70px', padding: '16px 35px', fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: '16px', cursor: 'pointer', transition: 'all 0.3s'}}
+                style={{background: '#0c3465', color: 'white', border: 'none', borderRadius: '70px', padding: 'clamp(14px, 16px, 3vw) clamp(30px, 35px, 5vw)', fontFamily: 'var(--font-montserrat), sans-serif', fontWeight: '600', fontSize: 'clamp(15px, 16px, 3vw)', cursor: 'pointer', transition: 'all 0.3s'}}
               >
                 {isSubmitting ? "Отправка..." : "Записаться"}
               </button>
