@@ -92,12 +92,16 @@ const ProfilePage = () => {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", { 
-      day: "numeric", 
-      month: "long", 
-      year: "numeric" 
-    });
+    // Extract date part and format directly without Date object
+    const datePart = dateString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    
+    const months = [
+      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    
+    return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year} г.`;
   };
 
   const getStatusText = (status) => {

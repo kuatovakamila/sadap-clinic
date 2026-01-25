@@ -92,12 +92,21 @@ const AppointmentsPage = () => {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", { 
-      day: "numeric", 
-      month: "long", 
-      year: "numeric" 
-    });
+    // Extract date part and format directly without Date object
+    console.log('Raw date from API:', dateString);
+    const datePart = dateString.split('T')[0];
+    console.log('Date part:', datePart);
+    const [year, month, day] = datePart.split('-');
+    console.log('Parsed:', { year, month, day });
+    
+    const months = [
+      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    
+    const formatted = `${parseInt(day)} ${months[parseInt(month) - 1]} ${year} г.`;
+    console.log('Formatted date:', formatted);
+    return formatted;
   };
 
   const getStatusText = (status) => {

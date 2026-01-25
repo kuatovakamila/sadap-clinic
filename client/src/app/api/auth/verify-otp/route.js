@@ -119,6 +119,17 @@ export async function POST(request) {
           updated_at: new Date().toISOString(),
         });
       }
+      
+      // Fetch the profile data
+      const { data: profileData } = await supabaseAdmin
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (profileData) {
+        console.log("Profile data found:", profileData);
+      }
     } else {
       console.log("Creating new user for phone:", cleanPhone);
       // Try to create new user
@@ -174,13 +185,36 @@ export async function POST(request) {
       }
     }
 
+    // Always fetch the latest profile data from database
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .eq("phone", cleanPhone)
+      .single();
+
+    if (profileError || !profileData) {
+      console.error("Error fetching profile:", profileError);
+      // Fallback to basic user data
+      return NextResponse.json({
+        success: true,
+        message: "Вход выполнен успешно!",
+        user: {
+          id: user.id,
+          phone: cleanPhone,
+          full_name: user.user_metadata?.full_name || storedData.fullName || "",
+        },
+      });
+    }
+
+    console.log("Returning user with profile ID:", profileData.id);
+
     return NextResponse.json({
       success: true,
       message: "Вход выполнен успешно!",
       user: {
-        id: user.id,
-        phone: cleanPhone,
-        full_name: user.user_metadata?.full_name || storedData.fullName || "",
+        id: profileData.id,
+        phone: profileData.phone,
+        full_name: profileData.full_name,
       },
     });
 
