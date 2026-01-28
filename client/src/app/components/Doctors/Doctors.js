@@ -4,47 +4,31 @@ import styles from "./Doctors.module.css";
 import Image from "next/image";
 import Link from "next/link";
 
-const doctorsData = [
-  {
-    name: "Ахметов Айдар Серикович",
-    position: "Врач-эндоскопист, заведующий отделением-врач-эндоскопист",
-    avatar: "/services/doctor.png",
-  },
-  {
-    name: "Каримова Асель Болатовна",
-    position: "Врач-терапевт высшей категории",
-    avatar: "/services/doctor.png",
-  },
-  {
-    name: "Нурланов Ерлан Маратович",
-    position: "Врач-хирург, кандидат медицинских наук",
-    avatar: "/services/doctor.png",
-  },
-  {
-    name: "Жумабаева Гульнара Сериковна",
-    position: "Врач-гинеколог высшей категории",
-    avatar: "/services/doctor.png",
-  },
-  {
-    name: "Турсунов Бахтияр Асылбекович",
-    position: "Врач-кардиолог, доктор медицинских наук",
-    avatar: "/services/doctor.png",
-  },
-  {
-    name: "Сагындыкова Айгуль Мухтаровна",
-    position: "Врач-педиатр высшей категории",
-    avatar: "/services/doctor.png",
-  },
-  {
-    name: "Алимов Ерлан Жанатович",
-    position: "Врач-невролог, кандидат медицинских наук",
-    avatar: "/services/doctor.png",
-  },
-];
-
 const Doctors = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load doctors from database
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await fetch("/api/doctors");
+        const result = await response.json();
+        
+        if (result.success) {
+          setDoctors(result.doctors || []);
+        }
+      } catch (error) {
+        console.error("Error loading doctors:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   // определяем, мобилка или нет
   useEffect(() => {
@@ -61,7 +45,7 @@ const Doctors = () => {
 
   // по 3 врача на десктопе и по 1 на мобилке
   const doctorsPerSlide = isMobile ? 1 : 3;
-  const totalSlides = Math.ceil(doctorsData.length / doctorsPerSlide);
+  const totalSlides = Math.ceil(doctors.length / doctorsPerSlide);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -75,7 +59,7 @@ const Doctors = () => {
     setCurrentSlide(index);
   };
 
-  const visibleDoctors = doctorsData.slice(
+  const visibleDoctors = doctors.slice(
     currentSlide * doctorsPerSlide,
     (currentSlide + 1) * doctorsPerSlide
   );
@@ -106,24 +90,27 @@ const Doctors = () => {
           </button>
 
           <div className={styles.doctorsGrid}>
-            {visibleDoctors.map((doctor, index) => (
+            {loading ? (
+              <p>Загрузка врачей...</p>
+            ) : visibleDoctors.length > 0 ? (
+              visibleDoctors.map((doctor, index) => (
               <div
-                key={currentSlide * doctorsPerSlide + index}
+                key={doctor.id}
                 className={styles.doctorCard}
               >
                 <div className={styles.doctorAvatar}>
                   <Image
-                    src={doctor.avatar}
-                    alt={doctor.name}
+                    src={doctor.avatar_url && doctor.avatar_url !== "" ? doctor.avatar_url : "/services/doctor.png"}
+                    alt={doctor.full_name}
                     width={143}
                     height={169}
                     className={styles.doctorImage}
                   />
                 </div>
-                <h3 className={styles.doctorName}>{doctor.name}</h3>
-                <p className={styles.doctorPosition}>{doctor.position}</p>
+                <h3 className={styles.doctorName}>{doctor.full_name}</h3>
+                <p className={styles.doctorPosition}>{doctor.specialization_title}</p>
 
-                <button className={styles.appointmentButton}>
+                <Link href={`/doctors/${doctor.slug}`} className={styles.appointmentButton}>
                   <span className={styles.buttonText}>Записаться</span>
                   <span className={styles.buttonIcon}>
                     <svg
@@ -141,9 +128,12 @@ const Doctors = () => {
                       />
                     </svg>
                   </span>
-                </button>
+                </Link>
               </div>
-            ))}
+            ))
+            ) : (
+              <p>Врачи не найдены</p>
+            )}
           </div>
 
           <button

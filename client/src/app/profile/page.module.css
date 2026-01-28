@@ -127,6 +127,7 @@
 
 .contentContainer {
   position: relative;
+  overflow: visible;
 }
 
 .pageTitle {
@@ -227,18 +228,20 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 18px 16px;
   margin-bottom: 16px;
+  align-items: stretch;
 }
 
 /* Appointment Card */
 .appointmentCard {
   background: #ffffff;
   border-radius: 8px;
-  padding: 22px 30px 28px;
+  padding: 22px 30px 24px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 12px;
   transition: all 0.3s;
-  height: 220px;
+  height: auto;
+  overflow: visible;
 }
 
 .appointmentCard:hover {
@@ -247,7 +250,7 @@
 }
 
 .cardHeader {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .dateTime {
@@ -281,13 +284,16 @@
 }
 
 .cardBody {
-  margin-bottom: 25px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .doctorInfo {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .doctorLabel {
@@ -626,21 +632,182 @@
 
 
 @media (max-width: 768px) {
+  .pageWrapper {
+    min-height: 100vh;
+  }
+
+  .contentWrapper {
+    padding-top: 70px;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .sidebarNav {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .sidebarItem {
+    flex: 0 0 auto;
+    min-width: 120px;
+    padding: 12px 20px;
+    height: 48px;
+  }
+
+  .sidebarIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sidebarIcon img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sidebarText {
+    font-size: 11px;
+  }
+
+  .mainContent {
+    padding: 30px 20px 60px;
+  }
+
+  .pageTitle {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .profileCard {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 20px;
+    margin-bottom: 30px;
+    align-items: center;
+  }
+
+  .profileAvatar {
+    width: 80px;
+    height: 80px;
+    order: -1;
+    margin-bottom: 16px;
+  }
+
+  .profileInfo {
+    order: 0;
+    width: 100%;
+  }
+
+  .profileRight {
+    order: 1;
+    margin-left: 0;
+    margin-top: 16px;
+    width: 100%;
+  }
+
+  .profileDetails {
+    align-items: center;
+  }
+
+  .profileName {
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .profileField {
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .fieldLabel {
+    font-size: 12px;
+  }
+
+  .fieldValue {
+    font-size: 13px;
+  }
+
+  .appointmentsSectionTitle {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .appointmentsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 
   .appointmentCard {
-    padding: 20px 20px 24px;
-    height: auto;      /* ← фикс */
+    padding: 20px;
+    gap: 10px;
+  }
+
+  .cardHeader {
+    margin-bottom: 8px;
+  }
+
+  .date, .time {
+    font-size: 14px;
+  }
+
+  .divider {
+    height: 16px;
+  }
+
+  .doctorLabel, .reasonLabel, .statusLabel {
+    font-size: 9px;
+  }
+
+  .doctorName, .reasonText {
+    font-size: 11px;
+  }
+
+  .statusText {
+    font-size: 9px;
+    padding: 2px 8px;
   }
 
   .detailsButton {
-    width: 100%;       /* ← кнопка тянется ровно по карточке */
-    max-width: 100%;   /* ← не выходит за края */
-    padding: 12px 16px;
-    border-radius: 60px;
+    max-width: 100%;
+    padding: 10px 15px;
   }
 
   .buttonText {
-    font-size: 14px;
+    font-size: 10px;
+  }
+
+  .buttonIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .noAppointments {
+    padding: 40px 20px;
+  }
+
+  .noAppointments p {
+    font-size: 13px;
+  }
+
+  .bookButton {
+    padding: 10px 24px;
+    font-size: 13px;
+  }
+
+  .profileRight {
+    margin-left: 0;
+    margin-top: 12px;
+  }
+
+  .logoutButtonSmall {
+    font-size: 11px;
+    padding: 6px 14px;
   }
 }
 

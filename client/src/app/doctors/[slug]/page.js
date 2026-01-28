@@ -25,67 +25,6 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-// Данные врачей
-const doctorsDatabase = {
-  "zhunisova-perizat": {
-    name: "Жунисова Перизат Мухитдиновна",
-    position: "Врач акушер-гинеколог",
-    specialties: ["Гинеколог", "Акушер"],
-    experience: "15+ лет опыта",
-    education: "Западно-Казахстанский медицинский университет имени Марата Оспанова, 2008 год",
-    avatar: "/doctor-female.jpg",
-    rating: 5,
-    workingHours: "Пн-Пт: 9:00 - 18:00, Сб: 9:00 - 14:00",
-    directions: [
-      "Ведение беременности",
-      "Диагностика и лечение гинекологических заболеваний",
-      "УЗИ органов малого таза",
-      "Консультации по планированию семьи"
-    ],
-    treatmentTags: [
-      "Воспаление половых органов",
-      "Нарушение менструального цикла",
-      "Эндометриоз",
-      "Миома матки",
-      "Инфекции",
-      "Бесплодие"
-    ],
-    certificates: [
-      "/certificate1.png",
-      "/certificate2.png",
-      "/certificate3.png"
-    ]
-  },
-  "yulamanova-zarina": {
-    name: "Юламанова Зарина Евгеньевна",
-    position: "Врач педиатр",
-    specialties: ["Педиатр"],
-    experience: "10+ лет опыта",
-    education: "Актюбинский государственный медицинский университет, 2013 год",
-    avatar: "/doctor-female.jpg",
-    rating: 5,
-    workingHours: "Пн-Пт: 8:00 - 17:00, Сб: 9:00 - 13:00",
-    directions: [
-      "Диагностика и лечение детских заболеваний",
-      "Вакцинация детей",
-      "Профилактические осмотры",
-      "Консультации по развитию ребенка"
-    ],
-    treatmentTags: [
-      "ОРВИ и грипп",
-      "Аллергия у детей",
-      "Бронхит",
-      "Гастрит",
-      "Дерматит",
-      "Отставание в развитии"
-    ],
-    certificates: [
-      "/certificate1.png",
-      "/certificate2.png"
-    ]
-  }
-};
-
 const reviewsData = [
   {
     name: "Арнау Жупарбеков",
@@ -111,8 +50,34 @@ const DoctorDetailPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState("");
-  
-  const doctorData = doctorsDatabase[params.slug];
+  const [doctorData, setDoctorData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Load doctor data from database
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/doctors/${params.slug}`);
+        const result = await response.json();
+        
+        if (result.success && result.doctor) {
+          setDoctorData(result.doctor);
+        } else {
+          router.push("/doctors");
+        }
+      } catch (error) {
+        console.error("Error loading doctor:", error);
+        router.push("/doctors");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.slug) {
+      fetchDoctor();
+    }
+  }, [params.slug, router]);
 
   // Проверка авторизации
   useEffect(() => {
@@ -127,13 +92,6 @@ const DoctorDetailPage = () => {
       }
     }
   }, []);
-
-  // Если врач не найден, перенаправляем на список врачей
-  useEffect(() => {
-    if (!doctorData) {
-      router.push("/doctors");
-    }
-  }, [doctorData, router]);
 
   // Закрытие попапа по ESC
   useEffect(() => {
@@ -186,7 +144,7 @@ const DoctorDetailPage = () => {
       const appointmentData = {
         userId: currentUser.id,
         doctorSlug: params.slug,
-        doctorName: doctorData.name,
+        doctorName: doctorData.full_name,
         patientName: formData.get("name"),
         patientPhone: formData.get("phone"),
         appointmentDate: formData.get("date"),
@@ -228,6 +186,14 @@ const DoctorDetailPage = () => {
       closeCertificate();
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <p>Загрузка...</p>
+      </div>
+    );
+  }
 
   if (!doctorData) {
     return null;
@@ -534,8 +500,8 @@ const DoctorDetailPage = () => {
               <div className={styles.doctorLeftSection} style={responsiveStyles.doctorLeftSection}>
                 <div className={styles.doctorAvatar} style={responsiveStyles.doctorAvatar}>
                   <Image
-                    src={doctorData.avatar}
-                    alt={doctorData.name}
+                    src={doctorData.avatar_url && doctorData.avatar_url !== "" ? doctorData.avatar_url : "/doctor-female.jpg"}
+                    alt={doctorData.full_name}
                     width={129}
                     height={145}
                     className={styles.avatarImage}
@@ -544,11 +510,11 @@ const DoctorDetailPage = () => {
                 </div>
 
                 <div className={styles.doctorDetails} style={responsiveStyles.doctorDetails}>
-                  <h2 className={styles.doctorName} style={responsiveStyles.doctorName}>{doctorData.name}</h2>
-                  <p className={styles.doctorPosition} style={responsiveStyles.doctorPosition}>{doctorData.position}</p>
+                  <h2 className={styles.doctorName} style={responsiveStyles.doctorName}>{doctorData.full_name}</h2>
+                  <p className={styles.doctorPosition} style={responsiveStyles.doctorPosition}>{doctorData.specialization_title}</p>
 
                   <div className={styles.doctorRating} style={responsiveStyles.doctorRating}>
-                    {[...Array(doctorData.rating)].map((_, i) => (
+                    {[...Array(Math.max(1, Math.min(5, Math.floor(doctorData.rating || 5))))].map((_, i) => (
                       <span key={i} className={styles.star} style={responsiveStyles.star}>★</span>
                     ))}
                   </div>
@@ -562,12 +528,12 @@ const DoctorDetailPage = () => {
               <div className={styles.doctorAdditionalInfo} style={responsiveStyles.doctorAdditionalInfo}>
                 <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
                   <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Образование</h3>
-                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.education}</p>
+                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.education_text || "Информация отсутствует"}</p>
                 </div>
 
                 <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
                   <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Стаж</h3>
-                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.experience}</p>
+                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.experience_years ? `${doctorData.experience_years}+ лет опыта` : "Информация отсутствует"}</p>
                 </div>
 
                 <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
@@ -584,39 +550,43 @@ const DoctorDetailPage = () => {
                   </ul>
                 </div>
 
-                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Специализация по заболеваниям</h3>
-                  <div className={styles.tagsWrapper} style={responsiveStyles.tagsWrapper}>
-                    {doctorData.treatmentTags.map((tag, index) => (
-                      <span key={index} className={styles.tag} style={responsiveStyles.tag}>{tag}</span>
-                    ))}
+                {doctorData.treatmentTags && doctorData.treatmentTags.length > 0 && (
+                  <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                    <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Специализация по заболеваниям</h3>
+                    <div className={styles.tagsWrapper} style={responsiveStyles.tagsWrapper}>
+                      {doctorData.treatmentTags.map((tag, index) => (
+                        <span key={index} className={styles.tag} style={responsiveStyles.tag}>{tag}</span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Сертификаты и лицензии</h3>
-                  <div className={styles.certificatesGrid} style={responsiveStyles.certificatesGrid}>
-                    {doctorData.certificates.map((cert, index) => (
-                      <div
-                        key={index}
-                        className={styles.certificateItem}
-                        style={responsiveStyles.certificateItem}
-                        onClick={() => openCertificate(cert)}
-                      >
-                        <Image
-                          src={cert}
-                          alt={`Сертификат ${index + 1}`}
-                          width={100}
-                          height={140}
-                          className={styles.certificateImage}
-                        />
-                      </div>
-                    ))}
+                {doctorData.certificates && doctorData.certificates.filter(cert => cert && cert.url && cert.url !== "").length > 0 && (
+                  <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
+                    <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Сертификаты и лицензии</h3>
+                    <div className={styles.certificatesGrid} style={responsiveStyles.certificatesGrid}>
+                      {doctorData.certificates.filter(cert => cert && cert.url && cert.url !== "").map((cert, index) => (
+                        <div
+                          key={index}
+                          className={styles.certificateItem}
+                          style={responsiveStyles.certificateItem}
+                          onClick={() => openCertificate(cert.url)}
+                        >
+                          <Image
+                            src={cert.url}
+                            alt={cert.title || `Сертификат ${index + 1}`}
+                            width={100}
+                            height={140}
+                            className={styles.certificateImage}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className={styles.certificateNote} style={responsiveStyles.certificateNote}>
+                      Нажмите на сертификат чтобы увидеть подробнее
+                    </p>
                   </div>
-                  <p className={styles.certificateNote} style={responsiveStyles.certificateNote}>
-                    Нажмите на сертификат чтобы увидеть подробнее
-                  </p>
-                </div>
+                )}
               </div>
             </div>
           </div>

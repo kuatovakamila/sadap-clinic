@@ -88,6 +88,7 @@
 
 .contentContainer {
   position: relative;
+  overflow: visible;
 }
 
 .pageTitle {
@@ -106,18 +107,20 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 18px 16px;
   margin-bottom: 16px;
+  align-items: stretch;
 }
 
 /* Appointment Card */
 .appointmentCard {
   background: #ffffff;
   border-radius: 8px;
-  padding: 22px 30px 28px;
+  padding: 22px 30px 24px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 12px;
   transition: all 0.3s;
-  height: 220px;
+  height: auto;
+  overflow: visible;
 }
 
 .appointmentCard:hover {
@@ -126,7 +129,7 @@
 }
 
 .cardHeader {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .dateTime {
@@ -160,13 +163,16 @@
 }
 
 .cardBody {
-  margin-bottom: 25px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .doctorInfo {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .doctorLabel {

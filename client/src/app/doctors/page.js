@@ -8,33 +8,6 @@ import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import RussianDatePicker from "../components/RussianDatePicker/RussianDatePicker";
 
-const doctorsData = [
-  {
-    id: 1,
-    name: "Жунисова Перизат Мухитдиновна",
-    fullName: "Жунисова Перизат Мухитдиновна",
-    position: "Врач акушер-гинеколог",
-    specialties: ["Гинеколог", "Акушер"],
-    avatar: "/doctor-female.jpg",
-    slug: "zhunisova-perizat",
-    experience: "15+ лет",
-    tags: ["Воспаление", "Беременность", "Женское здоровье", "УЗИ"],
-    workingHours: "Пн-Пт: 9:00 - 18:00, Сб: 9:00 - 14:00"
-  },
-  {
-    id: 2,
-    name: "Юламанова Зарина Евгеньевна",
-    fullName: "Юламанова Зарина Евгеньевна",
-    position: "Врач педиатр",
-    specialties: ["Педиатр"],
-    avatar: "/doctor-female.jpg",
-    slug: "yulamanova-zarina",
-    experience: "10+ лет",
-    tags: ["Детское здоровье", "Вакцинация", "ОРВИ", "Аллергия"],
-    workingHours: "Пн-Пт: 8:00 - 17:00, Сб: 9:00 - 13:00"
-  }
-];
-
 // 🔹 Категории-специальности под поиском
 const specialties = [
   "Педиатр",
@@ -59,6 +32,8 @@ const DoctorsPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState("");
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Проверка авторизации
   useEffect(() => {
@@ -74,12 +49,35 @@ const DoctorsPage = () => {
     }
   }, []);
 
+  // Загрузка врачей из базы данных
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/doctors");
+        const result = await response.json();
+        
+        console.log("Doctors loaded:", result);
+        
+        if (result.success) {
+          setDoctors(result.doctors || []);
+        }
+      } catch (error) {
+        console.error("Error loading doctors:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
   // Фильтрация врачей
-  const filteredDoctors = doctorsData.filter((doctor) => {
-    const matchesSearch = doctor.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         doctor.position.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredDoctors = doctors.filter((doctor) => {
+    const matchesSearch = doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         doctor.specialization_title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSpecialty = !selectedSpecialty || 
-                            doctor.specialties.some(s => s.toLowerCase() === selectedSpecialty.toLowerCase());
+                            doctor.specialization_title.toLowerCase().includes(selectedSpecialty.toLowerCase());
     return matchesSearch && matchesSpecialty;
   });
 
@@ -117,7 +115,7 @@ const DoctorsPage = () => {
       const appointmentData = {
         userId: currentUser.id,
         doctorSlug: selectedDoctor.slug,
-        doctorName: selectedDoctor.name,
+        doctorName: selectedDoctor.full_name,
         patientName: formData.get("name"),
         patientPhone: formData.get("phone"),
         appointmentDate: formData.get("date"),
@@ -221,15 +219,15 @@ const DoctorsPage = () => {
             {filteredDoctors.length > 0 ? (
               filteredDoctors.map((doctor) => (
               <div key={doctor.id} className={styles.doctorCardLink}>
-                <Link
-                  href={`/doctors/${doctor.slug}`}
-                  className={styles.doctorCardLinkInner}
-                >
-                  <div className={styles.doctorCard}>
+                <div className={styles.doctorCard}>
+                  <Link
+                    href={`/doctors/${doctor.slug}`}
+                    className={styles.doctorCardLinkInner}
+                  >
                     <div className={styles.doctorAvatar}>
                       <Image
-                        src={doctor.avatar}
-                        alt={doctor.name}
+                        src={doctor.avatar_url && doctor.avatar_url !== "" ? doctor.avatar_url : "/doctor-female.jpg"}
+                        alt={doctor.full_name}
                         width={73}
                         height={82}
                         className={styles.avatarImage}
@@ -237,18 +235,18 @@ const DoctorsPage = () => {
                     </div>
 
                     <div className={styles.doctorInfo}>
-                      <h3 className={styles.doctorName}>{doctor.name}</h3>
-                      <p className={styles.doctorPosition}>{doctor.position}</p>
+                      <h3 className={styles.doctorName}>{doctor.full_name}</h3>
+                      <p className={styles.doctorPosition}>{doctor.specialization_title}</p>
                     </div>
+                  </Link>
 
-                    <button 
-                      className={styles.appointmentButton}
-                      onClick={(e) => handleAppointmentClick(e, doctor)}
-                    >
-                      <span className={styles.buttonText}>Записаться</span>
-                    </button>
-                  </div>
-                </Link>
+                  <button 
+                    className={styles.appointmentButton}
+                    onClick={(e) => handleAppointmentClick(e, doctor)}
+                  >
+                    <span className={styles.buttonText}>Записаться</span>
+                  </button>
+                </div>
               </div>
             ))
             ) : (
@@ -266,7 +264,7 @@ const DoctorsPage = () => {
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <button className={styles.modalClose} onClick={() => setShowAppointmentModal(false)}>×</button>
             <h2 className={styles.modalTitle}>Записаться на прием</h2>
-            <p className={styles.modalDoctor}>Врач: {selectedDoctor?.name}</p>
+            <p className={styles.modalDoctor}>Врач: {selectedDoctor?.full_name}</p>
             <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm}>
               <input 
                 type="text" 
