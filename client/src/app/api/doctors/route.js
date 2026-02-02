@@ -5,6 +5,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const specialty = searchParams.get("specialty");
+    const specialization = searchParams.get("specialization");
 
     let query = supabaseAdmin
       .from("doctors")
@@ -15,6 +16,11 @@ export async function GET(request) {
     // Filter by specialty if provided
     if (specialty) {
       query = query.ilike("specialization_title", `%${specialty}%`);
+    }
+
+    // Filter by specialization if provided (for services)
+    if (specialization) {
+      query = query.ilike("specialization_title", `%${specialization}%`);
     }
 
     const { data, error } = await query;

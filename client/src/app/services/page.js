@@ -6,15 +6,15 @@ import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 
 const servicesData = [
-  { id: 1, title: "Педиатрия", image: "/services-page/pediatrics.png" },
-  { id: 2, title: "Кардиология", image: "/services-page/cardiology.png" },
-  { id: 3, title: "Неврология", image: "/services-page/neurology.png" },
-  { id: 4, title: "Гинекология", image: "/services-page/gynecology.png" },
-  { id: 5, title: "Эндокринология", image: "/services-page/endocrinology.png" },
-  { id: 6, title: "Уролог", image: "/services-page/urology.png" },
-  { id: 7, title: "Терапия", image: "/services-page/therapy.png" },
-  { id: 8, title: "Дерматология", image: "/services-page/dermatology.png" },
-  { id: 9, title: "Ортопедия", image: "/services-page/orthopedics.png" },
+  { id: 1, title: "Педиатрия", image: "/services-page/pediatrics.png", slug: "pediatriya" },
+  { id: 2, title: "Кардиология", image: "/services-page/cardiology.png", slug: "" },
+  { id: 3, title: "Неврология", image: "/services-page/neurology.png", slug: "" },
+  { id: 4, title: "Гинекология", image: "/services-page/gynecology.png", slug: "ginekologiya" },
+  { id: 5, title: "Эндокринология", image: "/services-page/endocrinology.png", slug: "endokrinologiya" },
+  { id: 6, title: "Уролог", image: "/services-page/urology.png", slug: "urologiya" },
+  { id: 7, title: "Терапия", image: "/services-page/therapy.png", slug: "terapiya" },
+  { id: 8, title: "Дерматология", image: "/services-page/dermatology.png", slug: "dermatologiya" },
+  { id: 9, title: "Ортопедия", image: "/services-page/orthopedics.png", slug: "ortopediya" },
 ];
 
 const ServicesPage = () => {
@@ -36,20 +36,37 @@ const ServicesPage = () => {
         <div className={styles.servicesContainer}>
           <div className={styles.servicesGrid}>
             {servicesData.map((service) => (
-              <div key={service.id} className={styles.serviceCard}>
-                <div className={styles.serviceImage}>
-                  <Image
-                    src={service.image}
-                    alt={service.title}
-                    width={130}
-                    height={130}
-                    className={styles.serviceImg}
-                  />
+              service.slug ? (
+                <Link key={service.id} href={`/services/${service.slug}`} className={styles.serviceCard}>
+                  <div className={styles.serviceImage}>
+                    <Image
+                      src={service.image}
+                      alt={service.title}
+                      width={130}
+                      height={130}
+                      className={styles.serviceImg}
+                    />
+                  </div>
+                  <div className={styles.serviceContent}>
+                    <h3 className={styles.serviceTitle}>{service.title}</h3>
+                  </div>
+                </Link>
+              ) : (
+                <div key={service.id} className={styles.serviceCard}>
+                  <div className={styles.serviceImage}>
+                    <Image
+                      src={service.image}
+                      alt={service.title}
+                      width={130}
+                      height={130}
+                      className={styles.serviceImg}
+                    />
+                  </div>
+                  <div className={styles.serviceContent}>
+                    <h3 className={styles.serviceTitle}>{service.title}</h3>
+                  </div>
                 </div>
-                <div className={styles.serviceContent}>
-                  <h3 className={styles.serviceTitle}>{service.title}</h3>
-                </div>
-              </div>
+              )
             ))}
           </div>
         </div>
