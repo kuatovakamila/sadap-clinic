@@ -7,30 +7,46 @@
   max-width: 1507px;
   margin: 0 auto;
   padding: 0 108px;
-  text-align: center;
+}
+
+.aboutContent {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.aboutText {
+  flex: 1;
 }
 
 .aboutTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
   font-size: 32px;
-  line-height: 0.896;
+  line-height: 1.2;
   letter-spacing: 0.05em;
-  text-align: center;
   color: #0b3364;
   margin: 0 0 30px;
 }
 
-.aboutText {
+.aboutDescription {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 500;
   font-size: 16px;
-  line-height: 1.219;
+  line-height: 1.6;
   letter-spacing: 0.05em;
-  text-align: center;
   color: #000000;
-  margin: 0 auto 50px;
-  max-width: 1290px;
+  margin: 0 0 40px;
+}
+
+.aboutImageWrapper {
+  flex-shrink: 0;
+}
+
+.aboutImage {
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .aboutButton {
@@ -88,19 +104,39 @@
   .aboutContainer {
     padding: 0 80px;
   }
+
+  .aboutContent {
+    gap: 40px;
+  }
+
+  .aboutImage {
+    width: 400px;
+    height: 280px;
+  }
 }
 
 @media (max-width: 1024px) {
   .aboutTitle {
-    font-size: 40px;
+    font-size: 28px;
   }
 
-  .aboutText {
-    font-size: 20px;
+  .aboutDescription {
+    font-size: 15px;
   }
 
   .aboutContainer {
     padding: 0 50px;
+  }
+
+  .aboutContent {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .aboutImage {
+    width: 100%;
+    max-width: 500px;
+    height: 300px;
   }
 }
 
@@ -114,12 +150,11 @@
   }
 
   .aboutTitle {
-    font-size: 32px;
+    font-size: 24px;
   }
 
-  .aboutText {
+  .aboutDescription {
     font-size: 14px;
-    margin-bottom: 40px;
   }
 
   .buttonText {

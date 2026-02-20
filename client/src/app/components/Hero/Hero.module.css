@@ -40,12 +40,15 @@
 
 .heroImageWrapper {
   flex-shrink: 0;
+  position: relative;
 }
 
 .heroImage {
   width: 340px;
-  height: auto;
-  object-fit: contain;
+  height: 400px;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 200px;
 }
 
 .heroButton {

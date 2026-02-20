@@ -26,18 +26,18 @@ const ServicePage = () => {
           'pediatriya': {
             title: 'Педиатрия',
             description: 'Комплексная медицинская помощь детям от рождения до 18 лет.',
-            image_url: '/pediatrics.jpg',
+            image_url: '/pediatry-new.JPG',
             specialization: 'Педиатр',
             equipment: [
               {
                 title: 'УЗИ аппарат последнего поколения',
                 description: 'Современное ультразвуковое оборудование для точной диагностики',
-                image_url: '/uzi_apparat.png'
+                image_url: '/uzi-apparat.JPG'
               },
               {
-                title: 'Педиатрический стол',
-                description: 'Специализированное оборудование для комфортного осмотра детей',
-                image_url: '/pediatrics_table.png'
+                title: 'Цифровой рентген-аппарат',
+                description: 'Современный цифровой рентген для быстрой и точной диагностики',
+                image_url: '/apparat.JPG'
               }
             ]
           },
@@ -196,8 +196,8 @@ const ServicePage = () => {
                       <Image
                         src={equipment[currentSlide]?.image_url && equipment[currentSlide]?.image_url !== "" ? equipment[currentSlide].image_url : "/blank.png"}
                         alt={equipment[currentSlide]?.title || "Оборудование"}
-                        width={600}
-                        height={400}
+                        width={800}
+                        height={500}
                         className={styles.equipmentImg}
                       />
                     </div>

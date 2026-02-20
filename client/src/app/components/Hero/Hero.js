@@ -20,8 +20,8 @@ const Hero = () => {
 
         <div className={styles.heroImageWrapper}>
           <Image
-            src="/hero.png"
-            alt="Medical illustration"
+            src="/doctor-welcome.JPG"
+            alt="Врач клиники"
             width={340}
             height={388}
             className={styles.heroImage}

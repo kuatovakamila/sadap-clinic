@@ -92,7 +92,7 @@ const ReviewsPage = () => {
           <div className={styles.teamGallery}>
             <div className={styles.teamCard}>
               <Image
-                src="/team-1.png"
+                src="/druzhnaya-comanda.JPG"
                 alt="Дружная команда"
                 width={544}
                 height={384}
@@ -105,7 +105,7 @@ const ReviewsPage = () => {
 
             <div className={styles.teamCard}>
               <Image
-                src="/team-2.png"
+                src="/privetstvuyshii_personal.JPG"
                 alt="Приветствующий персонал"
                 width={481}
                 height={384}
