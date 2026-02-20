@@ -1,7 +1,12 @@
+node_modules
 client/node_modules
 client/.next
 client/.env
+client/.env.local
 client/package-lock.json
 sources
 .vercel
 .env*.local
+package-lock.json
+*.log
+.DS_Store
