@@ -115,14 +115,14 @@ const AuthPage = () => {
         <div className={styles.logo}>
           <div className={styles.logoContent}>
             <Image 
-              src="/big-logo.png" 
+              src="/image.png" 
               alt="SADAP Clinic" 
               width={300} 
               height={300}
               className={styles.logoImage}
               priority
             />
-            <p className={styles.logoTagline}>Ваше здоровье — наш приоритет</p>
+            {/* <p className={styles.logoTagline}>Ваше здоровье — наш приоритет</p> */}
           </div>
         </div>
       </div>

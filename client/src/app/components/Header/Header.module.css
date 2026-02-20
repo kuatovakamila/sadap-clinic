@@ -28,9 +28,19 @@
 }
 
 .logo {
-  width: 120px;
+  width: 60px;
   margin-right: 50px;
   height: auto;
+  animation: gentleSwing 3s ease-in-out infinite;
+}
+
+@keyframes gentleSwing {
+  0%, 100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
 }
 
 /* Бургер */
@@ -57,7 +67,7 @@
 .navLink {
   font-family: var(--font-montserrat);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 15px;
   color: #fff;
   text-decoration: none;
   transition: 0.3s;

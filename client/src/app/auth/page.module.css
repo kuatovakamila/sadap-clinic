@@ -27,9 +27,19 @@
 }
 
 .logoImage {
-  max-width: 100%;
+  max-width: 50%;
   height: auto;
   margin-bottom: 20px;
+  animation: gentleSwing 3s ease-in-out infinite;
+}
+
+@keyframes gentleSwing {
+  0%, 100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
 }
 
 .logoTitle {

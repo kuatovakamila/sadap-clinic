@@ -8,7 +8,7 @@ const Footer = () => {
         <div className={styles.footerLeft}>
           <div className={styles.logoSection}>
             <Image
-              src="/logo.png"
+              src="/image.png"
               alt="Sadap Clinic"
               width={120}
               height={40}

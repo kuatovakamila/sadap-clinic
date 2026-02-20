@@ -49,7 +49,7 @@ export default function Header({
         {/* ЛОГО (уменьшенный) */}
         <Link href="/" className={styles.logoWrapper} onClick={closeMenu}>
           <Image
-            src="/logo.png"
+            src="/image.png"
             alt="Sadap Clinic"
             width={150}
             height={60}
