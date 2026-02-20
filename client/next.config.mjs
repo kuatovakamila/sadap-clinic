@@ -15,6 +15,12 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    // Add fallback for images that fail to load
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Disable image optimization if it causes issues in production
+    // unoptimized: process.env.NODE_ENV === 'production',
   },
 };
 
