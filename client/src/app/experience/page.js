@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -82,7 +82,6 @@ export default function ExperiencePage() {
   const loadingPromiseRef = useRef({});
   const currentImageRef = useRef(null);
   const frameIndexRef = useRef({ "12": 0, "22": 0, "32": 0 });
-  const activeSequenceRef = useRef("12");
 
   const [isBootLoading, setIsBootLoading] = useState(true);
   const [bootProgress, setBootProgress] = useState(0);
@@ -181,7 +180,6 @@ export default function ExperiencePage() {
       const safeIndex = Math.max(0, Math.min(images.length - 1, frameIndex));
       drawImageToCanvas(images[safeIndex]);
       frameIndexRef.current[sequenceId] = safeIndex;
-      activeSequenceRef.current = sequenceId;
     },
     [drawImageToCanvas]
   );
@@ -249,7 +247,8 @@ export default function ExperiencePage() {
 
   const playForwardToLounge = useCallback(async () => {
     try {
-      setBlockingMessage("Переходим в зону ожидания...");
+      setBlockingMessage("");
+      setStage("transitionToLounge");
 
       if (!imageCacheRef.current["22"].length) {
         await preloadSequence("22");
@@ -267,7 +266,6 @@ export default function ExperiencePage() {
             fromIndex: 0,
             toIndex: FRAME_COUNT - 1,
             onComplete: () => {
-              setBlockingMessage("");
               setStage("lounge");
             },
           });
@@ -280,7 +278,8 @@ export default function ExperiencePage() {
 
   const playForwardToApproach = useCallback(async () => {
     try {
-      setBlockingMessage("Переходим к кабинету врача...");
+      setBlockingMessage("");
+      setStage("transitionToApproach");
 
       if (!imageCacheRef.current["32"].length) {
         await preloadSequence("32");
@@ -292,7 +291,6 @@ export default function ExperiencePage() {
         fromIndex: 0,
         toIndex: FRAME_COUNT - 1,
         onComplete: () => {
-          setBlockingMessage("");
           setStage("approach");
         },
       });
@@ -316,7 +314,6 @@ export default function ExperiencePage() {
           fromIndex: frameIndexRef.current[sequenceId],
           toIndex: 0,
           onComplete: () => {
-            setBlockingMessage("");
             onDone?.();
           },
         });
@@ -350,24 +347,27 @@ export default function ExperiencePage() {
     }
 
     if (stage === "lounge") {
+      setStage("rewindToQuiz");
       await rewindCurrentScene("22", () => {
         setStage("quiz1");
-      }, "Возвращаемся к первому выбору...");
+      });
       return;
     }
 
     if (stage === "approach") {
+      setStage("rewindToLounge");
       await rewindCurrentScene("32", () => {
         setStage("lounge");
         drawFrameByIndex("22", FRAME_COUNT - 1);
-      }, "Возвращаемся в лаунж...");
+      });
       return;
     }
 
     if (stage === "doctorShowcase") {
+      setStage("rewindToApproach");
       await rewindCurrentScene("32", () => {
         setStage("approach");
-      }, "Возвращаемся к выбору действия...");
+      });
     }
   }, [blockingMessage, drawFrameByIndex, rewindCurrentScene, router, stage]);
 
@@ -446,6 +446,12 @@ export default function ExperiencePage() {
 
   const stageProgress = getProgressByStage(stage);
   const canProceedFromLounge = selectedServices.length > 0;
+  const isPureAnimationStage =
+    stage === "transitionToLounge" ||
+    stage === "transitionToApproach" ||
+    stage === "rewindToQuiz" ||
+    stage === "rewindToLounge" ||
+    stage === "rewindToApproach";
 
   return (
     <main className="relative h-screen w-full overflow-hidden bg-black text-white">
@@ -453,23 +459,25 @@ export default function ExperiencePage() {
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-black/60" />
 
-      <header className="absolute left-0 right-0 top-0 z-40 px-4 pt-4 sm:px-8 sm:pt-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-md">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="pointer-events-auto text-sm font-medium tracking-wide text-white/90 transition hover:text-white"
-          >
-            Назад
-          </button>
-          <div className="w-44 rounded-full bg-white/20 p-1">
-            <div
-              className="h-1.5 rounded-full bg-white transition-all duration-500"
-              style={{ width: `${stageProgress}%` }}
-            />
+      {!isPureAnimationStage && (
+        <header className="absolute left-0 right-0 top-0 z-40 px-4 pt-4 sm:px-8 sm:pt-6">
+          <div className="mx-auto flex max-w-6xl items-center justify-between rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-md">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="pointer-events-auto text-sm font-medium tracking-wide text-white/90 transition hover:text-white"
+            >
+              Назад
+            </button>
+            <div className="w-44 rounded-full bg-white/20 p-1">
+              <div
+                className="h-1.5 rounded-full bg-white transition-all duration-500"
+                style={{ width: `${stageProgress}%` }}
+              />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <AnimatePresence>
         {isBootLoading && (
@@ -561,10 +569,12 @@ export default function ExperiencePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 18 }}
             transition={{ duration: 0.32 }}
-            className="absolute inset-x-0 bottom-3 top-20 z-30 mx-auto w-[min(1120px,96vw)] overflow-y-auto rounded-3xl border border-white/20 bg-slate-900/72 p-4 backdrop-blur-xl sm:bottom-6 sm:p-7"
+            className="absolute inset-x-0 bottom-3 top-20 z-30 mx-auto w-[min(1120px,96vw)] overflow-y-auto rounded-3xl border border-white/35 bg-white/16 p-4 backdrop-blur-2xl sm:bottom-6 sm:p-7"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold sm:text-2xl">Добро пожаловать в нашу клинику. Как мы можем вам помочь?</h2>
+              <h2 className="text-lg font-semibold leading-tight text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.55)] sm:text-2xl">
+                Добро пожаловать в нашу клинику. Как мы можем вам помочь?
+              </h2>
               <button
                 type="button"
                 onClick={handleBack}
@@ -583,10 +593,10 @@ export default function ExperiencePage() {
                     key={service}
                     type="button"
                     onClick={() => toggleService(service)}
-                    className={`min-h-16 rounded-2xl border px-3 py-3 text-left text-xs font-medium transition sm:text-sm ${
+                    className={`min-h-16 rounded-2xl border px-3 py-3 text-left text-xs font-semibold drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)] transition sm:text-sm ${
                       active
-                        ? "border-cyan-300 bg-cyan-300/20 text-cyan-100"
-                        : "border-white/20 bg-white/5 text-white/85 hover:bg-white/12"
+                        ? "border-cyan-200 bg-cyan-300/25 text-white"
+                        : "border-white/30 bg-white/10 text-white hover:bg-white/15"
                     }`}
                   >
                     {service}
@@ -595,14 +605,14 @@ export default function ExperiencePage() {
               })}
             </div>
 
-            <div className="mt-5 rounded-2xl border border-white/15 bg-white/5 p-4 sm:p-5">
-              <h3 className="mb-2 text-base font-semibold sm:text-lg">Наши контакты</h3>
-              <p className="text-sm text-white/85">+7 (727) 000-00-00</p>
-              <p className="mb-4 text-sm text-white/85">г. Алматы, ул. Садовая 12</p>
+            <div className="mt-5 rounded-2xl border border-white/30 bg-white/12 p-4 sm:p-5">
+              <h3 className="mb-2 text-base font-semibold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)] sm:text-lg">Наши контакты</h3>
+              <p className="text-sm font-medium text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">+7 (727) 000-00-00</p>
+              <p className="mb-4 text-sm font-medium text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">г. Алматы, ул. Садовая 12</p>
               <button
                 type="button"
                 onClick={() => router.push("/contacts")}
-                className="rounded-xl border border-white/35 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-white/10"
+                className="rounded-xl border border-white/50 bg-white/8 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-white/16"
               >
                 Перейти к контактам
               </button>
@@ -612,7 +622,7 @@ export default function ExperiencePage() {
               type="button"
               onClick={playForwardToApproach}
               disabled={!canProceedFromLounge}
-              className="mt-5 w-full rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="mt-5 w-full rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
             >
               Далее
             </button>
@@ -745,7 +755,7 @@ export default function ExperiencePage() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {Boolean(blockingMessage) && (
+        {Boolean(blockingMessage) && !isPureAnimationStage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
