@@ -1,5 +1,6 @@
 import styles from "./Hero.module.css";
 import Image from "next/image";
+import Link from "next/link";
 
 const Hero = () => {
   return (
@@ -13,9 +14,9 @@ const Hero = () => {
             Новое качество жизни!
           </p>
 
-          <button className={styles.heroButton}>
+          <Link href="/experience" className={styles.heroButton}>
             <span className={styles.buttonText}>Записаться на прием</span>
-          </button>
+          </Link>
         </div>
 
         <div className={styles.heroImageWrapper}>
