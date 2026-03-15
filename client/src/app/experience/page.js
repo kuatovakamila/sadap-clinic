@@ -16,32 +16,37 @@ const SEQUENCES = {
 
 const QUIZ_OPTIONS = ["Онлайн запись", "Список врачей", "Контакты"];
 
-const INTEREST_CONTENT = {
-  "Онлайн запись": {
-    title: "Быстрая запись без звонков",
-    text: "Выберите удобное время онлайн — подтверждение приходит мгновенно в личный кабинет.",
-    ctaLabel: "Перейти к онлайн-записи",
-    ctaHref: "/appointments/book",
-  },
-  "Список врачей": {
-    title: "Подбор врача под ваш запрос",
-    text: "Покажем специалистов с актуальным расписанием и подходящей специализацией.",
-    ctaLabel: "Открыть список врачей",
-    ctaHref: "/doctors",
-  },
-  "Контакты": {
-    title: "Контакты и навигация",
-    text: "г. Алматы, ул. Садовая 12. Ежедневно с 08:00 до 20:00. Поможем быстро найти клинику.",
-    ctaLabel: "Показать контакты",
-    ctaHref: "/aboutUs",
-  },
-};
+const SERVICE_OPTIONS = [
+  "Диагностика",
+  "Консультации",
+  "Хирургическое лечение",
+  "Анализы",
+  "Услуги стационара",
+  "Процедурный кабинет",
+  "Комплексные программы",
+  "Услуги на дому",
+  "Вакцинация",
+  "Экстренная хирургия",
+  "Скорая помощь",
+  "Лекарства",
+];
 
-const SPECIALTY_HINTS = {
-  "Онлайн запись": ["терап", "педиатр", "невр"],
-  "Список врачей": ["кардио", "эндокрин", "хирург"],
-  "Контакты": ["терап", "гинек", "семейн"],
-};
+const SHOWCASE_DOCTORS = [
+  {
+    id: "zarina",
+    fullName: "Юламанова Зарина Евгеньевна",
+    specialty: "Врач-педиатр",
+    rating: "4.9",
+    avatar: "/doctor-female.jpg",
+  },
+  {
+    id: "perizat",
+    fullName: "Жунисова Перизат Мухитдиновна",
+    specialty: "Акушер-гинеколог",
+    rating: "4.5",
+    avatar: "/doctor-female.jpg",
+  },
+];
 
 const formatFrame = (index) => String(index).padStart(3, "0");
 
@@ -58,20 +63,14 @@ const getProgressByStage = (stage) => {
   switch (stage) {
     case "quiz1":
       return 25;
-    case "playing12":
-      return 50;
-    case "post12":
-      return 62;
-    case "playing22":
-      return 75;
     case "lounge":
-      return 82;
-    case "playing32":
+      return 75;
+    case "approach":
       return 88;
-    case "doctors":
+    case "doctorShowcase":
       return 100;
     default:
-      return 25;
+      return 40;
   }
 };
 
@@ -82,15 +81,17 @@ export default function ExperiencePage() {
   const imageCacheRef = useRef({ "12": [], "22": [], "32": [] });
   const loadingPromiseRef = useRef({});
   const currentImageRef = useRef(null);
+  const frameIndexRef = useRef({ "12": 0, "22": 0, "32": 0 });
+  const activeSequenceRef = useRef("12");
 
   const [isBootLoading, setIsBootLoading] = useState(true);
   const [bootProgress, setBootProgress] = useState(0);
   const [blockingMessage, setBlockingMessage] = useState("");
   const [stage, setStage] = useState("quiz1");
   const [selectedChoices, setSelectedChoices] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [doctorsLoading, setDoctorsLoading] = useState(false);
-  const [doctorsError, setDoctorsError] = useState("");
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [bookingName, setBookingName] = useState("");
+  const [bookingPhone, setBookingPhone] = useState("");
 
   const drawImageToCanvas = useCallback((image) => {
     const canvas = canvasRef.current;
@@ -172,8 +173,21 @@ export default function ExperiencePage() {
     }
   }, []);
 
+  const drawFrameByIndex = useCallback(
+    (sequenceId, frameIndex) => {
+      const images = imageCacheRef.current[sequenceId] || [];
+      if (!images.length) return;
+
+      const safeIndex = Math.max(0, Math.min(images.length - 1, frameIndex));
+      drawImageToCanvas(images[safeIndex]);
+      frameIndexRef.current[sequenceId] = safeIndex;
+      activeSequenceRef.current = sequenceId;
+    },
+    [drawImageToCanvas]
+  );
+
   const playSequence = useCallback(
-    (sequenceId, onComplete) => {
+    ({ sequenceId, direction = "forward", fromIndex, toIndex, onComplete }) => {
       const images = imageCacheRef.current[sequenceId] || [];
       if (!images.length) {
         onComplete?.();
@@ -185,20 +199,41 @@ export default function ExperiencePage() {
       }
 
       const frameDuration = 1000 / FPS;
+      const startIndex =
+        typeof fromIndex === "number"
+          ? Math.max(0, Math.min(images.length - 1, fromIndex))
+          : frameIndexRef.current[sequenceId] ?? (direction === "forward" ? 0 : images.length - 1);
+
+      const endIndex =
+        typeof toIndex === "number"
+          ? Math.max(0, Math.min(images.length - 1, toIndex))
+          : direction === "forward"
+            ? images.length - 1
+            : 0;
+
+      const totalFrames = Math.abs(endIndex - startIndex);
+
+      if (totalFrames === 0) {
+        drawFrameByIndex(sequenceId, endIndex);
+        onComplete?.();
+        return;
+      }
+
       let start = null;
 
       const animate = (timestamp) => {
         if (!start) start = timestamp;
 
         const elapsed = timestamp - start;
-        const frameIndex = Math.min(
-          images.length - 1,
-          Math.floor(elapsed / frameDuration)
-        );
+        const progressedFrames = Math.min(totalFrames, Math.floor(elapsed / frameDuration));
+        const frameIndex =
+          direction === "forward"
+            ? startIndex + progressedFrames
+            : startIndex - progressedFrames;
 
-        drawImageToCanvas(images[frameIndex]);
+        drawFrameByIndex(sequenceId, frameIndex);
 
-        if (frameIndex < images.length - 1) {
+        if (progressedFrames < totalFrames) {
           rafRef.current = requestAnimationFrame(animate);
           return;
         }
@@ -209,104 +244,132 @@ export default function ExperiencePage() {
 
       rafRef.current = requestAnimationFrame(animate);
     },
-    [drawImageToCanvas]
+    [drawFrameByIndex]
   );
 
-  const getRecommendedDoctors = useMemo(() => {
-    if (!Array.isArray(doctors)) return [];
-
-    const loweredChoices = selectedChoices.map((choice) => choice.toLowerCase());
-
-    const scored = doctors.map((doctor) => {
-      const title = String(doctor.specialization_title || "").toLowerCase();
-      let score = 0;
-
-      loweredChoices.forEach((choice) => {
-        const hints = SPECIALTY_HINTS[choice] || [];
-        if (hints.some((hint) => title.includes(hint))) {
-          score += 3;
-        }
-      });
-
-      if (!loweredChoices.length) {
-        score += 1;
-      }
-
-      return { doctor, score };
-    });
-
-    return scored
-      .sort((first, second) => second.score - first.score)
-      .map((item) => item.doctor)
-      .slice(0, 6);
-  }, [doctors, selectedChoices]);
-
-  const fetchDoctors = useCallback(async () => {
+  const playForwardToLounge = useCallback(async () => {
     try {
-      setDoctorsLoading(true);
-      setDoctorsError("");
-
-      const response = await fetch("/api/doctors");
-      const result = await response.json();
-
-      if (!response.ok || !result?.success) {
-        throw new Error(result?.error || "Не удалось получить список врачей");
-      }
-
-      setDoctors(result.doctors || []);
-    } catch (error) {
-      setDoctorsError(error.message || "Ошибка загрузки врачей");
-    } finally {
-      setDoctorsLoading(false);
-    }
-  }, []);
-
-  const startSequence22Flow = useCallback(async () => {
-    try {
-      setBlockingMessage("Подготавливаем зону ожидания...");
+      setBlockingMessage("Переходим в зону ожидания...");
 
       if (!imageCacheRef.current["22"].length) {
         await preloadSequence("22");
       }
 
-      setBlockingMessage("");
-      setStage("playing22");
+      playSequence({
+        sequenceId: "12",
+        direction: "forward",
+        fromIndex: frameIndexRef.current["12"],
+        toIndex: FRAME_COUNT - 1,
+        onComplete: () => {
+          playSequence({
+            sequenceId: "22",
+            direction: "forward",
+            fromIndex: 0,
+            toIndex: FRAME_COUNT - 1,
+            onComplete: () => {
+              setBlockingMessage("");
+              setStage("lounge");
+            },
+          });
+        },
+      });
+    } catch (error) {
+      setBlockingMessage(error.message || "Не удалось запустить сцену");
+    }
+  }, [playSequence, preloadSequence]);
 
-      playSequence("22", () => {
-        setStage("lounge");
+  const playForwardToApproach = useCallback(async () => {
+    try {
+      setBlockingMessage("Переходим к кабинету врача...");
+
+      if (!imageCacheRef.current["32"].length) {
+        await preloadSequence("32");
+      }
+
+      playSequence({
+        sequenceId: "32",
+        direction: "forward",
+        fromIndex: 0,
+        toIndex: FRAME_COUNT - 1,
+        onComplete: () => {
+          setBlockingMessage("");
+          setStage("approach");
+        },
       });
     } catch (error) {
       setBlockingMessage(error.message || "Не удалось загрузить сцену");
     }
   }, [playSequence, preloadSequence]);
 
-  const startSequence32Flow = useCallback(async () => {
-    try {
-      setBlockingMessage("Подготавливаем кабинет врача...");
+  const rewindCurrentScene = useCallback(
+    async (sequenceId, onDone, message) => {
+      try {
+        setBlockingMessage(message || "Возвращаемся назад...");
 
-      if (!imageCacheRef.current["32"].length) {
-        await preloadSequence("32");
+        if (!imageCacheRef.current[sequenceId].length) {
+          await preloadSequence(sequenceId);
+        }
+
+        playSequence({
+          sequenceId,
+          direction: "reverse",
+          fromIndex: frameIndexRef.current[sequenceId],
+          toIndex: 0,
+          onComplete: () => {
+            setBlockingMessage("");
+            onDone?.();
+          },
+        });
+      } catch (error) {
+        setBlockingMessage(error.message || "Ошибка возврата");
       }
-
-      setBlockingMessage("");
-      setStage("playing32");
-
-      playSequence("32", async () => {
-        setStage("doctors");
-        await fetchDoctors();
-      });
-    } catch (error) {
-      setBlockingMessage(error.message || "Не удалось запустить сцену");
-    }
-  }, [fetchDoctors, playSequence, preloadSequence]);
+    },
+    [playSequence, preloadSequence]
+  );
 
   const handleStartJourney = async () => {
-    setStage("playing12");
+    if (!selectedChoices.length) return;
 
-    playSequence("12", async () => {
-      setStage("post12");
-    });
+    const onlyContactsSelected =
+      selectedChoices.length === 1 && selectedChoices.includes("Контакты");
+
+    if (onlyContactsSelected) {
+      router.push("/contacts");
+      return;
+    }
+
+    await playForwardToLounge();
   };
+
+  const handleBack = useCallback(async () => {
+    if (blockingMessage) return;
+
+    if (stage === "quiz1") {
+      router.push("/");
+      return;
+    }
+
+    if (stage === "lounge") {
+      await rewindCurrentScene("22", () => {
+        setStage("quiz1");
+      }, "Возвращаемся к первому выбору...");
+      return;
+    }
+
+    if (stage === "approach") {
+      await rewindCurrentScene("32", () => {
+        setStage("lounge");
+        drawFrameByIndex("22", FRAME_COUNT - 1);
+      }, "Возвращаемся в лаунж...");
+      return;
+    }
+
+    if (stage === "doctorShowcase") {
+      await rewindCurrentScene("32", () => {
+        setStage("approach");
+      }, "Возвращаемся к выбору действия...");
+    }
+  }, [blockingMessage, drawFrameByIndex, rewindCurrentScene, router, stage]);
 
   const toggleChoice = (choice) => {
     setSelectedChoices((prev) => {
@@ -316,6 +379,21 @@ export default function ExperiencePage() {
 
       return [...prev, choice];
     });
+  };
+
+  const toggleService = (service) => {
+    setSelectedServices((prev) => {
+      if (prev.includes(service)) {
+        return prev.filter((item) => item !== service);
+      }
+
+      return [...prev, service];
+    });
+  };
+
+  const handleBookingSubmit = (event) => {
+    event.preventDefault();
+    router.push("/appointments/book");
   };
 
   useEffect(() => {
@@ -330,7 +408,7 @@ export default function ExperiencePage() {
         });
 
         if (mounted && images.length) {
-          drawImageToCanvas(images[0]);
+          drawFrameByIndex("12", 0);
           setIsBootLoading(false);
           setStage("quiz1");
         }
@@ -353,7 +431,7 @@ export default function ExperiencePage() {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [drawImageToCanvas, preloadSequence]);
+  }, [drawFrameByIndex, preloadSequence]);
 
   useEffect(() => {
     const onResize = () => {
@@ -367,6 +445,7 @@ export default function ExperiencePage() {
   }, [drawImageToCanvas]);
 
   const stageProgress = getProgressByStage(stage);
+  const canProceedFromLounge = selectedServices.length > 0;
 
   return (
     <main className="relative h-screen w-full overflow-hidden bg-black text-white">
@@ -378,10 +457,10 @@ export default function ExperiencePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-md">
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={handleBack}
             className="pointer-events-auto text-sm font-medium tracking-wide text-white/90 transition hover:text-white"
           >
-            Вернуться
+            Назад
           </button>
           <div className="w-44 rounded-full bg-white/20 p-1">
             <div
@@ -428,7 +507,7 @@ export default function ExperiencePage() {
             <div className="mb-6 flex items-center justify-between">
               <button
                 type="button"
-                onClick={() => router.push("/")}
+                onClick={handleBack}
                 className="rounded-full border border-white/30 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/85 transition hover:bg-white/10"
               >
                 Назад
@@ -476,115 +555,191 @@ export default function ExperiencePage() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {stage === "post12" && !blockingMessage && (
-          <motion.section
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 18 }}
-            transition={{ duration: 0.28 }}
-            className="absolute inset-x-0 bottom-8 z-30 mx-auto w-[min(680px,92vw)] rounded-3xl border border-white/20 bg-slate-950/70 p-5 text-center backdrop-blur-xl sm:p-8"
-          >
-            <p className="mb-3 text-sm uppercase tracking-[0.2em] text-white/60">Фаза 2 завершена</p>
-            <h2 className="mb-3 text-2xl font-semibold">Добро пожаловать в клинику</h2>
-            <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-white/80">
-              Мы учли ваши предпочтения. Переходим в зону ожидания, где покажем персональные действия.
-            </p>
-            <button
-              type="button"
-              onClick={startSequence22Flow}
-              className="w-full rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-            >
-              Продолжить
-            </button>
-          </motion.section>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {stage === "lounge" && !blockingMessage && (
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 18 }}
             transition={{ duration: 0.32 }}
-            className="absolute inset-x-0 bottom-6 z-30 mx-auto w-[min(920px,94vw)] rounded-3xl border border-white/20 bg-slate-900/70 p-5 backdrop-blur-xl sm:p-8"
+            className="absolute inset-x-0 bottom-3 top-20 z-30 mx-auto w-[min(1120px,96vw)] overflow-y-auto rounded-3xl border border-white/20 bg-slate-900/72 p-4 backdrop-blur-xl sm:bottom-6 sm:p-7"
           >
-            <h2 className="mb-5 text-xl font-semibold sm:text-2xl">Ваш персональный сценарий в Sadap Clinic</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {(selectedChoices.length ? selectedChoices : QUIZ_OPTIONS.slice(0, 1)).map((choice) => {
-                const block = INTEREST_CONTENT[choice];
-                if (!block) return null;
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold sm:text-2xl">Добро пожаловать в нашу клинику. Как мы можем вам помочь?</h2>
+              <button
+                type="button"
+                onClick={handleBack}
+                className="rounded-full border border-white/35 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/90 transition hover:bg-white/10"
+              >
+                Назад
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+              {SERVICE_OPTIONS.map((service) => {
+                const active = selectedServices.includes(service);
 
                 return (
-                  <article key={choice} className="rounded-2xl border border-white/15 bg-white/5 p-4">
-                    <h3 className="mb-2 text-base font-semibold">{block.title}</h3>
-                    <p className="mb-4 text-sm leading-relaxed text-white/80">{block.text}</p>
-                    <button
-                      type="button"
-                      onClick={() => router.push(block.ctaHref)}
-                      className="rounded-xl border border-white/30 px-4 py-2 text-xs uppercase tracking-wider text-white/90 transition hover:bg-white/10"
-                    >
-                      {block.ctaLabel}
-                    </button>
-                  </article>
+                  <button
+                    key={service}
+                    type="button"
+                    onClick={() => toggleService(service)}
+                    className={`min-h-16 rounded-2xl border px-3 py-3 text-left text-xs font-medium transition sm:text-sm ${
+                      active
+                        ? "border-cyan-300 bg-cyan-300/20 text-cyan-100"
+                        : "border-white/20 bg-white/5 text-white/85 hover:bg-white/12"
+                    }`}
+                  >
+                    {service}
+                  </button>
                 );
               })}
             </div>
 
+            <div className="mt-5 rounded-2xl border border-white/15 bg-white/5 p-4 sm:p-5">
+              <h3 className="mb-2 text-base font-semibold sm:text-lg">Наши контакты</h3>
+              <p className="text-sm text-white/85">+7 (727) 000-00-00</p>
+              <p className="mb-4 text-sm text-white/85">г. Алматы, ул. Садовая 12</p>
+              <button
+                type="button"
+                onClick={() => router.push("/contacts")}
+                className="rounded-xl border border-white/35 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-white/10"
+              >
+                Перейти к контактам
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={startSequence32Flow}
-              className="mt-5 w-full rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+              onClick={playForwardToApproach}
+              disabled={!canProceedFromLounge}
+              className="mt-5 w-full rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              К подбору врачей
+              Далее
             </button>
           </motion.section>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {stage === "doctors" && (
+        {stage === "approach" && (
           <motion.section
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.36 }}
-            className="absolute inset-x-0 bottom-4 z-30 mx-auto w-[min(1040px,96vw)] rounded-3xl border border-white/20 bg-slate-950/80 p-5 backdrop-blur-xl sm:p-8"
+            className="absolute inset-x-0 bottom-5 top-24 z-30 mx-auto w-[min(1040px,95vw)] overflow-y-auto rounded-3xl border border-white/20 bg-slate-950/80 p-4 backdrop-blur-xl sm:p-8"
           >
-            <h2 className="mb-2 text-2xl font-semibold">Рекомендованные врачи</h2>
-            <p className="mb-5 text-sm text-white/75">
-              Подбор сформирован на основе ваших приоритетов в интерактивном сценарии.
-            </p>
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-semibold sm:text-2xl">Выберите следующий шаг</h2>
+              <button
+                type="button"
+                onClick={handleBack}
+                className="rounded-full border border-white/35 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/90 transition hover:bg-white/10"
+              >
+                Назад
+              </button>
+            </div>
 
-            {doctorsLoading && <p className="text-sm text-white/80">Загружаем список врачей...</p>}
-            {doctorsError && <p className="text-sm text-rose-300">{doctorsError}</p>}
+            <div className="grid gap-4 lg:grid-cols-2">
+              <article className="rounded-3xl border border-cyan-100/35 bg-gradient-to-br from-cyan-400/20 via-cyan-300/10 to-white/5 p-5">
+                <h3 className="mb-2 text-xl font-semibold">Быстрая запись без звонков</h3>
+                <p className="mb-4 text-sm text-white/85">
+                  Оставьте данные, и мы переведем вас в мгновенную онлайн-запись.
+                </p>
+                <form className="space-y-3" onSubmit={handleBookingSubmit}>
+                  <input
+                    type="text"
+                    value={bookingName}
+                    onChange={(event) => setBookingName(event.target.value)}
+                    placeholder="Ваше имя"
+                    className="w-full rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/55"
+                    required
+                  />
+                  <input
+                    type="tel"
+                    value={bookingPhone}
+                    onChange={(event) => setBookingPhone(event.target.value)}
+                    placeholder="Телефон"
+                    className="w-full rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/55"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-cyan-300 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Перейти к записи
+                  </button>
+                </form>
+              </article>
 
-            {!doctorsLoading && !doctorsError && (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {getRecommendedDoctors.map((doctor) => (
-                  <article key={doctor.id} className="rounded-2xl border border-white/15 bg-white/5 p-4">
-                    <div className="mb-3 flex items-center gap-3">
-                      <img
-                        src={doctor.avatar_url || "/doctor-female.jpg"}
-                        alt={doctor.full_name}
-                        className="h-14 w-14 rounded-2xl object-cover"
-                      />
-                      <div>
-                        <h3 className="text-sm font-semibold leading-tight">{doctor.full_name}</h3>
-                        <p className="text-xs text-white/70">{doctor.specialization_title}</p>
-                      </div>
+              <article className="rounded-3xl border border-white/20 bg-white/5 p-5">
+                <h3 className="mb-2 text-xl font-semibold">Подобрать врача под ваш запрос</h3>
+                <p className="mb-4 text-sm text-white/85">
+                  Покажем лучших специалистов по вашему запросу и выбранным услугам.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStage("doctorShowcase")}
+                  className="w-full rounded-xl border border-cyan-200/50 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-200/15"
+                >
+                  Подобрать врача
+                </button>
+              </article>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {stage === "doctorShowcase" && (
+          <motion.section
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 22 }}
+            transition={{ duration: 0.32 }}
+            className="absolute inset-x-0 bottom-5 top-24 z-30 mx-auto w-[min(980px,95vw)] overflow-hidden rounded-3xl border border-white/30 bg-white/95 p-4 text-slate-900 shadow-[0_18px_60px_rgba(2,12,27,0.3)] sm:p-6"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold sm:text-2xl">Рекомендованные врачи</h2>
+              <button
+                type="button"
+                onClick={handleBack}
+                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-100"
+              >
+                Назад
+              </button>
+            </div>
+
+            <div className="max-h-[calc(100%-54px)] space-y-3 overflow-y-auto pr-1">
+              {SHOWCASE_DOCTORS.map((doctor) => (
+                <article
+                  key={doctor.id}
+                  className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)] sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={doctor.avatar}
+                      alt={doctor.fullName}
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 rounded-full object-cover"
+                    />
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 sm:text-base">{doctor.fullName}</h3>
+                      <p className="text-xs text-slate-500 sm:text-sm">{doctor.specialty}</p>
+                      <p className="mt-1 text-sm font-semibold text-amber-500">★ {doctor.rating}</p>
                     </div>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() => router.push(`/doctors/${doctor.slug}`)}
-                      className="w-full rounded-xl border border-cyan-200/50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-cyan-100 transition hover:bg-cyan-200/15"
-                    >
-                      Подробнее
-                    </button>
-                  </article>
-                ))}
-              </div>
-            )}
+                  <button
+                    type="button"
+                    onClick={() => router.push("/appointments/book")}
+                    className="rounded-xl bg-[#0b3364] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0c3d78]"
+                  >
+                    Записаться
+                  </button>
+                </article>
+              ))}
+            </div>
           </motion.section>
         )}
       </AnimatePresence>
