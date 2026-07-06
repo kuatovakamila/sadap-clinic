@@ -861,16 +861,34 @@
 
 /* ── Responsive ── */
 @media (max-width: 960px) {
-  .heroRight { display: none; }
   .heroTitle { font-size: 38px; }
-  .heroInner { padding: 100px 32px 0; }
-  .heroLeft { padding-bottom: 48px; }
+  .heroInner {
+    padding: 100px 32px 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .heroLeft { padding-bottom: 32px; max-width: 100%; }
+  .heroRight {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    height: 180px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+    flex-shrink: 0;
+  }
+  .heroStethoscope { width: 110px; right: 32px; top: 12px; }
+  .heroHeart { width: 80px; bottom: 16px; right: 24px; }
+  .heroStatBadge { left: 20px; bottom: 20px; padding: 10px 16px; }
+  .heroStatNum { font-size: 22px; }
+  .heroCircleLg { width: 260px; height: 260px; right: -60px; top: -60px; }
 }
 
 @media (max-width: 768px) {
   .heroInner { padding: 96px 24px 0; }
   .heroTitle { font-size: 32px; }
-  .heroLeft { padding-bottom: 40px; }
+  .heroLeft { padding-bottom: 24px; }
+  .heroRight { height: 160px; margin-bottom: 32px; }
 
   .main { padding: 36px 20px 72px; }
 
@@ -900,13 +918,19 @@
 }
 
 @media (max-width: 560px) {
-  .heroInner { padding: 88px 20px 0; }
-  .heroTitle { font-size: 26px; line-height: 1.2; }
-  .heroSub { font-size: 13px; margin-bottom: 24px; }
-  .heroBenefits { gap: 12px 16px; }
+  .heroInner { padding: 88px 16px 0; }
+  .heroTitle { font-size: 24px; line-height: 1.2; }
+  .heroSub { font-size: 13px; margin-bottom: 20px; }
+  .heroBenefits { gap: 10px 14px; }
   .heroBenefit { font-size: 11px; max-width: 110px; }
-  .heroBenefitIcon { width: 30px; height: 30px; }
+  .heroBenefitIcon { width: 28px; height: 28px; }
   .heroEyebrow { font-size: 10px; margin-bottom: 10px; }
+  .heroRight { height: 140px; border-radius: 12px; margin-bottom: 28px; }
+  .heroStethoscope { width: 90px; right: 20px; }
+  .heroHeart { width: 65px; }
+  .heroStatBadge { padding: 8px 14px; }
+  .heroStatNum { font-size: 20px; }
+  .heroStatText { font-size: 10px; }
 
   .main { padding: 28px 16px 60px; }
 
