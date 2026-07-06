@@ -179,90 +179,328 @@
   margin-top: 4px;
 }
 
-/* ── CTA section ── */
-.cta {
-  background: #0c3465;
-  padding: 72px 40px;
+/* ── Detail section ── */
+@keyframes detailCardIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.ctaInner {
+.detailSection {
+  background: #f5f7fa;
+  border-top: 1.5px solid #e8eaf0;
+  padding: 80px 0;
+}
+
+.detailInner {
   max-width: 1280px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 16px;
+  padding: 0 40px;
 }
 
-.ctaTitle {
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.detailTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 28px;
-  color: #fff;
+  font-size: 32px;
+  color: #0f1f3d;
   margin: 0;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.ctaSub {
+.detailPriceBadge {
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0;
-  max-width: 420px;
-  line-height: 1.65;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0c3465;
+  background: #e8f0fb;
+  padding: 5px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
-.ctaBtns {
+/* 2-col grid: left col has 2 small cards, right col has 1 featured */
+.detailCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.detailCard {
+  background: #fff;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 18px;
+  padding: 28px 26px;
+  opacity: 0;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.detailCard:hover {
+  border-color: #0c3465;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(12, 52, 101, 0.09);
+}
+
+/* full-width doctor card below the two top cards */
+.detailCardFull {
+  grid-column: span 2;
+  border-color: #c8d9f0;
+  background: #f8faff;
+  opacity: 0;
+}
+
+.detailCardFull.detailVisible {
+  animation: detailCardIn 0.5s ease both;
+  animation-delay: calc(var(--i) * 110ms);
+}
+
+.detailCardFull:hover {
+  border-color: #0c3465;
+}
+
+.detailVisible .detailCard {
+  animation: detailCardIn 0.5s ease both;
+  animation-delay: calc(var(--i) * 110ms);
+}
+
+.detailIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  background: #f0f4fb;
+  color: #0c3465;
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: background 0.18s;
+}
+
+.detailCard:hover .detailIcon { background: #dce7f7; }
+
+.detailCardTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #0f1f3d;
+  margin: 0 0 12px;
+}
+
+.detailCardText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Timeline ── */
+@keyframes progressGrow {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timelineStep {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timelineStepTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timelineNum {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0c3465;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.ctaBtnPrimary {
-  display: inline-flex;
+.timelineText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.timelineBar {
+  height: 3px;
+  background: #e8eaf0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-left: 34px;
+}
+
+.timelineBarFill {
+  height: 100%;
+  background: #0c3465;
+  border-radius: 2px;
+  width: 0;
+}
+
+.detailVisible .timelineBarFill {
+  animation: progressGrow 0.7s ease both;
+}
+
+.detailVisible .timelineStep:nth-child(1) .timelineBarFill { animation-delay: 0.3s; }
+.detailVisible .timelineStep:nth-child(2) .timelineBarFill { animation-delay: 0.55s; }
+.detailVisible .timelineStep:nth-child(3) .timelineBarFill { animation-delay: 0.8s; }
+
+/* ── Doctor row (horizontal) ── */
+.docRow {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.docCard {
+  flex: 1;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
+  padding: 16px 18px;
   background: #fff;
-  color: #0c3465;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+
+.docCard:hover {
+  border-color: #0c3465;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(12, 52, 101, 0.1);
+}
+
+.docPhoto {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e8f0fb;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.docImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.docInitials {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 14px;
-  padding: 13px 28px;
-  border-radius: 10px;
-  text-decoration: none;
-  transition: opacity 0.18s, transform 0.18s;
+  font-size: 16px;
+  color: #0c3465;
 }
 
-.ctaBtnPrimary:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
+.docInfo { display: flex; flex-direction: column; gap: 2px; }
+
+.docName {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f1f3d;
+  margin: 0;
 }
 
-.ctaBtnOutlined {
-  display: inline-flex;
+.docSpec {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11.5px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.docExp {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ── CTA buttons ── */
+.detailBtnWrap {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  background: transparent;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+
+.detailBtn {
+  display: inline-block;
+  background: #0c3465;
   color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 16px 40px;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  box-shadow: 0 4px 20px rgba(12, 52, 101, 0.3);
+}
+
+.detailBtn:hover {
+  background: #0a2850;
+  transform: scale(1.04);
+  box-shadow: 0 8px 28px rgba(12, 52, 101, 0.4);
+}
+
+.detailBtnOutlined {
+  display: inline-block;
+  background: transparent;
+  color: #0c3465;
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 600;
   font-size: 14px;
-  padding: 13px 28px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  padding: 15px 32px;
+  border-radius: 20px;
+  border: 1.5px solid #0c3465;
   text-decoration: none;
-  transition: border-color 0.18s, background 0.18s;
+  transition: background 0.18s, color 0.18s;
 }
 
-.ctaBtnOutlined:hover {
-  border-color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.07);
+.detailBtnOutlined:hover {
+  background: #0c3465;
+  color: #fff;
 }
 
 /* ── Responsive ── */
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .heroTitle { font-size: 38px; }
+}
+
 @media (max-width: 1024px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
   .heroTitle { font-size: 38px; }
@@ -278,8 +516,12 @@
   .card { padding: 22px 20px 18px; }
   .iconBox { width: 48px; height: 48px; border-radius: 12px; }
   .cardTitle { font-size: 14px; }
-  .cta { padding: 56px 24px; }
-  .ctaTitle { font-size: 24px; }
+  .detailSection { padding: 56px 0; }
+  .detailInner { padding: 0 24px; }
+  .detailTitle { font-size: 26px; }
+  .detailCards { grid-template-columns: 1fr; }
+  .detailCardFull { grid-column: span 1; }
+  .docRow { flex-direction: column; }
 }
 
 @media (max-width: 560px) {
@@ -294,7 +536,8 @@
   }
   .cardBody { gap: 4px; }
   .cardAction { display: none; }
-  .cta { padding: 48px 20px; }
-  .ctaBtns { flex-direction: column; align-items: stretch; }
-  .ctaBtnPrimary, .ctaBtnOutlined { justify-content: center; }
+  .detailSection { padding: 48px 0; }
+  .detailInner { padding: 0 20px; }
+  .detailHeader { flex-wrap: wrap; gap: 10px; }
+  .detailBtn { width: 100%; text-align: center; padding: 15px 32px; }
 }

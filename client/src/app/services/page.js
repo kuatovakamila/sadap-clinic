@@ -109,18 +109,41 @@ const SERVICES = [
 ];
 
 export default function ServicesPage() {
-  const [visible, setVisible] = useState(false);
-  const gridRef = useRef(null);
+  const [visible, setVisible]           = useState(false);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [gynDoctors, setGynDoctors]     = useState([]);
+  const gridRef   = useRef(null);
+  const detailRef = useRef(null);
 
   useEffect(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.05 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const make = (el, setter) => {
+      if (!el) return null;
+      const obs = new IntersectionObserver(
+        ([e]) => setter(e.isIntersecting),
+        { threshold: 0.1 }
+      );
+      obs.observe(el);
+      return obs;
+    };
+    const o1 = make(gridRef.current, setVisible);
+    const o2 = make(detailRef.current, setDetailVisible);
+
+    fetch("/api/doctors")
+      .then((r) => r.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : (data.doctors || []);
+        const gyn = list
+          .filter((d) =>
+            (d.specialization || d.position || "")
+              .toLowerCase()
+              .includes("гинеколог")
+          )
+          .slice(0, 2);
+        setGynDoctors(gyn);
+      })
+      .catch(() => {});
+
+    return () => { o1?.disconnect(); o2?.disconnect(); };
   }, []);
 
   return (
@@ -190,21 +213,109 @@ export default function ServicesPage() {
         </div>
       </main>
 
-      {/* CTA */}
-      <section className={styles.cta}>
-        <div className={styles.ctaInner}>
-          <h2 className={styles.ctaTitle}>Не нашли нужного специалиста?</h2>
-          <p className={styles.ctaSub}>Позвоните нам — мы подберём подходящего врача и удобное время</p>
-          <div className={styles.ctaBtns}>
-            <a href="tel:+77023012796" className={styles.ctaBtnPrimary}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 4.08 4.18 2 2 0 0 1 6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L10.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16z"/>
-              </svg>
-              +7 702 301 2796
-            </a>
-            <Link href="/doctors" className={styles.ctaBtnOutlined}>
-              Выбрать врача
+      {/* Detail section */}
+      <section className={styles.detailSection}>
+        <div className={styles.detailInner}>
+
+          {/* Header with price badge */}
+          <div className={styles.detailHeader}>
+            <h2 className={styles.detailTitle}>Гинекология</h2>
+            <span className={styles.detailPriceBadge}>от 12 000 тнг</span>
+          </div>
+
+          {/* Cards grid */}
+          <div
+            ref={detailRef}
+            className={`${styles.detailCards} ${detailVisible ? styles.detailVisible : ""}`}
+          >
+            {/* Card 1 — Problem */}
+            <div className={styles.detailCard} style={{ "--i": 0 }}>
+              <div className={styles.detailIcon}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="5"/>
+                  <path d="M12 13v9M9 19h6"/>
+                </svg>
+              </div>
+              <h3 className={styles.detailCardTitle}>С чем обращаются</h3>
+              <p className={styles.detailCardText}>
+                Нарушения цикла, боли, воспаления, профосмотры, контрацепция, подготовка к беременности — гинеколог ведёт женщину на каждом этапе жизни.
+              </p>
+            </div>
+
+            {/* Card 2 — Timeline */}
+            <div className={styles.detailCard} style={{ "--i": 1 }}>
+              <div className={styles.detailIcon}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 11l2 2 4-4"/>
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+              </div>
+              <h3 className={styles.detailCardTitle}>Как проходит приём</h3>
+              <div className={`${styles.timeline} ${detailVisible ? styles.detailVisible : ""}`}>
+                {[
+                  "Беседа и сбор жалоб",
+                  "Осмотр и УЗИ-диагностика",
+                  "Анализы и назначение лечения",
+                ].map((step, i) => (
+                  <div key={i} className={styles.timelineStep}>
+                    <div className={styles.timelineStepTop}>
+                      <span className={styles.timelineNum}>{i + 1}</span>
+                      <span className={styles.timelineText}>{step}</span>
+                    </div>
+                    {i < 2 && (
+                      <div className={styles.timelineBar}>
+                        <div className={styles.timelineBarFill} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Full-width doctor card */}
+          <div
+            className={`${styles.detailCard} ${styles.detailCardFull} ${detailVisible ? styles.detailVisible : ""}`}
+            style={{ "--i": 2 }}
+          >
+            <h3 className={styles.detailCardTitle}>Кто ведёт приём</h3>
+            <div className={styles.docRow}>
+              {(gynDoctors.length > 0 ? gynDoctors : [
+                { id: "a", full_name: "Анна Иванова",   specialization: "Гинеколог, к.м.н.",       experience: 12, photo_url: null },
+                { id: "b", full_name: "Мария Соколова", specialization: "Акушер-гинеколог, УЗИ",   experience: 8,  photo_url: null },
+              ]).map((doc) => {
+                const initials = (doc.full_name || "")
+                  .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                return (
+                  <Link key={doc.id} href="/doctors" className={styles.docCard}>
+                    <div className={styles.docPhoto}>
+                      {doc.photo_url
+                        ? <img src={doc.photo_url} alt={doc.full_name} className={styles.docImg} />
+                        : <span className={styles.docInitials}>{initials}</span>
+                      }
+                    </div>
+                    <div className={styles.docInfo}>
+                      <p className={styles.docName}>{doc.full_name}</p>
+                      <p className={styles.docSpec}>{doc.specialization || doc.position}</p>
+                      {doc.experience && (
+                        <p className={styles.docExp}>Опыт {doc.experience} лет</p>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className={styles.detailBtnWrap}>
+            <Link href="/doctors" className={styles.detailBtn}>
+              Записаться на приём
+            </Link>
+            <Link href="/doctors" className={styles.detailBtnOutlined}>
+              Смотреть всех врачей
             </Link>
           </div>
         </div>
