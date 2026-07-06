@@ -201,7 +201,7 @@ const FilterDropdown = ({ label, options, selected, onToggle, onClear }) => {
 };
 
 /* ── Plan card ── */
-const PlanCard = ({ plan, allFeatures, isActive, onClick }) => {
+const PlanCard = ({ plan, allFeatures, isActive, onClick, onBuy }) => {
   const cat = CAT[plan.category];
   return (
     <div
@@ -228,16 +228,15 @@ const PlanCard = ({ plan, allFeatures, isActive, onClick }) => {
         <span className={styles.cardPriceCur}> тнг</span>
       </div>
 
-      <Link
-        href="/appointments/book"
+      <button
         className={`${styles.cardBtn} ${plan.recommended ? styles.cardBtnFilled : styles.cardBtnOutlined}`}
         style={plan.recommended
           ? { background: cat.color, borderColor: cat.color }
           : { color: cat.color, borderColor: cat.color }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); onBuy(plan); }}
       >
         Выбрать
-      </Link>
+      </button>
 
       <ul className={styles.featureList}>
         {allFeatures.map((feat, i) => {
@@ -259,7 +258,7 @@ const PlanCard = ({ plan, allFeatures, isActive, onClick }) => {
 };
 
 /* ── Comparison table (modal) ── */
-const CompareTable = ({ category, activePlanId }) => {
+const CompareTable = ({ category, activePlanId, onBuy }) => {
   const cat = CAT[category];
   const catPlans = plans.filter((p) => p.category === category);
   const features = [...new Set(catPlans.flatMap((p) => p.includes))];
@@ -310,15 +309,108 @@ const CompareTable = ({ category, activePlanId }) => {
               <td className={`${styles.cFeatName} ${styles.cSticky}`} />
               {catPlans.map((p) => (
                 <td key={p.id} className={styles.cCell}>
-                  <Link href="/appointments/book" className={styles.cBtn}
-                    style={{ background: cat.color }}>
+                  <button className={styles.cBtn}
+                    style={{ background: cat.color }}
+                    onClick={() => onBuy(p)}>
                     Выбрать
-                  </Link>
+                  </button>
                 </td>
               ))}
             </tr>
           </tfoot>
         </table>
+      </div>
+    </div>
+  );
+};
+
+/* ── Kaspi payment modal ── */
+const KaspiModal = ({ plan, onClose }) => {
+  const [step, setStep] = useState("checkout");
+
+  const handlePay = () => {
+    setStep("processing");
+    setTimeout(() => {
+      window.open("https://kaspi.kz", "_blank");
+      setStep("redirect");
+    }, 1800);
+  };
+
+  return (
+    <div className={styles.kaspiOverlay} onClick={onClose}>
+      <div className={styles.kaspiModal} onClick={(e) => e.stopPropagation()}>
+
+        {/* header */}
+        <div className={styles.kaspiHeader}>
+          <svg className={styles.kaspiLogo} viewBox="0 0 90 28" fill="none">
+            <text x="0" y="22" fontFamily="Arial, sans-serif" fontWeight="800"
+              fontSize="24" fill="#fff" letterSpacing="-0.5">kaspi</text>
+          </svg>
+          <button className={styles.kaspiClose} onClick={onClose} aria-label="Закрыть">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 2l12 12M14 2L2 14" stroke="rgba(255,255,255,0.8)"
+                strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        {step === "checkout" && (
+          <div className={styles.kaspiBody}>
+            <p className={styles.kaspiLabel}>Оплата программы обследований</p>
+            <h3 className={styles.kaspiPlanName}>{plan.title}</h3>
+            <p className={styles.kaspiPlanSub}>{plan.tagline}</p>
+
+            <div className={styles.kaspiDivider} />
+
+            <div className={styles.kaspiRow}>
+              <span className={styles.kaspiRowLabel}>Программа</span>
+              <span className={styles.kaspiRowVal}>{plan.title}</span>
+            </div>
+            <div className={styles.kaspiRow}>
+              <span className={styles.kaspiRowLabel}>Клиника</span>
+              <span className={styles.kaspiRowVal}>Садап Клиник</span>
+            </div>
+
+            <div className={styles.kaspiTotal}>
+              <span className={styles.kaspiTotalLabel}>Итого</span>
+              <span className={styles.kaspiTotalNum}>{fmtPrice(plan.price)} ₸</span>
+            </div>
+
+            <button className={styles.kaspiPayBtn} onClick={handlePay}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="5" width="20" height="14" rx="2" stroke="white" strokeWidth="1.8"/>
+                <path d="M2 10h20" stroke="white" strokeWidth="1.8"/>
+              </svg>
+              Оплатить через Kaspi
+            </button>
+
+            <p className={styles.kaspiFootnote}>
+              Безопасный переход на kaspi.kz — ваши данные защищены
+            </p>
+          </div>
+        )}
+
+        {step === "processing" && (
+          <div className={styles.kaspiBodyCenter}>
+            <div className={styles.kaspiSpinner} />
+            <p className={styles.kaspiProcessing}>Переходим на kaspi.kz…</p>
+          </div>
+        )}
+
+        {step === "redirect" && (
+          <div className={styles.kaspiBodyCenter}>
+            <div className={styles.kaspiSuccessIcon}>
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="18" fill="#E30613" fillOpacity="0.1"/>
+                <path d="M10 18l6 6 10-10" stroke="#E30613" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <p className={styles.kaspiProcessing}>Страница Kaspi открыта в новой вкладке</p>
+            <button className={styles.kaspiCloseBtn} onClick={onClose}>Закрыть</button>
+          </div>
+        )}
+
       </div>
     </div>
   );
@@ -346,6 +438,7 @@ export default function TariffsPage() {
   const [activePlan, setActivePlan]         = useState(null);
   const [priceFilters, setPriceFilters]     = useState([]);
   const [specFilters, setSpecFilters]       = useState([]);
+  const [kaspiPlan, setKaspiPlan]           = useState(null);
   const gridRef = useRef(null);
 
   const scroll = (dir) => {
@@ -540,6 +633,7 @@ export default function TariffsPage() {
                   allFeatures={features}
                   isActive={activePlan?.id === plan.id}
                   onClick={() => handleCardClick(plan)}
+                  onBuy={setKaspiPlan}
                 />
               );
             }) : (
@@ -560,13 +654,17 @@ export default function TariffsPage() {
                   <path d="M2 2l14 14M16 2L2 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </button>
-              <CompareTable category={activePlan.category} activePlanId={activePlan.id} />
+              <CompareTable category={activePlan.category} activePlanId={activePlan.id} onBuy={setKaspiPlan} />
             </div>
           </div>
         )}
       </main>
 
       <Footer />
+
+      {kaspiPlan && (
+        <KaspiModal plan={kaspiPlan} onClose={() => setKaspiPlan(null)} />
+      )}
     </div>
   );
 }

@@ -112,6 +112,7 @@ export default function ServicesPage() {
   const [visible, setVisible]           = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
   const [gynDoctors, setGynDoctors]     = useState([]);
+  const [heroDoctors, setHeroDoctors]   = useState([]);
   const gridRef   = useRef(null);
   const detailRef = useRef(null);
 
@@ -140,6 +141,7 @@ export default function ServicesPage() {
           )
           .slice(0, 2);
         setGynDoctors(gyn);
+        setHeroDoctors(list.slice(0, 3));
       })
       .catch(() => {});
 
@@ -153,14 +155,57 @@ export default function ServicesPage() {
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <p className={styles.eyebrow}>Медицинские услуги</p>
-          <h1 className={styles.heroTitle}>Запишитесь к нужному<br />специалисту онлайн</h1>
-          <p className={styles.heroSub}>
-            Широкий спектр услуг для всей семьи — от педиатрии до кардиологии
-          </p>
-          <a href="mailto:support@sadapclinic.kz" className={styles.heroBtn}>
-            Оставить заявку
-          </a>
+          <div className={styles.heroLeft}>
+            <p className={styles.eyebrow}>Медицинские услуги</p>
+            <h1 className={styles.heroTitle}>Запишитесь к нужному<br />специалисту онлайн</h1>
+            <p className={styles.heroSub}>
+              Широкий спектр услуг для всей семьи — от педиатрии до кардиологии
+            </p>
+            <a href="mailto:support@sadapclinic.kz" className={styles.heroBtn}>
+              Оставить заявку
+            </a>
+          </div>
+
+          <div className={styles.heroRight}>
+            <div className={styles.heroVisual}>
+              <div className={styles.heroCircle} />
+
+              {/* floating doctor cards — always 3, fill with placeholders if needed */}
+              {(() => {
+                const PLACEHOLDERS = [
+                  { id: "p1", full_name: "Айгерим Сейтова", specialization: "Гинеколог",  avatar_url: null },
+                  { id: "p2", full_name: "Динара Ахметова",  specialization: "Педиатр",    avatar_url: null },
+                  { id: "p3", full_name: "Сергей Николаев",  specialization: "Кардиолог",  avatar_url: null },
+                ];
+                const AVATAR_BG = ["#0c3465", "#1a6b5a", "#7a3a0c"];
+                const docs = [
+                  ...heroDoctors,
+                  ...PLACEHOLDERS.slice(heroDoctors.length),
+                ].slice(0, 3);
+                return docs.map((doc, i) => {
+                  const initials = (doc.full_name || "")
+                    .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                  const firstName = (doc.full_name || "").split(" ").slice(0, 2).join(" ");
+                  const spec = (doc.specialization || doc.position || "").split(",")[0];
+                  return (
+                    <div key={doc.id} className={`${styles.heroDocCard} ${styles[`hdc${i + 1}`]}`}>
+                      <div className={styles.heroDocPhoto} style={!doc.avatar_url ? { background: AVATAR_BG[i] } : {}}>
+                        {doc.avatar_url
+                          ? <img src={doc.avatar_url} alt={doc.full_name} className={styles.heroDocImg} />
+                          : <span className={styles.heroDocInitials}>{initials}</span>
+                        }
+                      </div>
+                      <span className={styles.heroDocName}>{firstName}</span>
+                    </div>
+                  );
+                });
+              })()}
+
+              <div className={styles.dot1} />
+              <div className={styles.dot2} />
+              <div className={styles.dot3} />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -238,9 +283,19 @@ export default function ServicesPage() {
                 </svg>
               </div>
               <h3 className={styles.detailCardTitle}>С чем обращаются</h3>
-              <p className={styles.detailCardText}>
-                Нарушения цикла, боли, воспаления, профосмотры, контрацепция, подготовка к беременности — гинеколог ведёт женщину на каждом этапе жизни.
-              </p>
+              <div className={styles.tagList}>
+                {[
+                  "Нарушения цикла",
+                  "Боли внизу живота",
+                  "Воспаления",
+                  "Профосмотр",
+                  "Контрацепция",
+                  "Подготовка к беременности",
+                  "УЗИ малого таза",
+                ].map((tag) => (
+                  <span key={tag} className={styles.tag}>{tag}</span>
+                ))}
+              </div>
             </div>
 
             {/* Card 2 — Timeline */}
@@ -259,17 +314,17 @@ export default function ServicesPage() {
                   "Беседа и сбор жалоб",
                   "Осмотр и УЗИ-диагностика",
                   "Анализы и назначение лечения",
-                ].map((step, i) => (
+                ].map((step, i, arr) => (
                   <div key={i} className={styles.timelineStep}>
-                    <div className={styles.timelineStepTop}>
+                    <div className={styles.timelineLeft}>
                       <span className={styles.timelineNum}>{i + 1}</span>
-                      <span className={styles.timelineText}>{step}</span>
+                      {i < arr.length - 1 && (
+                        <div className={styles.timelineLine}>
+                          <div className={styles.timelineLineFill} style={{ "--delay": `${0.35 + i * 0.35}s` }} />
+                        </div>
+                      )}
                     </div>
-                    {i < 2 && (
-                      <div className={styles.timelineBar}>
-                        <div className={styles.timelineBarFill} />
-                      </div>
-                    )}
+                    <span className={styles.timelineText}>{step}</span>
                   </div>
                 ))}
               </div>
@@ -284,16 +339,16 @@ export default function ServicesPage() {
             <h3 className={styles.detailCardTitle}>Кто ведёт приём</h3>
             <div className={styles.docRow}>
               {(gynDoctors.length > 0 ? gynDoctors : [
-                { id: "a", full_name: "Анна Иванова",   specialization: "Гинеколог, к.м.н.",       experience: 12, photo_url: null },
-                { id: "b", full_name: "Мария Соколова", specialization: "Акушер-гинеколог, УЗИ",   experience: 8,  photo_url: null },
+                { id: "a", full_name: "Анна Иванова",   specialization: "Гинеколог, к.м.н.",       experience: 12, avatar_url: null },
+                { id: "b", full_name: "Мария Соколова", specialization: "Акушер-гинеколог, УЗИ",   experience: 8,  avatar_url: null },
               ]).map((doc) => {
                 const initials = (doc.full_name || "")
                   .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
                 return (
                   <Link key={doc.id} href="/doctors" className={styles.docCard}>
                     <div className={styles.docPhoto}>
-                      {doc.photo_url
-                        ? <img src={doc.photo_url} alt={doc.full_name} className={styles.docImg} />
+                      {doc.avatar_url
+                        ? <img src={doc.avatar_url} alt={doc.full_name} className={styles.docImg} />
                         : <span className={styles.docInitials}>{initials}</span>
                       }
                     </div>

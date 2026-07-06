@@ -1,785 +1,481 @@
-.pageWrapper {
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroShimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* ── Page ── */
+.page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f5f7fa;
 }
 
-/* Hero Section */
-.heroSection {
-  background: linear-gradient(
-    110deg,
-    rgba(11, 51, 100, 1) 0%,
-    rgba(0, 50, 111, 1) 100%
-  );
-  padding: 120px 0 100px;
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(-45deg, #0c3465, #1a5aad, #0c3465, #0a2850);
+  background-size: 400% 400%;
+  animation: heroShimmer 8s ease infinite;
+  padding-top: 76px;
 }
 
-.heroContainer {
-  max-width: 1512px;
+.heroInner {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 180px;
+  padding: 72px 40px 64px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 60px;
+  gap: 48px;
 }
 
-.heroContent {
+.heroLeft {
   flex: 1;
-  max-width: 667px;
+  min-width: 0;
 }
 
-.heroText {
-  margin-bottom: 40px;
+.heroRight {
+  flex-shrink: 0;
+  width: 400px;
+  height: 340px;
+  position: relative;
+  overflow: visible;
+}
+
+/* glow circle behind cross */
+.glowCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+}
+
+/* medical cross SVG */
+.bigCross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  opacity: 0.5;
+}
+
+/* floating stat badges */
+.badge {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px 8px 12px;
+  white-space: nowrap;
+}
+
+.badgeNum {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  line-height: 1;
+}
+
+.badgeText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.badge1 {
+  top: 12%;
+  left: 0;
+  animation: floatBadge 3.5s ease-in-out infinite;
+}
+
+.badge2 {
+  bottom: 20%;
+  right: 0;
+  animation: floatBadge 4s ease-in-out infinite 0.8s;
+}
+
+.badge3 {
+  bottom: 4%;
+  left: 10%;
+  animation: floatBadge 3.2s ease-in-out infinite 1.6s;
+}
+
+/* decorative dots */
+.dot1, .dot2, .dot3, .dot4, .dot5 {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+.dot1 { width: 10px; height: 10px; top: 8%;  right: 18%; }
+.dot2 { width: 6px;  height: 6px;  top: 30%; left: 4%; }
+.dot3 { width: 14px; height: 14px; bottom: 30%; right: 6%; }
+.dot4 { width: 5px;  height: 5px;  bottom: 10%; right: 30%; }
+.dot5 { width: 8px;  height: 8px;  top: 55%; left: 20%; }
+
+.eyebrow {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 1;
+  margin: 0 0 16px;
+}
+
+.eyebrowDark {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0c3465;
+  opacity: 0.6;
+  margin: 0 0 16px;
 }
 
 .heroTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 32px;
-  line-height: 1.219em;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  margin-bottom: 20px;
+  font-size: 48px;
+  color: #fff;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0 0 18px;
 }
 
-.heroDescription {
+.heroSub {
   font-family: var(--font-montserrat), sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 1.25em;
-  letter-spacing: 0.05em;
-  color: #ffffff;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.7;
+  margin: 0 0 36px;
+  max-width: 600px;
 }
 
-.heroButton {
-  display: inline-flex;
-  align-items: center;
-  background: transparent;
-  border: none;
-  border-radius: 70px;
-  padding: 0;
-  cursor: pointer;
-  transition: all 0.3s;
-  overflow: hidden;
-  position: relative;
-}
-
-.heroButton::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 74px;
-  height: 74px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 70px;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-}
-
-.heroButton:hover::before {
-  width: calc(100% + 74px);
+.heroBtn {
+  display: inline-block;
   background: rgba(255, 255, 255, 0.15);
-}
-
-.buttonCircle {
-  display: none;
-}
-
-.buttonText {
-  font-family: "Inter", var(--font-montserrat), sans-serif;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 19px;
-  line-height: 74px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #ffffff;
-  text-align: center;
-  padding: 0 37px 0 37px;
-  position: relative;
-  z-index: 1;
-  white-space: nowrap;
+  font-size: 15px;
+  padding: 15px 36px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
 }
 
-.heroImageWrapper {
-  flex-shrink: 0;
+.heroBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.04);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
 }
 
-.heroImage {
-  border-radius: 208.5px;
-  object-fit: cover;
-}
-
-/* Philosophy Section */
-.philosophySection {
-  background: #ffffff;
-  padding: 80px 0;
-}
-
-.philosophyContainer {
-  max-width: 1511px;
+/* ── Shared ── */
+.container {
+  max-width: 1280px;
   margin: 0 auto;
-  text-align: center;
+  padding: 0 40px;
 }
 
-.philosophyTitle {
+.sectionTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 32px;
-  line-height: 1.219em;
-  letter-spacing: 0.05em;
-  color: #00326f;
-  margin-bottom: 20px;
+  font-size: 36px;
+  color: #0f1f3d;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
 }
 
-.philosophySubtitle {
+.sectionSub {
   font-family: var(--font-montserrat), sans-serif;
-  font-weight: 400;
-  font-size: 20px;
-  line-height: 1.15em;
-  letter-spacing: 0.05em;
-  color: #000000;
+  font-size: 15px;
+  color: #9ca3af;
+  margin: 0 0 40px;
 }
 
-/* Team Section */
-.teamSection {
-  background: #f9f8f8;
-  padding: 68px 0 80px;
+/* ── Philosophy ── */
+.section {
+  padding: 72px 0;
 }
 
-.teamContainer {
-  max-width: 1511px;
-  margin: 0 auto;
+.philGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
-.teamTitle {
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 700;
-  font-size: 28px;
-  line-height: 0.896em;
-  letter-spacing: 0.05em;
-  color: #0b3364;
-  text-align: center;
-  margin-bottom: 66px;
-}
-
-.teamGallery {
+.philCard {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.philCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 32px rgba(12, 52, 101, 0.1);
+}
+
+.visible .philCard {
+  animation: cardIn 0.45s ease both;
+  animation-delay: calc(var(--i) * 90ms);
+}
+
+.philIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f0f4fb;
+  color: #0c3465;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 32px;
-  margin-bottom: 40px;
-  padding: 0 227px;
+  transition: background 0.18s;
+}
+
+.philCard:hover .philIcon { background: #dce7f7; }
+
+.philTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #0f1f3d;
+  margin: 0;
+}
+
+.philDesc {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Team ── */
+.teamSection {
+  padding: 0 0 72px;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 .teamCard {
   position: relative;
-  border-radius: 5px;
+  height: 480px;
+  border-radius: 20px;
   overflow: hidden;
-  background: #ffffff;
-  flex: 1;
+  opacity: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
 }
 
-.teamImage {
-  width: 100%;
-  height: 384px;
+.visible .teamCard {
+  animation: cardIn 0.45s ease both;
+  animation-delay: calc(var(--i) * 100ms);
+}
+
+.teamPhoto {
   object-fit: cover;
-  display: block;
+  object-position: center 30%;
 }
 
-.teamImagePlaceholder {
-  width: 100%;
-  height: 384px;
-  background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
-  display: block;
-}
-
-.teamCardOverlay {
+.teamOverlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 28px 37px;
+  padding: 40px 28px 24px;
+  background: linear-gradient(to top, rgba(12, 52, 101, 0.6) 0%, transparent 100%);
 }
 
-.teamCardTitle {
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 500;
-  font-size: 20px;
-  line-height: 2.15em;
-  letter-spacing: 0.05em;
-  color: #00326f;
-}
-
-/* Certificates Section */
-.certificatesSection {
-  background: #0c3465;
-  padding: 80px 0;
-  position: relative;
-}
-
-.certificatesContainer {
-  max-width: 1511px;
-  margin: 0 auto;
-  padding: 0 120px;
-  display: flex;
-  align-items: center;
-  gap: 88px;
-}
-
-.certificatesImage {
-  width: 624px;
-  height: 457px;
-  background: #ffffff;
-  border-radius: 5px;
-  flex-shrink: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.certificatesImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.certificatesContent {
-  flex: 1;
-}
-
-.certificatesTitle {
+.teamLabel {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 28px;
-  line-height: 1.075em;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  margin-bottom: 32px;
+  font-size: 16px;
+  color: #fff;
 }
 
-.certificatesText {
+/* ── Certificates ── */
+.certsSection {
+  background: #fff;
+  padding: 72px 0;
+}
+
+.certsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.certTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  color: #0f1f3d;
+  letter-spacing: -0.02em;
+  margin: 0 0 32px;
+}
+
+.certList {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+  margin-bottom: 36px;
 }
 
-.certificatesText p {
+.certItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.certDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0c3465;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.certText {
   font-family: var(--font-montserrat), sans-serif;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 1.219em;
-  letter-spacing: 0.05em;
-  color: #ffffff;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.65;
   margin: 0;
 }
 
-/* Partners Section */
-.partnersSection {
-  background: #ffffff;
-  padding: 68px 0 80px;
-}
-
-.partnersContainer {
-  max-width: 1511px;
-  margin: 0 auto;
-}
-
-.partnersTitle {
+.certsBtn {
+  display: inline-block;
+  background: #0c3465;
+  color: #fff;
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 28px;
-  line-height: 0.896em;
-  letter-spacing: 0.05em;
-  color: #0b3364;
-  text-align: center;
-  margin-bottom: 66px;
+  font-size: 14px;
+  padding: 14px 32px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 4px 16px rgba(12, 52, 101, 0.25);
 }
 
-.sliderWrapper {
-  position: relative;
-  margin-bottom: 40px;
+.certsBtn:hover {
+  background: #0a2850;
+  box-shadow: 0 6px 24px rgba(12, 52, 101, 0.35);
 }
 
-.sliderButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
-  background: #ffffff;
-  border: 2px solid #0c3465;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s;
-  color: #0c3465;
-}
-
-.sliderButton:hover {
-  background: #0c3465;
-  color: #ffffff;
-}
-
-.sliderButtonPrev {
-  left: 60px;
-}
-
-.sliderButtonNext {
-  right: 60px;
-}
-
-.partnersGrid {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  padding: 0 151px;
-  transition: all 0.3s;
-}
-
-.partnerCard {
-  width: 379px;
-  height: 370px;
-  background: rgba(204, 204, 204, 0.2);
-  border-radius: 5px;
-  overflow: hidden;
+.certsRight {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.partnerImage {
+.certsStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
-/* Pagination */
-.pagination {
+.certsStats .statCard:first-child {
+  grid-column: span 2;
+}
+
+.statCard {
+  background: #f5f7fa;
+  border-radius: 20px;
+  padding: 32px 24px;
   display: flex;
-  justify-content: center;
-  gap: 25px;
-  margin-top: 40px;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
 }
 
-.paginationDot {
-  width: 14px;
-  height: 14px;
-  background: #d9d9d9;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s;
+.statNum {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  color: #0c3465;
+  line-height: 1;
 }
 
-.certificatesSection .paginationDot {
-  background: #d9d9d9;
+.statLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
-.teamSection .paginationDot {
-  background: #e9e9e9;
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .philGrid  { grid-template-columns: repeat(2, 1fr); }
+  .certsGrid { grid-template-columns: 1fr; gap: 40px; }
+  .heroTitle { font-size: 40px; }
+  .heroRight { width: 320px; height: 280px; }
 }
 
-.paginationDot:hover {
-  transform: scale(1.2);
+@media (max-width: 860px) {
+  .heroInner  { flex-direction: column; align-items: center; gap: 32px; }
+  .heroRight  { width: 260px; height: 220px; }
 }
 
-.paginationDotActive {
-  background: #0c3465;
-}
-
-.certificatesSection .paginationDotActive {
-  background: #e9e9e9;
-}
-
-.teamSection .paginationDotActive {
-  background: #e9e9e9;
-}
-
-/* =========================
-   АДАПТАЦИЯ
-   ========================= */
-
-/* Крупные планшеты / маленькие ноуты */
-@media (max-width: 1200px) {
-  .heroContainer {
-    padding: 0 80px;
-    gap: 40px;
-  }
-
-  .heroTitle {
-    font-size: 40px;
-  }
-
-  .heroDescription {
-    font-size: 16px;
-  }
-
-  .teamGallery {
-    padding: 0 80px;
-  }
-
-  .certificatesContainer {
-    padding: 0 60px;
-    gap: 50px;
-  }
-
-  .partnersGrid {
-    padding: 0 80px;
-  }
-
-  .sliderButtonPrev {
-    left: 20px;
-  }
-
-  .sliderButtonNext {
-    right: 20px;
-  }
-}
-
-/* Планшеты */
-@media (max-width: 992px) {
-  .heroSection {
-    padding: 90px 0 70px;
-  }
-
-  .heroContainer {
-    padding: 0 40px;
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .heroContent {
-    max-width: 100%;
-  }
-
-  .heroButton {
-    margin: 0 auto;
-  }
-
-  .heroImageWrapper {
-    order: -1;           /* картинка сверху */
-  }
-
-  .heroImage {
-    width: 100%;
-    max-width: 420px;
-    height: auto;
-    border-radius: 40px;
-  }
-
-  .philosophySection {
-    padding: 60px 0;
-  }
-
-  .philosophyTitle {
-    font-size: 36px;
-  }
-
-  .philosophySubtitle {
-    font-size: 22px;
-  }
-
-  .teamSection {
-    padding: 60px 0;
-  }
-
-  .teamTitle {
-    font-size: 36px;
-    margin-bottom: 40px;
-  }
-
-  .teamGallery {
-    padding: 0 40px;
-    gap: 20px;
-  }
-
-  .teamImage,
-  .teamImagePlaceholder {
-    height: 320px;
-  }
-
-  .certificatesContainer {
-    padding: 0 40px;
-    gap: 40px;
-  }
-
-  .certificatesTitle {
-    font-size: 32px;
-  }
-
-  .certificatesText p {
-    font-size: 18px;
-  }
-
-  .partnersTitle {
-    font-size: 36px;
-    margin-bottom: 40px;
-  }
-
-  .partnersGrid {
-    padding: 0 40px;
-    gap: 20px;
-  }
-
-  .partnerCard {
-    width: 280px;
-    height: 270px;
-  }
-
-  .sliderButton {
-    width: 40px;
-    height: 40px;
-  }
-
-  .sliderButton svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-/* Мобильные (до 768px) */
 @media (max-width: 768px) {
-  .heroSection {
-    padding: 80px 0 50px;
-  }
-
-  .heroContainer {
-    padding: 0 20px;
-    gap: 30px;
-  }
-
-  .heroTitle {
-    font-size: 30px;
-    margin-bottom: 12px;
-  }
-
-  .heroDescription {
-    font-size: 15px;
-    line-height: 1.4;
-  }
-
-  .heroButton {
-    width: 100%;
-    max-width: 320px;
-    justify-content: center;
-  }
-
-  .buttonText {
-    font-size: 16px;
-    line-height: 60px;
-    padding: 0 28px;
-  }
-
-  .heroButton::before {
-    width: 60px;
-    height: 60px;
-  }
-
-  .heroImageWrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .heroImage {
-    width: 100%;
-    max-width: 360px;
-    border-radius: 32px;
-  }
-
-  .philosophySection {
-    padding: 50px 0;
-  }
-
-  .philosophyContainer {
-    padding: 0 20px;
-  }
-
-  .philosophyTitle {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
-
-  .philosophySubtitle {
-    font-size: 18px;
-  }
-
-  .teamSection {
-    padding: 50px 0;
-  }
-
-  .teamContainer {
-    padding: 0 20px;
-  }
-
-  .teamTitle {
-    font-size: 28px;
-    margin-bottom: 30px;
-  }
-
-  .teamGallery {
-    padding: 0;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .teamImage,
-  .teamImagePlaceholder {
-    height: 260px;
-  }
-
-  .teamCardOverlay {
-    padding: 16px 20px;
-  }
-
-  .teamCardTitle {
-    font-size: 16px;
-    line-height: 1.4;
-  }
-
-  .certificatesSection {
-    padding: 50px 0;
-  }
-
-  .certificatesContainer {
-    padding: 0 20px;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .certificatesImage {
-    width: 100%;
-    height: auto;
-    max-height: 260px;
-  }
-
-  .certificatesTitle {
-    font-size: 26px;
-    text-align: center;
-  }
-
-  .certificatesContent {
-    text-align: left;
-  }
-
-  .certificatesText p {
-    font-size: 16px;
-  }
-
-  .partnersSection {
-    padding: 50px 0 60px;
-  }
-
-  .partnersContainer {
-    padding: 0 20px;
-  }
-
-  .partnersTitle {
-    font-size: 28px;
-    margin-bottom: 25px;
-  }
-
-  .sliderWrapper {
-    padding: 0 10px;
-  }
-
-  .partnersGrid {
-    padding: 0 30px;
-    gap: 12px;
-  }
-
-  .partnerCard {
-    width: 240px;
-    height: 220px;
-  }
-
-  /* стрелки ближе к карточкам */
-  .sliderButtonPrev {
-    left: 0;
-  }
-
-  .sliderButtonNext {
-    right: 0;
-  }
-
-  .sliderButton {
-    width: 36px;
-    height: 36px;
-  }
-
-  .sliderButton svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .pagination {
-    gap: 16px;
-    margin-top: 24px;
-  }
-
-  .paginationDot {
-    width: 10px;
-    height: 10px;
-  }
+  .heroInner  { padding: 56px 24px 48px; }
+  .heroTitle  { font-size: 32px; }
+  .heroSub    { font-size: 14px; }
+  .container  { padding: 0 20px; }
+  .section    { padding: 48px 0; }
+  .teamSection { padding: 0 0 48px; }
+  .certsSection { padding: 48px 0; }
+  .sectionTitle { font-size: 28px; }
+  .teamGrid   { grid-template-columns: 1fr; }
+  .teamCard   { height: 280px; }
+  .certTitle  { font-size: 26px; }
 }
 
-/* Очень маленькие (до 480px) */
-@media (max-width: 480px) {
-  .heroSection {
-    padding: 70px 0 40px;
-  }
-
-  .heroTitle {
-    font-size: 24px;
-  }
-
-  .heroDescription {
-    font-size: 14px;
-  }
-
-  .heroButton {
-    max-width: 280px;
-  }
-
-  .philosophyTitle {
-    font-size: 24px;
-  }
-
-  .philosophySubtitle {
-    font-size: 16px;
-  }
-
-  .teamTitle {
-    font-size: 24px;
-  }
-
-  .teamImage,
-  .teamImagePlaceholder {
-    height: 220px;
-  }
-
-  .certificatesTitle {
-    font-size: 22px;
-  }
-
-  .certificatesText p {
-    font-size: 14px;
-  }
-
-  .partnersTitle {
-    font-size: 24px;
-  }
-
-  .partnersGrid {
-    padding: 0 10px;
-  }
-
-  .partnerCard {
-    width: 100%;
-    height: 200px;
-  }
+@media (max-width: 560px) {
+  .heroTitle  { font-size: 28px; }
+  .heroBtn    { width: 100%; text-align: center; }
+  .philGrid   { grid-template-columns: 1fr; }
+  .certsStats { grid-template-columns: 1fr; }
+  .certsStats .statCard:first-child { grid-column: span 1; }
 }

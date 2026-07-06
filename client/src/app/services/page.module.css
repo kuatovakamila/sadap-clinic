@@ -21,7 +21,165 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 72px 40px 64px;
+  display: flex;
+  align-items: center;
+  gap: 48px;
 }
+
+/* ── Hero two-column ── */
+.heroLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroRight {
+  flex-shrink: 0;
+  width: 400px;
+  height: 340px;
+  position: relative;
+  background: linear-gradient(135deg, #d6e8f8 0%, #bdd3f0 100%);
+  border-radius: 24px;
+  overflow: visible;
+}
+
+.heroVisual {
+  position: absolute;
+  inset: 0;
+}
+
+.heroCircle {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.heroCross {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -56%);
+}
+
+.floatIcon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(12, 52, 101, 0.13);
+}
+
+.fi1 { top: 16%; left: 8%; }
+.fi2 { top: 10%; right: 12%; }
+.fi3 { bottom: 24%; left: 6%; }
+.fi4 { bottom: 18%; right: 10%; }
+
+.heroStatBadge {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 18px rgba(12, 52, 101, 0.14);
+  white-space: nowrap;
+}
+
+.heroStatNum {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #0c3465;
+  line-height: 1;
+}
+
+.heroStatText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.dot1, .dot2, .dot3 {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+}
+.dot1 { width: 14px; height: 14px; top: 14%; right: 28%; }
+.dot2 { width: 9px;  height: 9px;  bottom: 32%; left: 22%; }
+.dot3 { width: 6px;  height: 6px;  top: 42%; right: 7%; }
+
+/* ── Hero doctor cards — orbit ── */
+@keyframes orbit {
+  from { transform: translate(-50%, -50%) rotate(0deg)   translateX(80px) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg) translateX(80px) rotate(-360deg); }
+}
+
+.heroDocCard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border-radius: 50px;
+  padding: 7px 16px 7px 7px;
+  box-shadow: 0 6px 22px rgba(12, 52, 101, 0.16);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.heroDocPhoto {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroDocImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.heroDocInitials {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+}
+
+.heroDocName {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f1f3d;
+}
+
+/* 3 cards evenly spaced 120° apart on the orbit */
+.hdc1 { animation: orbit 9s linear infinite; animation-delay:    0s; }
+.hdc2 { animation: orbit 9s linear infinite; animation-delay:   -3s; }
+.hdc3 { animation: orbit 9s linear infinite; animation-delay:   -6s; }
 
 .eyebrow {
   font-family: var(--font-montserrat), sans-serif;
@@ -301,43 +459,93 @@
   margin: 0;
 }
 
+/* ── Tags ── */
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c3465;
+  background: #eef3fb;
+  border: 1px solid #c8d9f0;
+  border-radius: 20px;
+  padding: 5px 12px;
+  white-space: nowrap;
+  transition: background 0.16s, border-color 0.16s;
+}
+
+.tag:hover {
+  background: #dce7f7;
+  border-color: #0c3465;
+}
+
 /* ── Timeline ── */
-@keyframes progressGrow {
-  from { width: 0; }
-  to   { width: 100%; }
+@keyframes progressDown {
+  from { height: 0; }
+  to   { height: 100%; }
 }
 
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
+  margin-top: 4px;
 }
 
 .timelineStep {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 14px;
 }
 
-.timelineStepTop {
+.timelineLeft {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  flex-shrink: 0;
 }
 
 .timelineNum {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #0c3465;
   color: #fff;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.timelineLine {
+  width: 2px;
+  height: 36px;
+  background: #e8eaf0;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.timelineLineFill {
+  width: 100%;
+  height: 0;
+  background: #0c3465;
+  border-radius: 2px;
+}
+
+.detailVisible .timelineLineFill {
+  animation: progressDown 0.5s ease both;
+  animation-delay: var(--delay);
 }
 
 .timelineText {
@@ -345,35 +553,18 @@
   font-size: 13px;
   color: #374151;
   line-height: 1.4;
+  padding-top: 5px;
+  padding-bottom: 28px;
 }
 
-.timelineBar {
-  height: 3px;
-  background: #e8eaf0;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-left: 34px;
+.timelineStep:last-child .timelineText {
+  padding-bottom: 0;
 }
-
-.timelineBarFill {
-  height: 100%;
-  background: #0c3465;
-  border-radius: 2px;
-  width: 0;
-}
-
-.detailVisible .timelineBarFill {
-  animation: progressGrow 0.7s ease both;
-}
-
-.detailVisible .timelineStep:nth-child(1) .timelineBarFill { animation-delay: 0.3s; }
-.detailVisible .timelineStep:nth-child(2) .timelineBarFill { animation-delay: 0.55s; }
-.detailVisible .timelineStep:nth-child(3) .timelineBarFill { animation-delay: 0.8s; }
 
 /* ── Doctor row (horizontal) ── */
 .docRow {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   margin-top: 16px;
 }
 
@@ -499,11 +690,12 @@
 @media (max-width: 1024px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
   .heroTitle { font-size: 38px; }
+  .heroRight { width: 340px; height: 290px; }
 }
 
-@media (max-width: 1024px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
-  .heroTitle { font-size: 38px; }
+@media (max-width: 960px) {
+  .heroInner { flex-direction: column; align-items: center; gap: 32px; }
+  .heroRight { width: 280px; height: 240px; }
 }
 
 @media (max-width: 768px) {

@@ -1,138 +1,201 @@
 "use client";
-import styles from "./page.module.css";
-import Image from "next/image";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
+import styles from "./page.module.css";
 
-const AboutUsPage = () => {
+const VALUES = [
+  {
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    ),
+    title: "Профессионализм",
+    desc: "Специалисты с многолетним опытом и подтверждёнными квалификациями",
+  },
+  {
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+      </svg>
+    ),
+    title: "Забота о пациентах",
+    desc: "Индивидуальный подход к каждому — от первого визита до полного выздоровления",
+  },
+  {
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        <path d="M9 16l2 2 4-4"/>
+      </svg>
+    ),
+    title: "Удобная запись",
+    desc: "Онлайн-запись 24/7 без очередей и лишних звонков — быстро и удобно",
+  },
+  {
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+    ),
+    title: "9 направлений",
+    desc: "Широкий спектр медицинских услуг для всей семьи под одной крышей",
+  },
+];
+
+const CONTACTS = [
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+    ),
+    label: "Адрес",
+    value: "19 мкр, ЖК «Ханшайым», офис 4",
+    href: null,
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.72 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.63 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.98-.98a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+    ),
+    label: "Записаться на приём",
+    value: "+7 702 301-27-96",
+    href: "tel:+77023012796",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </svg>
+    ),
+    label: "Email",
+    value: "support@sadapclinic.kz",
+    href: "mailto:support@sadapclinic.kz",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+    ),
+    label: "Instagram",
+    value: "@sadapclinic_kz",
+    href: "https://instagram.com/sadapclinic_kz",
+  },
+];
+
+export default function AboutUsPage() {
+  const valuesRef = useRef(null);
+  const [valVisible, setValVisible] = useState(false);
+
+  useEffect(() => {
+    if (!valuesRef.current) return;
+    const obs = new IntersectionObserver(
+      ([e]) => setValVisible(e.isIntersecting),
+      { threshold: 0.1 }
+    );
+    obs.observe(valuesRef.current);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <div className={styles.pageWrapper}>
-      <Header 
-        navItems={["Главная", "Услуги", "Врачи", "О нас"]}
-        showAccountButton={true}
-        fixed={true}
-      />
+    <div className={styles.page}>
+      <Header fixed={true} />
 
-      {/* Main Content */}
-      <main className={styles.main}>
+      {/* Hero */}
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <p className={styles.eyebrow}>О клинике</p>
+          <h1 className={styles.heroTitle}>Садап Клиник</h1>
+          <p className={styles.heroSub}>
+            Современная многопрофильная клиника в Актау. Мы объединяем опытных специалистов,
+            передовое оборудование и заботу о каждом пациенте.
+          </p>
+          <Link href="/doctors" className={styles.heroBtn}>
+            Записаться на приём
+          </Link>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section className={styles.valuesSection}>
         <div className={styles.container}>
-          {/* Page Heading */}
-          <div className={styles.pageHeading}>
-            <h1 className={styles.title}>О нас</h1>
-            <p className={styles.subtitle}>
-              Здесь вы можете найти наши адреса, а также контакты для связи.
-            </p>
+          <div
+            ref={valuesRef}
+            className={`${styles.valuesGrid} ${valVisible ? styles.visible : ""}`}
+          >
+            {VALUES.map((v, i) => (
+              <div key={i} className={styles.valueCard} style={{ "--i": i }}>
+                <div className={styles.valueIcon}>{v.icon}</div>
+                <h3 className={styles.valueTitle}>{v.title}</h3>
+                <p className={styles.valueDesc}>{v.desc}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          {/* Content Section */}
-          <div className={styles.contentSection}>
+      {/* Map + Contacts */}
+      <section className={styles.mapSection}>
+        <div className={styles.container}>
+          <h2 className={styles.sectionTitle}>Как нас найти</h2>
+          <div className={styles.mapGrid}>
             {/* Map */}
-            <div className={styles.mapContainer}>
+            <div className={styles.mapWrap}>
               <iframe
                 src="https://yandex.ru/map-widget/v1/?um=constructor%3A6df61d1066108ba7de888fb905c55d7845d03493b3184fccc061177dea5927b2&amp;source=constructor"
-                width="700"
-                height="392"
-                frameBorder="0"
                 className={styles.map}
                 title="Карта расположения клиники"
-              ></iframe>
+                frameBorder="0"
+              />
             </div>
 
-            {/* Contact Info */}
-            <div className={styles.contactInfo}>
-              <div className={styles.contactBlock}>
-                <h3 className={styles.contactLabel}>Адрес:</h3>
-                <p className={styles.contactText}>19 мкр, ЖК «Ханшайым», 4 офис.</p>
-              </div>
+            {/* Contacts */}
+            <div className={styles.contactsPanel}>
+              {CONTACTS.map((c, i) => (
+                <div key={i} className={styles.contactRow}>
+                  <div className={styles.contactIcon}>{c.icon}</div>
+                  <div className={styles.contactBody}>
+                    <span className={styles.contactLabel}>{c.label}</span>
+                    {c.href ? (
+                      <a href={c.href} className={styles.contactValue}
+                        target={c.href.startsWith("http") ? "_blank" : undefined}
+                        rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}>
+                        {c.value}
+                      </a>
+                    ) : (
+                      <span className={styles.contactValue}>{c.value}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
 
-              <div className={styles.contactBlock}>
-                <h3 className={styles.contactLabel}>Записаться на приём:</h3>
-                <a href="tel:+77023012796" className={styles.contactLink}>
-                  +7 702 301 2796
-                </a>
-              </div>
-
-              <div className={styles.contactBlock}>
-                <h3 className={styles.contactLabel}>Горячая линия 1:</h3>
-                <a href="tel:+77777777777" className={styles.contactLink}>
-                  +7 777 777 77 77
-                </a>
-              </div>
-
-              <div className={styles.contactBlock}>
-                <h3 className={styles.contactLabel}>Горячая линия 2:</h3>
-                <a href="tel:+77777777777" className={styles.contactLink}>
-                  +7 777 777 77 77
-                </a>
-              </div>
+              <Link href="/appointments" className={styles.ctaBtn}>
+                Записаться онлайн
+              </Link>
             </div>
           </div>
         </div>
-      </main>
+      </section>
 
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContainer}>
-          <div className={styles.footerLeft}>
-            <Image
-              src="/logo.png"
-              alt="Sadap Clinic"
-              width={120}
-              height={40}
-              className={styles.footerLogo}
-            />
-            <p className={styles.footerTagline}>Радость. Здоровье. Успех!</p>
-            <p className={styles.footerCopyright}>Все права защищены, 2024.</p>
-          </div>
-
-          <div className={styles.footerRight}>
-            <div className={styles.footerLinks}>
-              <a href="#" className={styles.footerLink}>Услуги</a>
-              <a href="#" className={styles.footerLink}>Врачи</a>
-              <a href="#" className={styles.footerLink}>Отзывы</a>
-              <a href="#" className={styles.footerLink}>О нас</a>
-            </div>
-
-            <div className={styles.footerContacts}>
-              <a href="tel:+77023012796" className={styles.contactItem}>
-                <Image
-                  src="/phone.png"
-                  alt="Phone"
-                  width={24}
-                  height={24}
-                  className={styles.contactIcon}
-                />
-                <span className={styles.contactItemText}>+7 702 301 2796</span>
-              </a>
-
-              <a href="https://instagram.com/sadapclinic_kz" target="_blank" rel="noopener noreferrer" className={styles.contactItem}>
-                <Image
-                  src="/instagram.png"
-                  alt="Instagram"
-                  width={24}
-                  height={24}
-                  className={styles.contactIcon}
-                />
-                <span className={styles.contactItemText}>@sadapclinic_kz</span>
-              </a>
-
-              <a href="mailto:support@sadapclinic.kz" className={styles.contactItem}>
-                <Image
-                  src="/mail.png"
-                  alt="Email"
-                  width={24}
-                  height={24}
-                  className={styles.contactIcon}
-                />
-                <span className={styles.contactItemText}>support@sadapclinic.kz</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
-};
-
-export default AboutUsPage;
-
+}
