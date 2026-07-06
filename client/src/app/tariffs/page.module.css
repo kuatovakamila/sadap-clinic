@@ -885,7 +885,7 @@
 }
 
 @media (max-width: 768px) {
-  .heroInner { padding: 96px 24px 0; }
+  .heroInner { padding: 110px 24px 0; }
   .heroTitle { font-size: 32px; }
   .heroLeft { padding-bottom: 24px; }
   .heroRight { height: 160px; margin-bottom: 32px; }
@@ -918,7 +918,7 @@
 }
 
 @media (max-width: 560px) {
-  .heroInner { padding: 88px 16px 0; }
+  .heroInner { padding: 104px 16px 0; }
   .heroTitle { font-size: 24px; line-height: 1.2; }
   .heroSub { font-size: 13px; margin-bottom: 20px; }
   .heroBenefits { gap: 10px 14px; }
