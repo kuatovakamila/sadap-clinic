@@ -867,20 +867,65 @@
   .heroLeft { padding-bottom: 48px; }
 }
 
-@media (max-width: 860px) {
-  .main { padding: 40px 24px 72px; }
-  .card { flex: 0 0 220px; }
+@media (max-width: 768px) {
+  .heroInner { padding: 96px 24px 0; }
+  .heroTitle { font-size: 32px; }
+  .heroLeft { padding-bottom: 40px; }
+
+  .main { padding: 36px 20px 72px; }
+
+  /* tabs scroll horizontally */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; flex-shrink: 0; font-size: 12.5px; padding: 8px 16px; }
+
+  /* hide arrows — touch scroll is enough */
+  .arrowBtn { display: none; }
+
+  /* cards — wide enough to read, peek next card */
+  .gridWrapper { margin: 0; }
+  .grid { padding: 4px 0 16px; gap: 14px; }
+  .card { flex: 0 0 80vw; min-height: unset; }
+
+  /* modal — nearly full screen */
+  .modalOverlay { padding: 12px; align-items: flex-end; }
+  .modalBox { max-height: 90vh; border-radius: 18px 18px 14px 14px; }
 }
 
 @media (max-width: 560px) {
   .heroInner { padding: 88px 20px 0; }
-  .heroTitle { font-size: 28px; }
-  .heroSub { font-size: 13px; }
-  .heroBenefits { gap: 14px 20px; }
-  .heroBenefit { font-size: 11px; }
+  .heroTitle { font-size: 26px; line-height: 1.2; }
+  .heroSub { font-size: 13px; margin-bottom: 24px; }
+  .heroBenefits { gap: 12px 16px; }
+  .heroBenefit { font-size: 11px; max-width: 110px; }
   .heroBenefitIcon { width: 30px; height: 30px; }
-  .main { padding: 32px 16px 60px; }
-  .card { flex: 0 0 200px; }
-  .tabs { gap: 6px; }
-  .tab { font-size: 12px; padding: 8px 16px; }
+  .heroEyebrow { font-size: 10px; margin-bottom: 10px; }
+
+  .main { padding: 28px 16px 60px; }
+
+  .card {
+    flex: 0 0 88vw;
+    padding: 24px 20px 20px;
+  }
+  .cardPriceNum { font-size: 26px; }
+  .cardTitle { font-size: 14px; }
+
+  /* filters wrap on small screens */
+  .filtersRow { gap: 8px; }
+  .filterBtn { font-size: 12px; padding: 8px 14px; }
+
+  /* compare modal full screen */
+  .modalOverlay { padding: 0; align-items: flex-end; }
+  .modalBox {
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    max-width: 100%;
+  }
 }
