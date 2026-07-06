@@ -211,12 +211,20 @@
 @media (max-width: 600px) {
   .footerContainer {
     flex-direction: column;
+    align-items: center;
     padding: 40px 20px 32px;
     gap: 32px;
+    text-align: center;
   }
 
   .footerLeft {
+    align-items: center;
     gap: 12px;
+    width: 100%;
+  }
+
+  .logoWrap {
+    justify-content: center;
   }
 
   .logoName {
@@ -234,25 +242,37 @@
     text-align: center;
   }
 
-  /* Two columns side by side */
   .footerCols {
     display: flex;
     gap: 32px;
+    width: 100%;
   }
 
   .footerCol {
     flex: 1;
     min-width: 0;
+    align-items: center;
+  }
+
+  .colTitle {
+    text-align: center;
   }
 
   .footerLinks,
   .footerContacts {
     gap: 12px;
+    align-items: center;
   }
 
   .footerLink,
   .contactItem {
     font-size: 13px;
+    width: fit-content;
+  }
+
+  .contactItem {
+    flex-direction: column;
+    gap: 6px;
   }
 
   .contactIcon {
@@ -263,6 +283,7 @@
   .footerBottom {
     padding: 14px 20px;
     font-size: 11px;
+    text-align: center;
   }
 }
 
@@ -274,6 +295,12 @@
   .footerCols {
     flex-direction: column;
     gap: 24px;
+    align-items: center;
+  }
+
+  .footerCol {
+    align-items: center;
+    width: 100%;
   }
 
   .footerLink,
