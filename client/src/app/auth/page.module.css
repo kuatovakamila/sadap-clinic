@@ -30,7 +30,12 @@
   max-width: 50%;
   height: auto;
   margin-bottom: 20px;
-  animation: gentleSwing 3s ease-in-out infinite;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+.logoContent:hover .logoImage {
+  animation: gentleSwing 0.7s ease-in-out infinite;
 }
 
 @keyframes gentleSwing {

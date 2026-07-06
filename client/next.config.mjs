@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://yandex.kz https://yandex.ru;",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

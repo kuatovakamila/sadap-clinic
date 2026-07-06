@@ -1,318 +1,261 @@
-/* .services {
-  background: #f9f8f8;
-  padding: 100px 0;
+@keyframes cardAppear {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.servicesContainer {
-  max-width: 1507px;
+.section {
+  background: #fff;
+  padding: 80px 0;
+  border-bottom: 1.5px solid #e8eaf0;
+}
+
+.container {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 212px;
+  padding: 0 40px;
 }
 
-.servicesTitle {
+/* ── Header ── */
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.title {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #00326f;
-  margin: 0 0 80px;
+  font-size: 32px;
+  color: #0c3465;
+  margin: 0 0 6px;
+  line-height: 1.2;
 }
 
-.servicesGrid {
+.subtitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+}
+
+.allLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0c3465;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 9px 18px;
+  border: 1.5px solid #0c3465;
+  border-radius: 8px;
+  transition: background 0.18s, color 0.18s;
+}
+
+.allLink:hover {
+  background: #0c3465;
+  color: #fff;
+}
+
+/* ── Tabs ── */
+.tabs {
   display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 40px;
-  row-gap: 40px;
 }
 
-.serviceCard {
-  width: calc(33% - 30px);
-  min-width: 291px;
-  height: 113px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0px 4px 4px 0px rgba(152, 152, 152, 0.2);
-  position: relative;
+.tab {
+  padding: 8px 18px;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+}
+
+.tab:hover {
+  border-color: #0c3465;
+  color: #0c3465;
+}
+
+.tabActive {
+  background: #0c3465;
+  border-color: #0c3465;
+  color: #fff;
+}
+
+/* ── Grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* ── Card ── */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  background: #fff;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 14px;
+  cursor: default;
+  opacity: 0;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  border-color: #0c3465;
+  transform: translateY(-3px);
+}
+
+.card:hover .iconBox {
+  background: #dce7f7;
+}
+
+.card:hover .iconBox svg {
+  transform: scale(1.06);
+}
+
+/* Featured: wider */
+.featured {
+  grid-column: span 2;
+}
+
+/* ── Stagger via CSS custom property ── */
+.visible .card {
+  animation: cardAppear 0.45s ease both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+/* ── Icon ── */
+.iconBox {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #f0f4fb;
+  color: #0c3465;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-  overflow: hidden;
-}
-
-.serviceCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 8px 12px 0px rgba(152, 152, 152, 0.3);
-}
-
-.serviceTitle {
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #00326f;
-  margin: 0;
-  padding: 0 20px 0 50px;
-  position: relative;
-  z-index: 2;
-}
-
-.serviceImageWrapper {
-  position: absolute;
-  top: 50%;
-  left: 0px;
-  transform: translateY(-19%);
-  z-index: 1;
-  opacity: 0.9;
-}
-
-.serviceImage {
-  width: auto;
-  height: auto;
-  max-width: 160px;
-  max-height: 160px;
-  object-fit: contain;
-}
-
-@media (max-width: 1400px) {
-  .servicesContainer {
-    padding: 0 100px;
-  }
-
-  .serviceCard {
-    width: calc(33.333% - 27px);
-  }
-}
-
-@media (max-width: 1024px) {
-  .servicesContainer {
-    padding: 0 50px;
-  }
-
-  .servicesTitle {
-    font-size: 40px;
-    margin-bottom: 60px;
-  }
-
-  .serviceCard {
-    width: calc(50% - 20px);
-  }
-}
-
-@media (max-width: 768px) {
-  .services {
-    padding: 60px 0;
-  }
-
-  .servicesContainer {
-    padding: 0 20px;
-  }
-
-  .servicesTitle {
-    font-size: 32px;
-    margin-bottom: 40px;
-  }
-
-  .servicesGrid {
-    gap: 20px;
-  }
-
-  .serviceCard {
-    width: 100%;
-    min-width: auto;
-  }
-
-  .serviceTitle {
-    font-size: 18px;
-  }
-} */
-
-/* ================== SERVICES SECTION ================== */
-/* ================== SERVICES SECTION ================== */
-
-/* ================== SERVICES SECTION ================== */
-
-.services {
-  background: #f9f8f8;
-  padding: 100px 0;
-}
-
-.servicesContainer {
-  max-width: 1507px;
-  margin: 0 auto;
-  padding: 0 212px;
-}
-
-.servicesTitle {
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #00326f;
-  margin: 0 0 80px;
-}
-
-/* GRID */
-.servicesGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-}
-
-/* CARD — текст слева, картинка справа */
-.serviceCard {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 22px 24px;
-  height: 120px;
-  position: relative;
-  overflow: hidden;        /* 🔥 даёт обрезку картинки */
-}
-.serviceCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 8px 12px rgba(152, 152, 152, 0.3);
-}
-
-/* ТЕКСТ СЛЕВА */
-.serviceTitle {
-  flex: 1;
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 1.25;
-  color: #00326f;
-  margin: 0;
-  text-align: left;     /* текст слева */
-  padding-left: 10px;
-}
-
-/* КАРТИНКА СПРАВА */
-.serviceImageWrapper {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  overflow: hidden;
   flex-shrink: 0;
+  transition: background 0.18s;
 }
 
-.serviceImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.iconBox svg {
+  transition: transform 0.25s ease;
 }
 
-/* ================== RESPONSIVE ================== */
+.cardTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2744;
+  line-height: 1.35;
+}
 
-/* планшеты */
+.featured .cardTitle {
+  font-size: 15px;
+}
+
+/* ── Responsive ── */
 @media (max-width: 1024px) {
-
-  .servicesContainer {
-    padding: 0 40px;
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .servicesTitle {
-    font-size: 40px;
-    margin-bottom: 60px;
-  }
-
-  .servicesGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-
-  .serviceImageWrapper {
-    width: 65px;
-    height: 65px;
-  }
-
-  .serviceTitle {
-    font-size: 18px;
+  .featured {
+    grid-column: span 2;
   }
 }
 
-/* мобильные — по 2 в ряд */
 @media (max-width: 768px) {
+  .section { padding: 56px 0; }
 
-  .services {
-    padding: 60px 0;
+  .container { padding: 0 20px; }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
   }
 
-  .servicesContainer {
-    padding: 0 16px;
+  .title { font-size: 26px; }
+
+  .tabs {
+    gap: 6px;
+    margin-bottom: 20px;
   }
 
-  .servicesTitle {
-    font-size: 32px;
-    margin-bottom: 32px;
+  .tab {
+    padding: 7px 14px;
+    font-size: 12.5px;
   }
 
-  .servicesGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .serviceCard {
-    border-radius: 12px;
-    height: 70px;
-    padding: 12px 10px;
-  }
-
-  .serviceImageWrapper {
-    width: 56px;
-    height: 56px;
-  }
-
-  .serviceTitle {
-    font-size: 15px;
-    line-height: 1.3;
-  }
-}
-
-/* маленькие мобильные */
-@media (max-width: 480px) {
-  .servicesContainer {
-    padding: 0 12px;
-  }
-
-  .servicesGrid {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
-  .serviceImageWrapper {
-    width: 52px;
-    height: 52px;
+  .featured {
+    grid-column: span 2;
   }
 
-  .serviceCard {
-    padding: 10px 8px;
+  .card {
+    padding: 14px 14px;
+    gap: 12px;
   }
 
-  .serviceTitle {
-    font-size: 13px;
+  .iconBox {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
   }
+
+  .iconBox svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .cardTitle { font-size: 13px; }
+  .featured .cardTitle { font-size: 13.5px; }
 }
 
-/* сверх маленькие */
-@media (max-width: 360px) {
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
 
-  .serviceTitle {
-    font-size: 12px;
+  .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: none;
   }
 
-  .serviceImageWrapper {
-    width: 48px;
-    height: 48px;
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab { white-space: nowrap; flex-shrink: 0; }
+
+  .grid { gap: 8px; }
+
+  .card { padding: 12px; gap: 10px; }
+
+  .iconBox {
+    width: 40px;
+    height: 40px;
   }
+
+  .cardTitle { font-size: 12px; }
 }

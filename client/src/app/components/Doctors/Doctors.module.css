@@ -1,424 +1,293 @@
-.doctors {
-  background: #f9f8f8;
-  padding: 100px 0;
-  text-align: center;
+.section {
+  background: #f7f9fc;
+  padding: 80px 0 60px;
+  border-bottom: 1.5px solid #e8eaf0;
 }
 
-.doctorsContainer {
-  max-width: 1507px;
+.container {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 210px;
+  padding: 0 40px;
 }
 
-.doctorsHeader {
-  text-align: center;
-  margin-bottom: 80px;
+/* ── Header ── */
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
 }
 
-.doctorsTitle {
+.title {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  color: #0b3364;
-  margin: 0 0 8px;
+  font-size: 32px;
+  color: #0c3465;
+  margin: 0 0 6px;
+  line-height: 1.2;
 }
 
-.doctorsSubtitle {
+.subtitle {
   font-family: var(--font-montserrat), sans-serif;
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  color: #0b3364;
+  font-size: 14px;
+  font-weight: 400;
+  color: #6b7280;
   margin: 0;
 }
 
-.sliderWrapper {
-  position: relative;
-  margin-bottom: 50px;
-    padding: 0 40px;  
+.allLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0c3465;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 9px 18px;
+  border: 1.5px solid #0c3465;
+  border-radius: 8px;
+  transition: background 0.18s, color 0.18s;
 }
 
-.sliderButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
-  background: #ffffff;
-  border: 2px solid #0c3465;
-  border-radius: 50%;
+.allLink:hover {
+  background: #0c3465;
+  color: #fff;
+}
+
+/* ── Tabs ── */
+.tabs {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 7px 16px;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
   cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s;
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+}
+
+.tab:hover {
+  border-color: #0c3465;
   color: #0c3465;
 }
 
-.sliderButton:hover {
+.tabActive {
   background: #0c3465;
-  color: #ffffff;
+  border-color: #0c3465;
+  color: #fff;
 }
 
-.sliderButtonPrev {
-  left: -40px;
-}
-
-.sliderButtonNext {
-  right: -40px;
-}
-
-.doctorsGrid {
+/* ── Scroll grid ── */
+.grid {
   display: flex;
-  justify-content: space-between;
-  gap: 38px;
+  gap: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 4px;
 }
 
-.doctorCard {
-  width: 346px;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 37px 36px;
+.grid::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Card ── */
+.card {
+  flex: 0 0 360px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  transition: transform 0.3s, box-shadow 0.3s;
-  text-align: left;
-}
-
-.doctorCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.doctorAvatar {
-  width: 143px;
-  height: 169px;
-  background: #e6e4e5;
-  border-radius: 100px;
+  background: #fff;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  scroll-snap-align: start;
+  transition: border-color 0.2s, transform 0.2s;
 }
 
-.doctorImage {
+.card:hover {
+  border-color: #0c3465;
+  transform: translateY(-3px);
+}
+
+/* ── Photo cover ── */
+.photoWrap {
+  position: relative;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.doctorName {
-  font-family: var(--font-helvetica), var(--font-montserrat), sans-serif;
-  font-weight: 700;
-  font-size: 25px;
-  line-height: 1;
-  text-align: center;
-  color: #0c3465;
-  margin: 0 0 15px;
-}
-
-.doctorPosition {
-  font-family: "Helvetica", var(--font-montserrat), sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 1.15;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #000000;
-  margin: 0 0 30px;
-  min-height: 45px;
-}
-
-.appointmentButton {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #0c3465;
-  border: none;
-  border-radius: 70px;
-  padding: 15px 20px 15px 30px;
-  cursor: pointer;
-  transition: all 0.3s;
-  width: 100%;
-  max-width: 302px;
-  gap: 15px;
-}
-
-.appointmentButton:hover {
-  background: #0a2850;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(12, 52, 101, 0.3);
-}
-
-.buttonText {
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  flex: 1;
-  text-align: left;
-}
-
-.buttonIcon {
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 280px;
+  overflow: hidden;
   flex-shrink: 0;
-  transition: all 0.3s;
+  background: #f0f4fb;
 }
 
-.appointmentButton:hover .buttonIcon {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateX(3px);
+.photo {
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.35s ease;
 }
 
-.pagination {
+.card:hover .photo {
+  transform: scale(1.05);
+}
+
+.expBadge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(12, 52, 101, 0.82);
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.02em;
+}
+
+/* ── Card body ── */
+.cardBody {
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 40px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px 20px;
+  flex: 1;
 }
 
-.paginationDot {
-  width: 14px;
-  height: 14px;
-  background: #d9d9d9;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s;
-  padding: 0;
+.specTag {
+  display: inline-block;
+  align-self: flex-start;
+  background: #eef2ff;
+  color: #0c3465;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
 }
 
-.paginationDotActive {
-  background: #0c3465;
-  transform: scale(1.2);
+.name {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #0c3465;
+  margin: 0;
+  line-height: 1.3;
 }
 
-.paginationDot:hover {
-  background: #0c3465;
-  transform: scale(1.1);
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
 }
 
-.viewAllButton {
+.reviews {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* ── Book button ── */
+.bookBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: 70px;
-  padding: 0 38px;
-  cursor: pointer;
-  height: 70px;
-  transition: all 0.3s;
-  text-decoration: none;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
   background: #0c3465;
-  vertical-align: middle;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.18s, transform 0.18s;
 }
 
-.viewAllButton:hover {
+.bookBtn:hover {
   background: #0a2850;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(12, 52, 101, 0.3);
+  transform: scale(1.02);
 }
 
-.viewAllText {
-  font-family: "Inter", var(--font-montserrat), sans-serif;
-  font-weight: 700;
-  font-size: 19px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #ffffff;
-  text-align: center;
-  white-space: nowrap;
+/* ── Progress bar ── */
+.progressBar {
+  height: 3px;
+  background: #e8eaf0;
+  border-radius: 2px;
+  margin-top: 24px;
+  overflow: hidden;
 }
 
-@media (max-width: 1400px) {
-  .doctorsContainer {
-    padding: 0 100px;
-  }
-
-  .sliderButtonPrev {
-    left: -25px;
-  }
-
-  .sliderButtonNext {
-    right: -25px;
-  }
-
-  .doctorsGrid {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+.progressFill {
+  height: 100%;
+  background: #0c3465;
+  border-radius: 2px;
+  transition: width 0.12s ease;
+  min-width: 8%;
 }
 
+.empty {
+  font-family: var(--font-montserrat), sans-serif;
+  color: #6b7280;
+  font-size: 14px;
+  padding: 20px 0;
+}
+
+/* ── Responsive ── */
 @media (max-width: 1024px) {
-  .doctorsContainer {
-    padding: 0 50px;
+  .card {
+    flex: 0 0 300px;
   }
 
-  .doctorsTitle {
-    font-size: 40px;
-  }
-
-  .doctorsSubtitle {
-    font-size: 20px;
-  }
-
-  .sliderButtonPrev,
-  .sliderButtonNext {
-    width: 40px;
-    height: 40px;
-  }
-
-  .sliderButtonPrev {
-    left: -20px;
-  }
-
-  .sliderButtonNext {
-    right: -20px;
-  }
-
-  .doctorsGrid {
-    gap: 30px;
-  }
-
-  .doctorCard {
-    width: calc(50% - 15px);
-    min-width: 300px;
+  .photoWrap {
+    height: 240px;
   }
 }
 
 @media (max-width: 768px) {
-  .doctors {
-    padding: 60px 0;
+  .section {
+    padding: 56px 0 48px;
   }
 
-  .doctorsContainer {
+  .container {
     padding: 0 20px;
   }
 
-  .doctorsTitle {
-    font-size: 32px;
-  }
-
-  .doctorsSubtitle {
-    font-size: 18px;
-  }
-
-  .doctorsHeader {
-    margin-bottom: 50px;
-  }
-
-  .sliderWrapper {
-    padding: 0 50px;
-  }
-
-  .sliderButtonPrev {
-    left: 0;
-  }
-
-  .sliderButtonNext {
-    right: 0;
-  }
-
-  .sliderButton {
-    width: 36px;
-    height: 36px;
-  }
-
-  .sliderButton svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .doctorsGrid {
+  .sectionHeader {
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
   }
 
-  .doctorCard {
-    width: 100%;
-    max-width: 400px;
+  .title {
+    font-size: 26px;
   }
 
-  .viewAllText {
-    font-size: 16px;
-    padding-right: 20px;
-  }@media (max-width: 768px) {
-  .doctors {
-    padding: 60px 0;
+  .card {
+    flex: 0 0 260px;
   }
 
-  .doctorsContainer {
-    padding: 0 20px;
+  .photoWrap {
+    height: 210px;
   }
-
-  .doctorsTitle {
-    font-size: 32px;
-  }
-
-  .doctorsSubtitle {
-    font-size: 18px;
-  }
-
-  .doctorsHeader {
-    margin-bottom: 40px;
-  }
-
-  .sliderWrapper {
-    position: relative;
-    padding: 0 20px;        /* место под стрелки */
-    overflow: visible;      /* ничего не режем */
-  }
-
-  .doctorsGrid {
-    display: flex;
-    justify-content: center;
-  }
-
-  .doctorCard {
-    width: 85%;             /* ⬅ карточка уже */
-    max-width: 320px;       /* максимум по ширине */
-    margin: 0 auto;
-  }
-
-  .doctorAvatar {
-    margin-bottom: 24px;
-  }
-
-  .sliderButton {
-    width: 40px;
-    height: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  .sliderButtonPrev {
-    left: 0;                /* вплотную к краю обёртки */
-  }
-
-  .sliderButtonNext {
-    right: 0;
-  }
-
-  .sliderButton svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .viewAllText {
-    font-size: 16px;
-    padding-right: 20px;
-  }
-  }}
+}

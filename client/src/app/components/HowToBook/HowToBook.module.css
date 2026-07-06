@@ -1,373 +1,335 @@
-.howToBook {
-  background: linear-gradient(110deg, #0b3364 0%, #00326f 100%);
-  padding: 106px 0;
+/* ── Animations ── */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes drawLine {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section ── */
+.section {
+  background: #f7f9fc;
+  padding: 80px 0;
+  border-top: 1.5px solid #e8eaf0;
 }
 
 .container {
-  max-width: 1509px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 163px;
+  padding: 0 40px;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  margin-bottom: 56px;
 }
 
 .title {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 48px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #ffffff;
-  margin: 0 0 80px;
+  font-size: 32px;
+  color: #0c3465;
+  margin: 0 0 8px;
+  line-height: 1.2;
 }
 
-.stepsContainer {
+.subtitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Steps grid ── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 52px;
+}
+
+/* ── Single step ── */
+.step {
+  padding: 0 32px;
   position: relative;
-  margin-bottom: 80px;
 }
 
-.arrowImage {
+.step:first-child { padding-left: 0; }
+.step:last-child  { padding-right: 0; }
+
+/* Large background number */
+.bgNum {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%) translateX(-50%);
-  right: -25%;
-  width: 100%;
-  max-width: 80px;
-  z-index: 2;
+  top: -8px;
+  right: 20px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 100px;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(12, 52, 101, 0.05);
   pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  transition: color 0.2s;
 }
 
-.arrow {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+.step:hover .bgNum {
+  color: rgba(12, 52, 101, 0.1);
 }
 
-.stepsGrid {
+/* ── Icon + connector row ── */
+.stepTop {
   display: flex;
-  justify-content: space-between;
-  gap: 23px;
-  position: relative;
-  z-index: 2;
-}
-
-.stepCard {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 40px 33px;
-  text-align: center;
-  min-height: 284px;
-  display: flex;
-  flex-direction: column;
   align-items: center;
+  margin-bottom: 20px;
   position: relative;
+  z-index: 1;
 }
 
-.stepNumber {
-  font-family: "Inter", var(--font-montserrat), sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  line-height: 1.21;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #0b3364;
-  margin-bottom: 27px;
+/* Icon circle — hidden until animated */
+.iconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0c3465;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: transform 0.2s;
+}
+
+.step:hover .iconWrap {
+  transform: scale(1.1) !important;
+}
+
+/* Connector line — hidden until animated */
+.connector {
+  flex: 1;
+  height: 2px;
+  background: #c8d6e8;
+  margin-left: 16px;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* ── Triggered animations ── */
+.visible .step:nth-child(1) .iconWrap {
+  animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0s;
+}
+.visible .step:nth-child(1) .connector {
+  animation: drawLine 0.5s ease both;
+  animation-delay: 0.5s;
+}
+.visible .step:nth-child(2) .iconWrap {
+  animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 1.05s;
+}
+.visible .step:nth-child(2) .connector {
+  animation: drawLine 0.5s ease both;
+  animation-delay: 1.55s;
+}
+.visible .step:nth-child(3) .iconWrap {
+  animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 2.1s;
+}
+
+/* Step text — fade up staggered */
+.num,
+.stepTitle,
+.stepDesc {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+}
+
+.visible .step:nth-child(1) .num      { animation: fadeUp 0.4s ease both; animation-delay: 0.1s; }
+.visible .step:nth-child(1) .stepTitle{ animation: fadeUp 0.4s ease both; animation-delay: 0.2s; }
+.visible .step:nth-child(1) .stepDesc { animation: fadeUp 0.4s ease both; animation-delay: 0.3s; }
+
+.visible .step:nth-child(2) .num      { animation: fadeUp 0.4s ease both; animation-delay: 1.15s; }
+.visible .step:nth-child(2) .stepTitle{ animation: fadeUp 0.4s ease both; animation-delay: 1.25s; }
+.visible .step:nth-child(2) .stepDesc { animation: fadeUp 0.4s ease both; animation-delay: 1.35s; }
+
+.visible .step:nth-child(3) .num      { animation: fadeUp 0.4s ease both; animation-delay: 2.2s; }
+.visible .step:nth-child(3) .stepTitle{ animation: fadeUp 0.4s ease both; animation-delay: 2.3s; }
+.visible .step:nth-child(3) .stepDesc { animation: fadeUp 0.4s ease both; animation-delay: 2.4s; }
+
+/* ── Step text styles ── */
+.num {
   display: block;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #0c3465;
+  opacity: 0;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+}
+
+.step:hover .num {
+  opacity: 0.7 !important;
 }
 
 .stepTitle {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 24px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #00326f;
-  margin: 0 0 12px;
+  font-size: 17px;
+  color: #0c3465;
+  margin: 0 0 10px;
+  line-height: 1.3;
+  min-height: 44px;
 }
 
-.stepDescription {
+.stepDesc {
   font-family: var(--font-montserrat), sans-serif;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 1.219;
-  letter-spacing: 0.05em;
-  text-align: center;
-  color: #7a7a7a;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #6b7280;
   margin: 0;
-  white-space: pre-line;
+  line-height: 1.65;
+  min-height: 66px;
 }
 
-.sendButton {
+/* ── CTA ── */
+.cta {
   display: flex;
   align-items: center;
-  background: transparent;
-  border: none;
-  border-radius: 70px;
-  padding: 0;
-  cursor: pointer;
-  margin: 0 auto;
-  transition: all 0.3s;
-  overflow: hidden;
-  position: relative;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.sendButton::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 69px;
-  height: 70px;
-  background: #214776;
-  border-radius: 70px;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-}
-
-.sendButton:hover::before {
-  width: calc(100% + 69px);
-}
-
-.buttonText {
-  font-family: "Inter", var(--font-montserrat), sans-serif;
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #0c3465;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 15px;
   font-weight: 700;
-  font-size: 19px;
-  line-height: 70px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #ffffff;
-  text-align: center;
-  padding: 0 39px;
-  position: relative;
-  z-index: 1;
-  white-space: nowrap;
+  padding: 17px 40px;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(12, 52, 101, 0.35);
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  letter-spacing: 0.01em;
 }
 
-/* ===== АДАПТАЦИЯ ===== */
-
-/* большие планшеты / маленькие десктопы */
-@media (max-width: 1400px) {
-  .container {
-    padding: 0 100px;
-  }
-
-  .stepCard {
-    padding: 35px 26px;
-  }
-
-  .title {
-    margin-bottom: 60px;
-  }
+.btnPrimary:hover {
+  background: #0a2850;
+  transform: scale(1.04);
+  box-shadow: 0 6px 28px rgba(12, 52, 101, 0.45);
 }
 
-/* до 1200px: чуть меньше шрифты, стрелка ближе */
-@media (max-width: 1200px) {
-  .howToBook {
-    padding: 90px 0;
-  }
+.btnPrimary:active { transform: scale(0.98); }
 
-  .container {
-    padding: 0 60px;
-  }
-
-  .title {
-    font-size: 32px;
-    margin-bottom: 50px;
-  }
-
-  .stepsContainer {
-    margin-bottom: 60px;
-  }
-
-  .arrowImage {
-    right: -15%;
-    max-width: 60px;
-  }
-
-  .stepTitle {
-    font-size: 22px;
-  }
-
-  .stepDescription {
-    font-size: 15px;
-  }
+.btnOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: #0c3465;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 17px 40px;
+  border-radius: 14px;
+  border: 2px solid #0c3465;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, color 0.18s, transform 0.18s;
 }
 
-/* до 1024px: карточки в колонку, стрелку убираем */
-@media (max-width: 1024px) {
-  .container {
-    padding: 0 40px;
+.btnOutline:hover {
+  background: #0c3465;
+  color: #fff;
+  transform: scale(1.04);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .section { padding: 56px 0; }
+
+  .container { padding: 0 20px; }
+
+  .title { font-size: 26px; }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 36px;
   }
 
-  .stepsGrid {
-    flex-direction: column;
-    gap: 20px;
+  .step {
+    padding: 0;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    grid-template-rows: auto auto auto auto;
+    column-gap: 16px;
+    align-items: start;
   }
 
-  .stepCard {
-    min-height: auto;
-  }
-
-  .arrowImage {
+  .bgNum {
     display: none;
   }
-}
 
-/* мобильные (до 768px) */
-@media (max-width: 768px) {
-  .howToBook {
-    padding: 60px 0;
+  .stepTop {
+    grid-column: 1;
+    grid-row: 1 / 5;
+    flex-direction: column;
+    margin-bottom: 0;
+    align-items: center;
   }
 
-  .container {
-    padding: 0 20px;
+  .connector {
+    flex: none;
+    width: 2px;
+    height: 48px;
+    margin-left: 0;
+    margin-top: 12px;
+    transform: scaleY(0);
+    transform-origin: top center;
+    background: #c8d6e8;
   }
 
-  .title {
-    font-size: 28px;
-    line-height: 1.3;
-    margin-bottom: 35px;
+  .visible .step:nth-child(1) .connector {
+    animation: none;
+    transform: scaleY(1);
+  }
+  .visible .step:nth-child(2) .connector {
+    animation: none;
+    transform: scaleY(1);
   }
 
-  .stepsContainer {
-    margin-bottom: 40px;
+  .num        { grid-column: 2; grid-row: 1; }
+  .stepTitle  { grid-column: 2; grid-row: 2; }
+  .stepDesc   { grid-column: 2; grid-row: 3; min-height: auto; }
+
+  .stepTitle { min-height: auto; }
+
+  .cta {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .stepCard {
-    padding: 28px 20px;
-  }
-
-  .stepNumber {
-    font-size: 18px;
-    margin-bottom: 20px;
-  }
-
-  .stepTitle {
-    font-size: 20px;
-  }
-
-  .stepDescription {
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  .sendButton {
-    width: 100%;
+  .btnPrimary,
+  .btnOutline {
     justify-content: center;
   }
-
-  .buttonText {
-    font-size: 16px;
-    line-height: 60px;
-  }
-
-  .sendButton::before {
-    width: 100px;
-    height: 60px;
-  }
 }
-
-/* маленькие мобильные (до 480px) */
-@media (max-width: 480px) {
-  .howToBook {
-    padding: 50px 0;
-  }
-
-  .container {
-    padding: 0 16px;
-  }
-
-  .title {
-    font-size: 24px;
-    margin-bottom: 30px;
-  }
-
-  .stepCard {
-    padding: 24px 18px;
-  }
-
-  .buttonText {
-    font-size: 15px;
-    padding: 0 26px;
-  }
-}
-
-/* очень маленькие (до 360px) */
-@media (max-width: 360px) {
-  .title {
-    font-size: 20px;
-  }
-
-  .stepTitle {
-    font-size: 18px;
-  }
-
-  .stepDescription {
-    font-size: 13px;
-  }
-
-  .buttonText {
-    font-size: 14px;
-  }
-}
-
-/* 
-@media (max-width: 1200px) {
-  .container {
-    padding: 0 80px;
-  }
-
-  .arrowImage {
-    max-width: 700px;
-  }
-}
-
-@media (max-width: 1024px) {
-  .title {
-    font-size: 40px;
-    margin-bottom: 60px;
-  }
-
-  .stepsGrid {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .arrowImage {
-    display: none;
-  }
-
-  .stepCard {
-    min-height: auto;
-  }
-}
-
-@media (max-width: 768px) {
-  .howToBook {
-    padding: 60px 0;
-  }
-
-  .container {
-    padding: 0 20px;
-  }
-
-  .title {
-    font-size: 32px;
-    margin-bottom: 40px;
-  }
-
-  .stepTitle {
-    font-size: 20px;
-  }
-
-  .stepDescription {
-    font-size: 15px;
-  }
-
-  .buttonText {
-    font-size: 16px;
-    padding: 0 20px;
-  }
-}
- */

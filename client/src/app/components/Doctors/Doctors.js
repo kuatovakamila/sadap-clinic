@@ -1,174 +1,158 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./Doctors.module.css";
 import Image from "next/image";
 import Link from "next/link";
 
 const Doctors = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [doctors, setDoctors]       = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [activeSpec, setActiveSpec] = useState("all");
+  const [progress, setProgress]     = useState(0);
+  const scrollRef                   = useRef(null);
 
-  // Load doctors from database
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await fetch("/api/doctors");
-        const result = await response.json();
-        
-        if (result.success) {
-          setDoctors(result.doctors || []);
-        }
-      } catch (error) {
-        console.error("Error loading doctors:", error);
+        const res    = await fetch("/api/doctors");
+        const result = await res.json();
+        if (result.success) setDoctors(result.doctors || []);
+      } catch (e) {
+        console.error("Error loading doctors:", e);
       } finally {
         setLoading(false);
       }
     };
-
     fetchDoctors();
   }, []);
 
-  // определяем, мобилка или нет
+  /* derived */
+  const specs = ["all", ...Array.from(
+    new Set(doctors.map((d) => d.specialization_title).filter(Boolean))
+  )];
+  const filtered = activeSpec === "all"
+    ? doctors
+    : doctors.filter((d) => d.specialization_title === activeSpec);
+
+  /* scroll progress bar */
   useEffect(() => {
-    const checkIsMobile = () => {
-      if (typeof window !== "undefined") {
-        setIsMobile(window.innerWidth <= 768);
-      }
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const max = el.scrollWidth - el.clientWidth;
+      setProgress(max ? el.scrollLeft / max : 0);
     };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [filtered]);
 
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
-
-  // по 3 врача на десктопе и по 1 на мобилке
-  const doctorsPerSlide = isMobile ? 1 : 3;
-  const totalSlides = Math.ceil(doctors.length / doctorsPerSlide);
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % totalSlides);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
-
-  const goToSlide = (index) => {
-    setCurrentSlide(index);
-  };
-
-  const visibleDoctors = doctors.slice(
-    currentSlide * doctorsPerSlide,
-    (currentSlide + 1) * doctorsPerSlide
-  );
+  /* reset scroll when filter changes */
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = 0;
+      setProgress(0);
+    }
+  }, [activeSpec]);
 
   return (
-    <section className={styles.doctors}>
-      <div className={styles.doctorsContainer}>
-        <div className={styles.doctorsHeader}>
-          <h2 className={styles.doctorsTitle}>Наши врачи</h2>
-          <p className={styles.doctorsSubtitle}>Наши врачи - наша гордость!</p>
+    <section className={styles.section}>
+      <div className={styles.container}>
+
+        {/* ── Header ── */}
+        <div className={styles.sectionHeader}>
+          <div>
+            <h2 className={styles.title}>Наши врачи</h2>
+            <p className={styles.subtitle}>Опытные специалисты по 20+ направлениям</p>
+          </div>
+          <Link href="/doctors" className={styles.allLink}>
+            Все врачи
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </Link>
         </div>
 
-        <div className={styles.sliderWrapper}>
-          <button
-            className={`${styles.sliderButton} ${styles.sliderButtonPrev}`}
-            onClick={prevSlide}
-            aria-label="Предыдущий слайд"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          <div className={styles.doctorsGrid}>
-            {loading ? (
-              <p>Загрузка врачей...</p>
-            ) : visibleDoctors.length > 0 ? (
-              visibleDoctors.map((doctor, index) => (
-              <div
-                key={doctor.id}
-                className={styles.doctorCard}
+        {/* ── Spec tabs ── */}
+        {specs.length > 1 && (
+          <div className={styles.tabs}>
+            {specs.map((spec) => (
+              <button
+                key={spec}
+                className={`${styles.tab} ${activeSpec === spec ? styles.tabActive : ""}`}
+                onClick={() => setActiveSpec(spec)}
               >
-                <div className={styles.doctorAvatar}>
-                  <Image
-                    src={doctor.avatar_url && doctor.avatar_url !== "" ? doctor.avatar_url : "/services/doctor.png"}
-                    alt={doctor.full_name}
-                    width={143}
-                    height={169}
-                    className={styles.doctorImage}
-                  />
-                </div>
-                <h3 className={styles.doctorName}>{doctor.full_name}</h3>
-                <p className={styles.doctorPosition}>{doctor.specialization_title}</p>
+                {spec === "all" ? "Все специалисты" : spec}
+              </button>
+            ))}
+          </div>
+        )}
 
-                <Link href={`/doctors/${doctor.slug}`} className={styles.appointmentButton}>
-                  <span className={styles.buttonText}>Записаться</span>
-                  <span className={styles.buttonIcon}>
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                    >
-                      <path
-                        d="M7.5 15L12.5 10L7.5 5"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+        {/* ── Cards scroll ── */}
+        <div className={styles.grid} ref={scrollRef}>
+          {loading ? (
+            <p className={styles.empty}>Загрузка...</p>
+          ) : filtered.length > 0 ? (
+            filtered.map((doctor) => (
+              <div key={doctor.id} className={styles.card}>
+
+                {/* Photo cover */}
+                <div className={styles.photoWrap}>
+                  <Image
+                    src={doctor.avatar_url || "/services/doctor.png"}
+                    alt={doctor.full_name}
+                    fill
+                    className={styles.photo}
+                  />
+                  {doctor.experience_years && (
+                    <span className={styles.expBadge}>
+                      Стаж {doctor.experience_years} лет
+                    </span>
+                  )}
+                </div>
+
+                {/* Card body */}
+                <div className={styles.cardBody}>
+                  {doctor.specialization_title && (
+                    <span className={styles.specTag}>{doctor.specialization_title}</span>
+                  )}
+                  <h3 className={styles.name}>{doctor.full_name}</h3>
+                  {(doctor.rating != null || doctor.reviews_count != null) && (
+                    <p className={styles.rating}>
+                      <svg width="14" height="14" viewBox="0 0 24 24"
+                        fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5"
+                        strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                      {doctor.rating ?? "—"}
+                      {doctor.reviews_count != null && (
+                        <span className={styles.reviews}> · {doctor.reviews_count} отзывов</span>
+                      )}
+                    </p>
+                  )}
+                  <Link href={`/doctors/${doctor.slug}`} className={styles.bookBtn}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <path d="M16 2v4M8 2v4M3 10h18"/>
                     </svg>
-                  </span>
-                </Link>
+                    Записаться
+                  </Link>
+                </div>
+
               </div>
             ))
-            ) : (
-              <p>Врачи не найдены</p>
-            )}
-          </div>
-
-          <button
-            className={`${styles.sliderButton} ${styles.sliderButtonNext}`}
-            onClick={nextSlide}
-            aria-label="Следующий слайд"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M9 18L15 12L9 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          ) : (
+            <p className={styles.empty}>Врачи не найдены</p>
+          )}
         </div>
 
-        <div className={styles.pagination}>
-          {[...Array(totalSlides)].map((_, index) => (
-            <button
-              key={index}
-              className={`${styles.paginationDot} ${
-                index === currentSlide ? styles.paginationDotActive : ""
-              }`}
-              onClick={() => goToSlide(index)}
-              aria-label={`Перейти к слайду ${index + 1}`}
-            />
-          ))}
+        {/* ── Progress bar ── */}
+        <div className={styles.progressBar}>
+          <div className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
         </div>
 
-        <Link href="/doctors" className={styles.viewAllButton}>
-          <span className={styles.viewAllText}>ПОСМОТРЕТЬ ВСЕХ ВРАЧЕЙ</span>
-        </Link>
       </div>
     </section>
   );
