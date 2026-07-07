@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
@@ -8,851 +8,461 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import RussianDatePicker from "../../components/RussianDatePicker/RussianDatePicker";
 
-// Хук для определения мобильного устройства
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
+const ALL_SLOTS = [
+  "09:00","09:30","10:00","10:30","11:00","11:30",
+  "13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00",
+];
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  return isMobile;
-};
-
-const reviewsData = [
+const REVIEWS = [
   {
     name: "Арнау Жупарбеков",
-    text: "Отличная клиника!!! Пришел по рекомендациям друзей и знакомых, не жалею, высокое качество обслуживания! Их методика лечения отличается от других!",
+    text: "Отличная клиника! Пришел по рекомендациям друзей, не жалею — высокое качество обслуживания, методика лечения отличается от других!",
     avatar: "/arnau.png",
-    rating: 5
+    rating: 5,
   },
   {
     name: "Кайсар Калибаев",
-    text: "Я доволен! Самое лучшее место для медицинского обслуживания в Актау!!! Очень удобное расположение, посещаю после работы, персонал профессиональный, врачи опытные!!! СПАСИБО!",
+    text: "Самое лучшее место для медицинского обслуживания в Актау! Удобное расположение, персонал профессиональный, врачи опытные. Спасибо!",
     avatar: "/kaysar.png",
-    rating: 5
-  }
+    rating: 5,
+  },
 ];
 
-const DoctorDetailPage = () => {
+/* generate 7 upcoming weekdays starting from tomorrow */
+function getNextDays(count = 7) {
+  const days = [];
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  while (days.length < count) {
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) {
+      days.push(new Date(d));
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
+}
+
+const DAY_NAMES = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
+const MONTH_SHORT = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+
+/* fake free slots — deterministic per doctor+date */
+function getFakeSlots(doctorId, dateStr) {
+  const seed = (doctorId || 0) + (dateStr ? parseInt(dateStr.replace(/-/g, "")) % 100 : 0);
+  const taken = new Set();
+  let i = seed % ALL_SLOTS.length;
+  for (let k = 0; k < 5; k++) {
+    taken.add(ALL_SLOTS[i % ALL_SLOTS.length]);
+    i += 2 + (seed % 3);
+  }
+  return ALL_SLOTS.filter(s => !taken.has(s));
+}
+
+export default function DoctorDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const isMobile = useIsMobile();
-  const [selectedCertificate, setSelectedCertificate] = useState(null);
-  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [appointmentDate, setAppointmentDate] = useState("");
-  const [doctorData, setDoctorData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  // Load doctor data from database
-  useEffect(() => {
-    const fetchDoctor = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/doctors/${params.slug}`);
-        const result = await response.json();
-        
-        if (result.success && result.doctor) {
-          setDoctorData(result.doctor);
-        } else {
-          router.push("/doctors");
-        }
-      } catch (error) {
-        console.error("Error loading doctor:", error);
-        router.push("/doctors");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [doctorData, setDoctorData]             = useState(null);
+  const [loading, setLoading]                   = useState(true);
+  const [isAuthenticated, setIsAuthenticated]   = useState(false);
+  const [currentUser, setCurrentUser]           = useState(null);
+  const [showModal, setShowModal]               = useState(false);
+  const [selectedCert, setSelectedCert]         = useState(null);
+  const [isSubmitting, setIsSubmitting]         = useState(false);
+  const [appointmentDate, setAppointmentDate]   = useState("");
+  const [prefilledTime, setPrefilledTime]       = useState("");
 
-    if (params.slug) {
-      fetchDoctor();
-    }
-  }, [params.slug, router]);
+  /* day picker state */
+  const days = useMemo(() => getNextDays(7), []);
+  const [selectedDayIdx, setSelectedDayIdx]     = useState(0);
 
-  // Проверка авторизации
+  const selectedDay = days[selectedDayIdx];
+  const selectedDateStr = selectedDay
+    ? `${selectedDay.getFullYear()}-${String(selectedDay.getMonth()+1).padStart(2,"0")}-${String(selectedDay.getDate()).padStart(2,"0")}`
+    : "";
+
+  const freeSlots = useMemo(
+    () => getFakeSlots(doctorData?.id, selectedDateStr),
+    [doctorData?.id, selectedDateStr]
+  );
+
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      try {
-        const userData = JSON.parse(user);
-        setIsAuthenticated(true);
-        setCurrentUser(userData);
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
+      try { const u = JSON.parse(user); setIsAuthenticated(true); setCurrentUser(u); } catch {}
     }
   }, []);
 
-  // Закрытие попапа по ESC
   useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === "Escape") {
-        setSelectedCertificate(null);
-        setShowAppointmentModal(false);
-      }
-    };
+    if (!params.slug) return;
+    fetch(`/api/doctors/${params.slug}`)
+      .then(r => r.json())
+      .then(res => { if (res.success) setDoctorData(res.doctor); else router.push("/doctors"); })
+      .catch(() => router.push("/doctors"))
+      .finally(() => setLoading(false));
+  }, [params.slug, router]);
 
-    if (selectedCertificate || showAppointmentModal) {
-      document.addEventListener("keydown", handleEscape);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") { setShowModal(false); setSelectedCert(null); }
+    };
+    if (showModal || selectedCert) {
+      document.addEventListener("keydown", onKey);
       document.body.style.overflow = "hidden";
     }
-
     return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
     };
-  }, [selectedCertificate, showAppointmentModal]);
+  }, [showModal, selectedCert]);
 
-  const openCertificate = (certSrc) => {
-    setSelectedCertificate(certSrc);
+  const openModal = (time = "") => {
+    if (!isAuthenticated) { alert("Сперва войдите в личный кабинет"); router.push("/auth"); return; }
+    setPrefilledTime(time);
+    if (selectedDateStr) setAppointmentDate(selectedDateStr);
+    setShowModal(true);
   };
 
-  const handleAppointmentClick = () => {
-    // Проверка авторизации
-    if (!isAuthenticated) {
-      alert("Сперва войдите в личный кабинет");
-      router.push("/auth");
-      return;
-    }
-    
-    setShowAppointmentModal(true);
-  };
-
-  const handleAppointmentSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!isAuthenticated || !currentUser) {
-      alert("Сперва войдите в личный кабинет");
-      router.push("/auth");
-      return;
-    }
-
+    if (!isAuthenticated || !currentUser) { alert("Сперва войдите в личный кабинет"); return; }
     setIsSubmitting(true);
-
     try {
-      const formData = new FormData(e.target);
-      const appointmentData = {
-        userId: currentUser.id,
-        doctorSlug: params.slug,
-        doctorName: doctorData.full_name,
-        patientName: formData.get("name"),
-        patientPhone: formData.get("phone"),
-        appointmentDate: formData.get("date"),
-        appointmentTime: formData.get("time"),
-        reason: formData.get("reason") || ""
-      };
-
-      const response = await fetch("/api/appointments/create", {
+      const fd = new FormData(e.target);
+      const res = await fetch("/api/appointments/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(appointmentData)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          doctorSlug: params.slug,
+          doctorName: doctorData.full_name,
+          patientName: fd.get("name"),
+          patientPhone: fd.get("phone"),
+          appointmentDate: fd.get("date"),
+          appointmentTime: fd.get("time"),
+          reason: fd.get("reason") || "",
+        }),
       });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        alert("Заявка на запись успешно отправлена!");
-        setShowAppointmentModal(false);
+      const result = await res.json();
+      if (res.ok && result.success) {
+        alert("Заявка успешно отправлена!");
+        setShowModal(false);
         e.target.reset();
       } else {
         alert(result.error || "Ошибка при создании записи");
       }
-    } catch (error) {
-      console.error("Error creating appointment:", error);
-      alert("Произошла ошибка. Попробуйте снова.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch { alert("Произошла ошибка. Попробуйте снова."); }
+    finally { setIsSubmitting(false); }
   };
 
-  const closeCertificate = () => {
-    setSelectedCertificate(null);
-  };
+  if (loading) return <div className={styles.loading}>Загрузка...</div>;
+  if (!doctorData) return null;
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      closeCertificate();
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <p>Загрузка...</p>
-      </div>
-    );
-  }
-
-  if (!doctorData) {
-    return null;
-  }
-
-  // Responsive styles
-  const responsiveStyles = {
-    pageWrapper: {
-      minHeight: '100vh',
-      background: '#f8f9fa'
-    },
-    main: {
-      padding: isMobile ? '100px 0 40px' : '200px 0 80px',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: isMobile ? '0 15px' : '0 40px',
-      width: '100%',
-      boxSizing: 'border-box'
-    },
-    pageTitle: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '700',
-      fontSize: isMobile ? '24px' : '36px',
-      lineHeight: '1.2em',
-      letterSpacing: '0.05em',
-      color: '#0b3364',
-      textAlign: 'center',
-      margin: isMobile ? '0 0 20px 0' : '0 0 30px 0'
-    },
-    doctorCard: {
-      background: '#ffffff',
-      borderRadius: isMobile ? '12px' : '16px',
-      padding: isMobile ? '20px' : '50px 60px',
-      marginBottom: isMobile ? '30px' : '60px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-    },
-    doctorMainInfo: {
-      display: 'grid',
-      gridTemplateColumns: isMobile ? '1fr' : 'auto 1fr',
-      gap: isMobile ? '20px' : '40px',
-      alignItems: 'start',
-      textAlign: isMobile ? 'center' : 'left'
-    },
-    doctorLeftSection: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: isMobile ? '15px' : '20px',
-      alignItems: isMobile ? 'center' : 'flex-start'
-    },
-    doctorAvatar: {
-      width: isMobile ? '100px' : '120px',
-      height: isMobile ? '100px' : '135px',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      background: '#e6e4e5',
-      flexShrink: '0'
-    },
-    avatarImage: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover'
-    },
-    doctorDetails: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
-      width: '100%',
-      alignItems: isMobile ? 'center' : 'flex-start'
-    },
-    doctorName: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '700',
-      fontSize: isMobile ? '20px' : '24px',
-      lineHeight: '1.3em',
-      color: '#0c3465',
-      margin: '0'
-    },
-    doctorPosition: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '400',
-      fontSize: isMobile ? '14px' : '18px',
-      lineHeight: '1.3em',
-      letterSpacing: '0.05em',
-      color: '#000000',
-      margin: '0'
-    },
-    doctorRating: {
-      display: 'flex',
-      gap: '2px',
-      marginTop: '4px'
-    },
-    star: {
-      color: '#ffa800',
-      fontSize: isMobile ? '14px' : '16px'
-    },
-    appointmentButton: {
-      width: isMobile ? '160px' : '200px',
-      height: isMobile ? '40px' : '45px',
-      background: '#00326f',
-      border: 'none',
-      borderRadius: '25px',
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-      marginTop: '8px'
-    },
-    appointmentText: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '700',
-      fontSize: isMobile ? '12px' : '14px',
-      lineHeight: '1.2em',
-      letterSpacing: '0.05em',
-      color: '#ffffff',
-      textAlign: 'center'
-    },
-    doctorAdditionalInfo: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: isMobile ? '15px' : '20px'
-    },
-    infoBlock: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '8px'
-    },
-    infoTitle: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '700',
-      fontSize: isMobile ? '14px' : '16px',
-      lineHeight: '1.3em',
-      letterSpacing: '0.05em',
-      color: '#0c3465',
-      margin: '0'
-    },
-    infoText: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '400',
-      fontSize: isMobile ? '12px' : '14px',
-      lineHeight: '1.4em',
-      letterSpacing: '0.05em',
-      color: '#000000',
-      margin: '0'
-    },
-    directionsList: {
-      listStyle: 'none',
-      padding: '0',
-      margin: '8px 0 0 0',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '6px'
-    },
-    directionItem: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '400',
-      fontSize: isMobile ? '12px' : '14px',
-      lineHeight: '1.4em',
-      color: '#000000',
-      paddingLeft: '15px',
-      position: 'relative'
-    },
-    tagsWrapper: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: isMobile ? '6px' : '8px',
-      marginTop: '8px'
-    },
-    tag: {
-      background: '#e8f2ff',
-      border: '1px solid #0c3465',
-      borderRadius: '15px',
-      padding: isMobile ? '4px 8px' : '6px 14px',
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '500',
-      fontSize: isMobile ? '11px' : '13px',
-      color: '#0c3465',
-      whiteSpace: 'nowrap'
-    },
-    certificatesGrid: {
-      display: 'flex',
-      gap: isMobile ? '8px' : '12px',
-      marginTop: '10px',
-      flexWrap: 'wrap',
-      justifyContent: isMobile ? 'center' : 'flex-start'
-    },
-    certificateItem: {
-      width: isMobile ? '70px' : '100px',
-      height: isMobile ? '90px' : '140px',
-      borderRadius: '6px',
-      overflow: 'hidden',
-      cursor: 'pointer',
-      transition: 'transform 0.3s'
-    },
-    certificateNote: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '400',
-      fontSize: '12px',
-      lineHeight: '1.219em',
-      letterSpacing: '0.05em',
-      color: '#989898',
-      margin: '8px 0 0 0',
-      textAlign: isMobile ? 'center' : 'left'
-    },
-    reviewsCard: {
-      background: '#00326f',
-      borderRadius: isMobile ? '12px' : '16px',
-      padding: isMobile ? '20px 15px' : '39px 85px',
-      position: 'relative'
-    },
-    reviewsTitle: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '700',
-      fontSize: isMobile ? '20px' : '25px',
-      lineHeight: '1.219em',
-      letterSpacing: '0.05em',
-      color: '#ffffff',
-      margin: isMobile ? '0 0 15px 0' : '0 0 24px 0',
-      textAlign: isMobile ? 'center' : 'left'
-    },
-    reviewsContent: {
-      display: 'flex',
-      flexDirection: isMobile ? 'column' : 'row',
-      gap: isMobile ? '20px' : '45px',
-      alignItems: 'flex-start'
-    },
-    videoContainer: {
-      width: isMobile ? '100%' : '504px',
-      height: isMobile ? '200px' : '308px',
-      flexShrink: '0',
-      borderRadius: '5px',
-      overflow: 'hidden',
-      background: '#000'
-    },
-    reviewsGrid: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px',
-      flex: '1'
-    },
-    reviewItem: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px',
-      padding: isMobile ? '12px' : '0'
-    },
-    reviewHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: isMobile ? '10px' : '8px'
-    },
-    reviewAvatar: {
-      width: isMobile ? '40px' : '50px',
-      height: isMobile ? '40px' : '50px',
-      borderRadius: '30px',
-      overflow: 'hidden',
-      flexShrink: '0'
-    },
-    reviewName: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '600',
-      fontSize: isMobile ? '14px' : '20px',
-      lineHeight: '1.219',
-      letterSpacing: '0.05em',
-      color: '#ffffff',
-      margin: '0'
-    },
-    reviewStar: {
-      color: '#ffa800',
-      fontSize: isMobile ? '12px' : '19px'
-    },
-    reviewText: {
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      fontWeight: '400',
-      fontSize: isMobile ? '12px' : '15px',
-      lineHeight: '1.4em',
-      letterSpacing: '0.05em',
-      color: '#ffffff',
-      fontStyle: 'italic',
-      margin: '0'
-    }
-  };
+  const rating = Math.max(1, Math.min(5, Math.round(doctorData.rating || 5)));
+  const exp = doctorData.experience_years || doctorData.experience || "—";
+  const certs = (doctorData.certificates || []).filter(c => c?.url);
+  const directions = doctorData.directions || [];
+  const treatmentTags = doctorData.treatmentTags || [];
 
   return (
-    <div className={styles.pageWrapper} style={responsiveStyles.pageWrapper}>
-      <Header 
-        navItems={["Записаться на прием", "Выбрать врача", "О клинике", "Личный кабинет"]}
-        showAccountButton={false}
-        fixed={true}
-        onAppointmentClick={handleAppointmentClick}
-      />
+    <div className={styles.page}>
+      <Header fixed={true} showAccountButton={true} />
 
-      {/* Main Content */}
-      <main className={styles.main} style={responsiveStyles.main}>
-        <div className={styles.container} style={responsiveStyles.container}>
-          {/* Page Title */}
-          <h1 className={styles.pageTitle} style={responsiveStyles.pageTitle}>Подробнее о враче</h1>
+      {/* ── Hero ── */}
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroPhoto}>
+            <Image
+              src={doctorData.avatar_url || "/doctor-female.jpg"}
+              alt={doctorData.full_name}
+              fill
+              className={styles.heroPhotoImg}
+              sizes="(max-width: 768px) 100vw, 280px"
+            />
+          </div>
 
-          {/* Doctor Info Card */}
-          <div className={styles.doctorCard} style={responsiveStyles.doctorCard}>
-            <div className={styles.doctorMainInfo} style={responsiveStyles.doctorMainInfo}>
-              <div className={styles.doctorLeftSection} style={responsiveStyles.doctorLeftSection}>
-                <div className={styles.doctorAvatar} style={responsiveStyles.doctorAvatar}>
-                  <Image
-                    src={doctorData.avatar_url && doctorData.avatar_url !== "" ? doctorData.avatar_url : "/doctor-female.jpg"}
-                    alt={doctorData.full_name}
-                    width={129}
-                    height={145}
-                    className={styles.avatarImage}
-                    style={responsiveStyles.avatarImage}
-                  />
-                </div>
+          <div className={styles.heroInfo}>
+            <p className={styles.heroEyebrow}>Специалист клиники</p>
+            <h1 className={styles.heroName}>{doctorData.full_name}</h1>
+            <p className={styles.heroSpec}>{doctorData.specialization_title}</p>
 
-                <div className={styles.doctorDetails} style={responsiveStyles.doctorDetails}>
-                  <h2 className={styles.doctorName} style={responsiveStyles.doctorName}>{doctorData.full_name}</h2>
-                  <p className={styles.doctorPosition} style={responsiveStyles.doctorPosition}>{doctorData.specialization_title}</p>
-
-                  <div className={styles.doctorRating} style={responsiveStyles.doctorRating}>
-                    {[...Array(Math.max(1, Math.min(5, Math.floor(doctorData.rating || 5))))].map((_, i) => (
-                      <span key={i} className={styles.star} style={responsiveStyles.star}>★</span>
-                    ))}
-                  </div>
-
-                  <button className={styles.appointmentButton} style={responsiveStyles.appointmentButton} onClick={handleAppointmentClick}>
-                    <span className={styles.appointmentText} style={responsiveStyles.appointmentText}>Записаться на прием</span>
-                  </button>
-                </div>
+            <div className={styles.heroRating}>
+              <div className={styles.stars}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className={i < rating ? styles.star : styles.starEmpty}>★</span>
+                ))}
               </div>
+              <span className={styles.ratingText}>{rating}.0 / 5.0</span>
+            </div>
 
-              <div className={styles.doctorAdditionalInfo} style={responsiveStyles.doctorAdditionalInfo}>
-                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Образование</h3>
-                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.education_text || "Информация отсутствует"}</p>
-                </div>
+            <div className={styles.heroStats}>
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatNum}>{exp}+</span>
+                <span className={styles.heroStatLabel}>лет опыта</span>
+              </div>
+              <div className={styles.heroStatDivider} />
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatNum}>{directions.length || "—"}</span>
+                <span className={styles.heroStatLabel}>направлений</span>
+              </div>
+              <div className={styles.heroStatDivider} />
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatNum}>100%</span>
+                <span className={styles.heroStatLabel}>лицензировано</span>
+              </div>
+            </div>
 
-                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Стаж</h3>
-                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.experience_years ? `${doctorData.experience_years}+ лет опыта` : "Информация отсутствует"}</p>
-                </div>
+            <button className={styles.heroBtn} onClick={() => openModal()}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+              Записаться на приём
+            </button>
+          </div>
+        </div>
+      </section>
 
-                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Время приема</h3>
-                  <p className={styles.infoText} style={responsiveStyles.infoText}>{doctorData.workingHours}</p>
-                </div>
+      {/* ── Main ── */}
+      <main className={styles.main}>
+        <div className={styles.container}>
 
-                <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                  <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Направления</h3>
-                  <ul className={styles.directionsList} style={responsiveStyles.directionsList}>
-                    {doctorData.directions.map((direction, index) => (
-                      <li key={index} className={styles.directionItem} style={responsiveStyles.directionItem}>{direction}</li>
-                    ))}
-                  </ul>
-                </div>
+          {/* Top info cards */}
+          <div className={styles.infoGrid}>
+            {/* Education */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+              </div>
+              <p className={styles.infoCardTitle}>Образование</p>
+              <p className={styles.infoCardText}>{doctorData.education_text || "Высшее медицинское образование"}</p>
+            </div>
 
-                {doctorData.treatmentTags && doctorData.treatmentTags.length > 0 && (
-                  <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                    <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Специализация по заболеваниям</h3>
-                    <div className={styles.tagsWrapper} style={responsiveStyles.tagsWrapper}>
-                      {doctorData.treatmentTags.map((tag, index) => (
-                        <span key={index} className={styles.tag} style={responsiveStyles.tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            {/* Working hours */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <p className={styles.infoCardTitle}>Время приёма</p>
+              <p className={styles.infoCardText}>{doctorData.workingHours || "Пн–Пт: 09:00–17:00"}</p>
+            </div>
 
-                {doctorData.certificates && doctorData.certificates.filter(cert => cert && cert.url && cert.url !== "").length > 0 && (
-                  <div className={styles.infoBlock} style={responsiveStyles.infoBlock}>
-                    <h3 className={styles.infoTitle} style={responsiveStyles.infoTitle}>Сертификаты и лицензии</h3>
-                    <div className={styles.certificatesGrid} style={responsiveStyles.certificatesGrid}>
-                      {doctorData.certificates.filter(cert => cert && cert.url && cert.url !== "").map((cert, index) => (
-                        <div
-                          key={index}
-                          className={styles.certificateItem}
-                          style={responsiveStyles.certificateItem}
-                          onClick={() => openCertificate(cert.url)}
-                        >
-                          <Image
-                            src={cert.url}
-                            alt={cert.title || `Сертификат ${index + 1}`}
-                            width={100}
-                            height={140}
-                            className={styles.certificateImage}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <p className={styles.certificateNote} style={responsiveStyles.certificateNote}>
-                      Нажмите на сертификат чтобы увидеть подробнее
-                    </p>
-                  </div>
-                )}
+            {/* Quick slots */}
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 11l2 2 4-4"/>
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+              </div>
+              <p className={styles.infoCardTitle}>Свободно завтра</p>
+              <div className={styles.slotsList}>
+                {freeSlots.slice(0, 5).map(s => (
+                  <button key={s} className={styles.slotChip} onClick={() => openModal(s)}>{s}</button>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <div className={styles.reviewsCard} style={responsiveStyles.reviewsCard}>
-            <h2 className={styles.reviewsTitle} style={responsiveStyles.reviewsTitle}>Отзывы</h2>
+          {/* Content row: directions + sidebar booking */}
+          <div className={styles.contentRow}>
+            <div>
+              {/* Directions */}
+              {directions.length > 0 && (
+                <div className={styles.sectionCard} style={{ marginBottom: 16 }}>
+                  <h2 className={styles.sectionTitle}>Направления</h2>
+                  <ul className={styles.directionsList}>
+                    {directions.map((d, i) => (
+                      <li key={i} className={styles.directionItem}>
+                        <div className={styles.directionDot} />
+                        {d}
+                      </li>
+                    ))}
+                  </ul>
 
-            <div className={styles.reviewsContent} style={responsiveStyles.reviewsContent}>
-              <div className={styles.videoContainer} style={responsiveStyles.videoContainer}>
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/4dtV3iF4MPg"
-                  title="Отзыв о клинике"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className={styles.videoIframe}
-                ></iframe>
-              </div>
-
-              <div className={styles.reviewsGrid} style={responsiveStyles.reviewsGrid}>
-                {reviewsData.map((review, index) => (
-                  <div key={index} className={styles.reviewItem} style={responsiveStyles.reviewItem}>
-                    <div className={styles.reviewHeader} style={responsiveStyles.reviewHeader}>
-                      <div className={styles.reviewAvatar} style={responsiveStyles.reviewAvatar}>
-                        <Image
-                          src={review.avatar}
-                          alt={review.name}
-                          width={50}
-                          height={50}
-                          className={styles.reviewAvatarImage}
-                        />
-                      </div>
-                      <div className={styles.reviewInfo}>
-                        <h3 className={styles.reviewName} style={responsiveStyles.reviewName}>{review.name}</h3>
-                        <div className={styles.reviewRating}>
-                          {[...Array(review.rating)].map((_, i) => (
-                            <span key={i} className={styles.reviewStar} style={responsiveStyles.reviewStar}>★</span>
-                          ))}
-                        </div>
+                  {treatmentTags.length > 0 && (
+                    <div className={styles.tagsSection}>
+                      <p className={styles.tagsSectionTitle}>Специализация по заболеваниям</p>
+                      <div className={styles.tags}>
+                        {treatmentTags.map((t, i) => (
+                          <span key={i} className={styles.tag}>{t}</span>
+                        ))}
                       </div>
                     </div>
-                    <p className={styles.reviewText} style={responsiveStyles.reviewText}>"{review.text}"</p>
+                  )}
+                </div>
+              )}
+
+              {/* Certificates */}
+              {certs.length > 0 && (
+                <div className={styles.certsCard}>
+                  <h2 className={styles.sectionTitle}>Сертификаты и лицензии</h2>
+                  <div className={styles.certsScroll}>
+                    {certs.map((cert, i) => (
+                      <div key={i} className={styles.certThumb} onClick={() => setSelectedCert(cert.url)}>
+                        <Image src={cert.url} alt={cert.title || `Сертификат ${i+1}`}
+                          fill style={{ objectFit: "cover" }} />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                  <p className={styles.certNote}>Нажмите на сертификат чтобы увидеть подробнее</p>
+                </div>
+              )}
+
+              {/* Reviews */}
+              <div className={styles.reviewsCard} style={{ marginTop: 16 }}>
+                <h2 className={styles.sectionTitle}>Отзывы пациентов</h2>
+                <div className={styles.reviewsGrid}>
+                  {REVIEWS.map((r, i) => (
+                    <div key={i} className={styles.reviewItem}>
+                      <div className={styles.reviewHeader}>
+                        <div className={styles.reviewAvatar}>
+                          <Image src={r.avatar} alt={r.name} fill style={{ objectFit: "cover", borderRadius: "50%" }} />
+                        </div>
+                        <div>
+                          <p className={styles.reviewName}>{r.name}</p>
+                          <div className={styles.reviewStars}>
+                            {[...Array(r.rating)].map((_, j) => (
+                              <span key={j} className={styles.reviewStar}>★</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <p className={styles.reviewText}>"{r.text}"</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar booking card with day picker */}
+            <div>
+              <div className={styles.bookCard}>
+                <h3 className={styles.bookCardTitle}>Записаться онлайн</h3>
+                <p className={styles.bookCardSub}>Выберите удобный день и время</p>
+
+                {/* Day picker */}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {days.map((d, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedDayIdx(i)}
+                      style={{
+                        flex: "0 0 calc(25% - 5px)",
+                        background: selectedDayIdx === i ? "#fff" : "rgba(255,255,255,0.12)",
+                        color: selectedDayIdx === i ? "#0c3465" : "rgba(255,255,255,0.8)",
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "6px 4px",
+                        cursor: "pointer",
+                        fontFamily: "var(--font-montserrat), sans-serif",
+                        fontWeight: 700,
+                        fontSize: 11,
+                        textAlign: "center",
+                        lineHeight: 1.4,
+                        transition: "background 0.15s, color 0.15s",
+                      }}
+                    >
+                      <div>{DAY_NAMES[d.getDay()]}</div>
+                      <div>{d.getDate()} {MONTH_SHORT[d.getMonth()]}</div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.bookCardDivider} />
+
+                {/* Slots for selected day */}
+                <div className={styles.bookCardSlots}>
+                  <span className={styles.bookCardSlotsLabel}>
+                    Свободные окошки — {selectedDay.getDate()} {MONTH_SHORT[selectedDay.getMonth()]}
+                  </span>
+                  {freeSlots.length > 0 ? (
+                    <div className={styles.bookCardSlotsRow}>
+                      {freeSlots.map(s => (
+                        <button key={s} className={styles.bookCardSlot} onClick={() => openModal(s)}>{s}</button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontFamily: "var(--font-montserrat), sans-serif", fontSize: 13, color: "rgba(255,255,255,0.5)", margin: 0 }}>
+                      Нет свободных мест
+                    </p>
+                  )}
+                </div>
+
+                <div className={styles.bookCardDivider} />
+
+                <button className={styles.bookBtn} onClick={() => openModal()}>
+                  Записаться на приём
+                </button>
+
+                <div className={styles.bookCardContact}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)"
+                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 4.08 4.18 2 2 0 0 1 6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L10.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 24 16z"/>
+                  </svg>
+                  <div>
+                    <p className={styles.bookCardContactText}>Или позвоните нам</p>
+                    <a href="tel:+77023012796" className={styles.bookCardPhone}>+7 702 301-27-96</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Certificate Popup */}
-      {selectedCertificate && (
-        <div
-          className={styles.popupOverlay}
-          onClick={handleBackdropClick}
-        >
-          <div className={styles.popupContent}>
-            <button
-              className={styles.popupClose}
-              onClick={closeCertificate}
-              aria-label="Закрыть"
-            >
+      {/* Certificate popup */}
+      {selectedCert && (
+        <div className={styles.popupOverlay} onClick={() => setSelectedCert(null)}>
+          <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
+            <button className={styles.popupClose} onClick={() => setSelectedCert(null)}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 6L6 18M6 6L18 18"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path d="M18 6L6 18M6 6L18 18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </button>
-            <div className={styles.popupImageContainer}>
-              <Image
-                src={selectedCertificate}
-                alt="Сертификат"
-                width={800}
-                height={1200}
-                className={styles.popupImage}
-                unoptimized
-              />
-            </div>
+            <Image src={selectedCert} alt="Сертификат" width={600} height={900}
+              className={styles.popupImage} unoptimized />
           </div>
         </div>
       )}
 
-      {/* Модальное окно записи на прием */}
-      {showAppointmentModal && (
-        <div 
-          className={styles.modal} 
-          onClick={() => setShowAppointmentModal(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999
-          }}
-        >
-          <div 
-            className={styles.modalContent} 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: isMobile ? '25px 20px' : '50px',
-              maxWidth: isMobile ? '95%' : '650px',
-              width: '95%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              position: 'relative',
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
-            }}
-          >
-            <button 
-              className={styles.modalClose} 
-              onClick={() => setShowAppointmentModal(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '25px',
-                background: 'none',
-                border: 'none',
-                fontSize: '28px',
-                cursor: 'pointer',
-                color: '#666',
-                width: '35px',
-                height: '35px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >×</button>
-            <h2 
-              className={styles.modalTitle}
-              style={{
-                fontFamily: 'var(--font-montserrat), sans-serif',
-                fontWeight: '700',
-                fontSize: isMobile ? '22px' : '28px',
-                color: '#0c3465',
-                margin: '0 0 15px 0',
-                textAlign: 'center'
-              }}
-            >Записаться на прием</h2>
-            <p 
-              className={styles.modalDoctor}
-              style={{
-                fontFamily: 'var(--font-montserrat), sans-serif',
-                fontWeight: '600',
-                fontSize: isMobile ? '14px' : '18px',
-                color: '#666',
-                margin: '0 0 35px 0',
-                textAlign: 'center'
-              }}
-            >Врач: {doctorData.name}</p>
-            <form onSubmit={handleAppointmentSubmit} className={styles.appointmentForm} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <input 
-                type="text" 
-                name="name"
-                placeholder="Ваше ФИО" 
-                className={styles.formInput}
-                style={{
-                  width: '100%',
-                  padding: '14px 18px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontFamily: 'var(--font-montserrat), sans-serif',
-                  boxSizing: 'border-box'
-                }}
-                required 
-                disabled={isSubmitting}
-              />
-              <input 
-                type="tel" 
-                name="phone"
-                placeholder="Телефон" 
-                className={styles.formInput}
-                style={{
-                  width: '100%',
-                  padding: '14px 18px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontFamily: 'var(--font-montserrat), sans-serif',
-                  boxSizing: 'border-box'
-                }}
-                required 
-                disabled={isSubmitting}
-              />
-              <RussianDatePicker 
-                name="date"
-                value={appointmentDate}
-                onChange={setAppointmentDate}
-                disabled={isSubmitting}
-                required
-              />
-              <select 
-                name="time"
-                className={styles.formInput}
-                style={{
-                  width: '100%',
-                  padding: '14px 18px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontFamily: 'var(--font-montserrat), sans-serif',
-                  boxSizing: 'border-box',
-                  background: 'white'
-                }}
-                required
-                disabled={isSubmitting}
-              >
+      {/* Appointment modal */}
+      {showModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setShowModal(false)}>×</button>
+            <h2 className={styles.modalTitle}>Записаться на приём</h2>
+            <p className={styles.modalDoctor}>Врач: {doctorData.full_name}</p>
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <input className={styles.formInput} type="text" name="name"
+                placeholder="Ваше ФИО" required disabled={isSubmitting} />
+              <input className={styles.formInput} type="tel" name="phone"
+                placeholder="Телефон" required disabled={isSubmitting} />
+              <RussianDatePicker name="date" value={appointmentDate}
+                onChange={setAppointmentDate} disabled={isSubmitting} required />
+              <select className={styles.formSelect} name="time" required disabled={isSubmitting}
+                defaultValue={prefilledTime}>
                 <option value="">Выберите время</option>
-                <option value="09:00">09:00</option>
-                <option value="10:00">10:00</option>
-                <option value="11:00">11:00</option>
-                <option value="14:00">14:00</option>
-                <option value="15:00">15:00</option>
-                <option value="16:00">16:00</option>
+                {ALL_SLOTS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
-              <textarea 
-                name="reason"
-                placeholder="Причина обращения (необязательно)" 
-                className={styles.formTextarea}
-                style={{
-                  width: '100%',
-                  padding: '14px 18px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontFamily: 'var(--font-montserrat), sans-serif',
-                  boxSizing: 'border-box',
-                  minHeight: '100px',
-                  resize: 'vertical'
-                }}
-                disabled={isSubmitting}
-              ></textarea>
-              <button 
-                type="submit" 
-                className={styles.formSubmit}
-                style={{
-                  background: '#0c3465',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '70px',
-                  padding: '16px 35px',
-                  fontFamily: 'var(--font-montserrat), sans-serif',
-                  fontWeight: '600',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s'
-                }}
-                disabled={isSubmitting}
-              >
+              <textarea className={styles.formTextarea} name="reason"
+                placeholder="Причина обращения (необязательно)" disabled={isSubmitting} />
+              <button type="submit" className={styles.formSubmit} disabled={isSubmitting}>
                 {isSubmitting ? "Отправка..." : "Записаться"}
               </button>
             </form>
@@ -861,6 +471,4 @@ const DoctorDetailPage = () => {
       )}
     </div>
   );
-};
-
-export default DoctorDetailPage;
+}

@@ -38,6 +38,19 @@ const DoctorsPage = () => {
   const [visible, setVisible]                       = useState(false);
   const gridRef = useRef(null);
 
+  const ALL_SLOTS = ["09:00","09:30","10:00","10:30","11:00","11:30",
+    "12:00","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00"];
+
+  const getFakeSlots = (seed) => {
+    const picked = [];
+    let idx = seed % ALL_SLOTS.length;
+    while (picked.length < 3) {
+      picked.push(ALL_SLOTS[idx % ALL_SLOTS.length]);
+      idx += 3;
+    }
+    return picked;
+  };
+
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
@@ -260,6 +273,14 @@ const DoctorsPage = () => {
                     {doctor.experience && (
                       <span className={styles.expBadge}>Стаж {doctor.experience} лет</span>
                     )}
+                    <div className={styles.slotsWrap}>
+                      <span className={styles.slotsLabel}>Свободно завтра</span>
+                      <div className={styles.slots}>
+                        {getFakeSlots(i).map(slot => (
+                          <span key={slot} className={styles.slot}>{slot}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   <div className={styles.cardFooter}>
                     <button
