@@ -218,6 +218,58 @@
   color: #1e3a8a;
 }
 
+/* ── Link step (шаг привязки к SADAP) ── */
+.linkIcon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.linkDesc {
+  font-size: 14px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.skipButton {
+  display: block;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  margin: 16px auto 0;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.skipButton:hover {
+  color: #64748b;
+}
+
+.skipLink {
+  display: block;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 16px;
+  padding: 8px;
+  transition: color 0.2s;
+  width: 100%;
+}
+
+.skipLink:hover {
+  color: #64748b;
+}
+
 .error {
   background: #fef2f2;
   border: 1px solid #fecaca;

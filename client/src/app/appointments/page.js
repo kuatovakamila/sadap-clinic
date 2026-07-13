@@ -1,327 +1,292 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./page.module.css";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import styles from "./page.module.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import { supabase } from "@/lib/supabase";
 
+const IcoProfile   = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>;
+const IcoCalendar  = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
+const IcoClipboard = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>;
+const IcoCard      = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>;
+
+function formatDate(ds) {
+  if (!ds) return "—";
+  const [y, m, d] = (ds.split("T")[0]).split("-");
+  const months = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function doctorInitials(name = "") {
+  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "Dr";
+}
+
+function formatTime(t) {
+  if (!t) return "—";
+  return /^\d{1,2}:\d{2}/.test(t) ? t.slice(0, 5) : "—";
+}
+
+// Deterministic color from doctor name for initials avatar
+const AVATAR_COLORS = ["#1e4d8c","#0c3465","#2563a6","#3b6fa0","#154c79","#1a5276","#2e4057"];
+function avatarColor(name = "") {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+const STATUS_LABEL = { pending:"Ожидается", confirmed:"Подтверждено", completed:"Завершено", cancelled:"Отменено" };
+const STATUS_TABS  = [
+  { key: "all",       label: "Все" },
+  { key: "active",    label: "Активные" },
+  { key: "completed", label: "Завершённые" },
+  { key: "cancelled", label: "Отменённые" },
+];
+
+function filterAppt(a, key) {
+  if (key === "active")    return a.status === "pending" || a.status === "confirmed";
+  if (key === "completed") return a.status === "completed";
+  if (key === "cancelled") return a.status === "cancelled";
+  return true;
+}
+
 const AppointmentsPage = () => {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [appointments, setAppointments] = useState([]);
+
+  const [user, setUser]     = useState(null);
+  const [sadapPatientId, setSadapPatientId] = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [appointments, setAppointments]               = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [cancelling, setCancelling] = useState(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    (async () => {
       try {
-        // First check localStorage for custom auth
-        const storedUser = localStorage.getItem("user");
-        
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          
-          // Get profile from database using user id
-          const { data: profileData } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", userData.id)
-            .single();
+        const stored = localStorage.getItem("user");
+        let userData = null;
+        let profileData = null;
 
-          setProfile(profileData || userData);
-          setLoading(false);
-          
-          // Fetch appointments for this user
-          await fetchAppointments(userData.id);
-          return;
+        if (stored) {
+          userData = JSON.parse(stored);
+        } else {
+          const { data: { user: u } } = await supabase.auth.getUser();
+          if (!u) { router.push("/auth"); return; }
+          userData = u;
         }
+        setUser(userData);
 
-        // Fallback to Supabase auth
-        const { data: { user: supaUser } } = await supabase.auth.getUser();
-        
-        if (!supaUser) {
-          router.push("/auth");
-          return;
-        }
+        const { data: pd } = await supabase
+          .from("profiles").select("*").eq("id", userData.id).single();
+        profileData = pd || userData;
 
-        setUser(supaUser);
-
-        // Get profile from database
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", supaUser.id)
-          .single();
-
-        setProfile(profileData);
-        
-        // Fetch appointments for this user
-        await fetchAppointments(supaUser.id);
-      } catch (error) {
-        console.error("Auth error:", error);
+        const pid = profileData?.sadap_patient_id || userData.sadap_patient_id || null;
+        setSadapPatientId(pid);
+        await fetchAppointments(pid);
+      } catch {
         router.push("/auth");
       } finally {
         setLoading(false);
       }
-    };
-
-    checkAuth();
+    })();
   }, [router]);
 
-  const fetchAppointments = async (userId) => {
+  const fetchAppointments = async (pid) => {
     try {
       setLoadingAppointments(true);
-      const response = await fetch(`/api/appointments/get?userId=${userId}`);
-      const result = await response.json();
-      
-      if (result.success) {
-        setAppointments(result.appointments || []);
-      }
-    } catch (error) {
-      console.error("Error loading appointments:", error);
+      if (!pid) { setAppointments([]); return; }
+      const res  = await fetch(`/api/appointments/get?sadap_patient_id=${pid}`);
+      const data = await res.json();
+      if (data.success) setAppointments(data.appointments || []);
+    } catch {}
+    finally { setLoadingAppointments(false); }
+  };
+
+  const handleCancel = async (appointment) => {
+    if (!confirm("Вы уверены, что хотите отменить запись?")) return;
+    setCancelling(appointment.id);
+    try {
+      await fetch(`/api/sadap/appointments/${appointment.sadap_appointment_id}/cancel`, { method: "POST" });
+      // Refresh from MIS
+      await fetchAppointments(sadapPatientId);
+    } catch {
+      alert("Не удалось отменить запись. Попробуйте ещё раз.");
     } finally {
-      setLoadingAppointments(false);
+      setCancelling(null);
     }
   };
 
-  const formatDate = (dateString) => {
-    // Extract date part and format directly without Date object
-    console.log('Raw date from API:', dateString);
-    const datePart = dateString.split('T')[0];
-    console.log('Date part:', datePart);
-    const [year, month, day] = datePart.split('-');
-    console.log('Parsed:', { year, month, day });
-    
-    const months = [
-      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-    ];
-    
-    const formatted = `${parseInt(day)} ${months[parseInt(month) - 1]} ${year} г.`;
-    console.log('Formatted date:', formatted);
-    return formatted;
-  };
-
-  const getStatusText = (status) => {
-    const statusMap = {
-      pending: "Ожидается",
-      confirmed: "Подтверждено", 
-      completed: "Завершено",
-      cancelled: "Отменено"
-    };
-    return statusMap[status] || status;
-  };
-
   const handleLogout = async () => {
-    // Clear localStorage
     localStorage.removeItem("user");
-    // Also sign out from Supabase if there's a session
     await supabase.auth.signOut();
     router.push("/");
   };
 
+  const today = new Date().toISOString().split("T")[0];
+  const filtered = appointments.filter(a => filterAppt(a, activeTab));
+
+  const sidebarItems = [
+    { label: "Профиль",  Icon: IcoProfile,   href: "/profile" },
+    { label: "Записи",   Icon: IcoCalendar,  href: "/appointments" },
+    { label: "Диагнозы", Icon: IcoClipboard, href: "/profile" },
+    { label: "Оплаты",   Icon: IcoCard,      href: "/profile" },
+  ];
+
   return (
     <div className={styles.pageWrapper}>
-      <Header 
-        // navItems={["Главная", "Услуги", "Врачи", "O нас"]}
-        showAccountButton={false}
-        fixed={true}
-      />
+      <Header showAccountButton={false} fixed={true} />
 
       <div className={styles.contentWrapper}>
-        {/* Sidebar */}
         <aside className={styles.sidebar}>
           <nav className={styles.sidebarNav}>
-            <Link href="/profile" className={`${styles.sidebarItem} ${pathname === "/profile" ? styles.sidebarItemActive : ""}`}>
-              <div className={styles.sidebarIcon}>
-                <img src={pathname === "/profile" ? "/profile-active.png" : "/profile.png"} alt="" />
-              </div>
-              <span className={styles.sidebarText}>Профиль</span>
-            </Link>
-
-            <Link href="/appointments" className={`${styles.sidebarItem} ${pathname === "/appointments" ? styles.sidebarItemActive : ""}`}>
-              <div className={styles.sidebarIcon}>
-                <img src={pathname === "/appointments" ? "/appointments-active.png" : "/appointments.png"} alt="" />
-              </div>
-              <span className={styles.sidebarText}>Записи</span>
-            </Link>
-
-            <Link href="#" className={styles.sidebarItem}>
-              <div className={styles.sidebarIcon}>
-                <img src="/analyzes.png" alt="" />
-              </div>
-              <span className={styles.sidebarText}>Анализы</span>
-            </Link>
-
-            <Link href="#" className={styles.sidebarItem}>
-              <div className={styles.sidebarIcon}>
-                <img src="/notes.png" alt="" />
-              </div>
-              <span className={styles.sidebarText}>Выписки</span>
-            </Link>
-
-            <Link href="#" className={styles.sidebarItem}>
-              <div className={styles.sidebarIcon}>
-                <img src="/insurance.png" alt="" />
-              </div>
-              <span className={styles.sidebarText}>Страхования</span>
-            </Link>
+            {sidebarItems.map(({ label, Icon, href }) => {
+              const active = pathname === href && !(href === "/profile" && label !== "Профиль");
+              const isAppts = label === "Записи" && pathname === "/appointments";
+              return (
+                <Link key={label} href={href}
+                  className={`${styles.sidebarItem} ${(active || isAppts) ? styles.sidebarItemActive : ""}`}>
+                  <div className={styles.sidebarIcon}><Icon a={active || isAppts} /></div>
+                  <span className={styles.sidebarText}>{label}</span>
+                </Link>
+              );
+            })}
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className={styles.mainContent}>
           <div className={styles.contentContainer}>
-            <h1 className={styles.pageTitle}>Записи</h1>
+            <h1 className={styles.pageTitle}>Мои записи</h1>
 
-            {loading ? (
+            {/* Status filter tabs */}
+            <div className={styles.filterTabs}>
+              {STATUS_TABS.map(t => (
+                <button key={t.key}
+                  className={`${styles.filterTab} ${activeTab === t.key ? styles.filterTabActive : ""}`}
+                  onClick={() => setActiveTab(t.key)}>
+                  {t.label}
+                  {t.key !== "all" && (
+                    <span className={styles.filterCount}>
+                      {appointments.filter(a => filterAppt(a, t.key)).length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {loading || loadingAppointments ? (
               <div className={styles.appointmentsLoading}>
-                <div className={styles.loadingSpinner}></div>
-                <p>Загрузка...</p>
-              </div>
-            ) : !user ? (
-              <div className={styles.noAppointments}>
-                <p>Войдите в систему, чтобы увидеть свои записи</p>
-                <Link href="/auth" className={styles.bookButton}>
-                  Войти
-                </Link>
-              </div>
-            ) : loadingAppointments ? (
-              <div className={styles.appointmentsLoading}>
-                <div className={styles.loadingSpinner}></div>
+                <div className={styles.loadingSpinner} />
                 <p>Загрузка записей...</p>
               </div>
-            ) : appointments.length === 0 ? (
+            ) : !sadapPatientId ? (
               <div className={styles.noAppointments}>
-                <p>У вас пока нет записей</p>
-                <Link href="/doctors" className={styles.bookButton}>
-                  Записаться на прием
-                </Link>
+                <p>Привяжите профиль к базе клиники, чтобы видеть свои записи</p>
+                <Link href="/profile" className={styles.bookButton}>Перейти в профиль</Link>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className={styles.noAppointments}>
+                <p>Нет записей</p>
+                <Link href="/doctors" className={styles.bookButton}>Записаться на приём</Link>
               </div>
             ) : (
-              <div className={styles.appointmentsGrid}>
-                {appointments.map((appointment) => (
-                  <div key={appointment.id} className={styles.appointmentCard}>
-                    <div className={styles.cardHeader}>
-                      <div className={styles.dateTime}>
-                        <div className={styles.date}>{formatDate(appointment.appointment_date)}</div>
-                        <div className={styles.divider}></div>
-                        <div className={styles.time}>{appointment.appointment_time}</div>
-                      </div>
-                    </div>
+              <div className={styles.gridScroll}>
+                <div className={styles.appointmentsGrid}>
+                {filtered.map(a => {
+                  const canCancel = a.status === "pending" || a.status === "confirmed";
+                  return (
+                    <div key={a.id} className={`${styles.appointmentCard} ${styles[`card_${a.status}`]}`}>
+                      <div className={styles.cardAccent} />
 
-                    <div className={styles.cardBody}>
-                      <div className={styles.doctorInfo}>
-                        <span className={styles.doctorLabel}>Врач:</span>
-                        <span className={styles.doctorName}>{appointment.doctor_name}</span>
-                      </div>
-                      {appointment.reason && (
-                        <div className={styles.reasonInfo}>
-                          <span className={styles.reasonLabel}>Причина:</span>
-                          <span className={styles.reasonText}>{appointment.reason}</span>
+                      <div className={styles.cardHeader}>
+                        <div className={styles.dateBlock}>
+                          <div className={styles.dateRow}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2"/>
+                              <path d="M16 2v4M8 2v4M3 10h18"/>
+                            </svg>
+                            <span className={styles.date}>{formatDate(a.appointment_date)}</span>
+                          </div>
+                          <div className={styles.timeRow}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <path d="M12 6v6l4 2"/>
+                            </svg>
+                            <span className={styles.time}>{formatTime(a.appointment_time)}</span>
+                          </div>
                         </div>
-                      )}
-                      <div className={styles.statusInfo}>
-                        <span className={styles.statusLabel}>Статус:</span>
-                        <span className={`${styles.statusText} ${styles[appointment.status]}`}>
-                          {getStatusText(appointment.status)}
-                        </span>
+                        <div className={`${styles.statusBadge} ${styles[a.status]}`}>
+                          {STATUS_LABEL[a.status] || a.status}
+                        </div>
+                      </div>
+
+                      <div className={styles.cardDivider} />
+
+                      <div className={styles.doctorRow}>
+                        <div
+                          className={styles.doctorAvatar}
+                          style={!a.doctor_avatar_url ? { background: avatarColor(a.doctor_name), borderColor: "transparent" } : {}}
+                        >
+                          {a.doctor_avatar_url ? (
+                            <img
+                              src={a.doctor_avatar_url}
+                              alt={a.doctor_name}
+                              className={styles.doctorAvatarImg}
+                            />
+                          ) : (
+                            <span className={styles.doctorAvatarInitials} style={{ color: "#fff" }}>
+                              {doctorInitials(a.doctor_name)}
+                            </span>
+                          )}
+                        </div>
+                        <div className={styles.doctorInfo}>
+                          <span className={styles.doctorLabel}>Лечащий врач</span>
+                          <span className={styles.doctorName}>{a.doctor_name}</span>
+                        </div>
+                      </div>
+
+                      <div className={styles.cardBody}>
+                        {a.reason && (
+                          <div className={styles.reasonBlock}>
+                            <span className={styles.reasonLabel}>Причина обращения</span>
+                            <span className={styles.reasonText}>{a.reason}</span>
+                          </div>
+                        )}
+                        {a.source === "sadap" && (
+                          <span className={styles.clinicBadge}>Из базы клиники</span>
+                        )}
+                      </div>
+
+                      <div className={styles.cardFooter}>
+                        <Link href="/doctors" className={styles.bookAgainBtn}>
+                          Записаться снова
+                        </Link>
+                        {canCancel && (
+                          <button className={styles.cancelButton}
+                            onClick={() => handleCancel(a)}
+                            disabled={cancelling === a.id}>
+                            {cancelling === a.id ? "Отмена..." : "Отменить"}
+                          </button>
+                        )}
                       </div>
                     </div>
-
-                    <div className={styles.cardFooter}>
-                      <button className={styles.detailsButton}>
-                        <span className={styles.buttonText}>Подробнее</span>
-                        <span className={styles.buttonIcon}>
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M7.5 15L12.5 10L7.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
+                </div>
               </div>
             )}
-
-            {/* <div className={styles.scrollbar}>
-              <div className={styles.scrollbarThumb}></div>
-            </div> */}
           </div>
         </main>
       </div>
 
-      {/* Custom Footer */}
-      <Footer></Footer>
-      {/* <footer className={styles.footer}>
-        <div className={styles.footerContainer}>
-          <div className={styles.footerLeft}>
-            <Image
-              src="/logo.png"
-              alt="Sadap Clinic"
-              width={149}
-              height={74}
-              className={styles.footerLogo}
-            />
-            <p className={styles.footerTagline}>Радость. Здоровье. Успех!</p>
-            <p className={styles.footerCopyright}>Все права защищены, 2024.</p>
-          </div>
-
-          <div className={styles.footerRight}>
-            <div className={styles.footerLinks}>
-              <a href="#" className={styles.footerLink}>Услуги</a>
-              <a href="#" className={styles.footerLink}>Врачи</a>
-              <a href="#" className={styles.footerLink}>Отзывы</a>
-              <a href="#" className={styles.footerLink}>О нас</a>
-            </div>
-
-            <div className={styles.footerContacts}>
-              <a href="tel:+77023012796" className={styles.contactItem}>
-                <Image
-                  src="/phone.png"
-                  alt="Phone"
-                  width={24}
-                  height={24}
-                  className={styles.contactIcon}
-                />
-                <span className={styles.contactText}>+7 702 301 2796</span>
-              </a>
-
-              <a href="https://instagram.com/sadapclinic_kz" target="_blank" rel="noopener noreferrer" className={styles.contactItem}>
-                <Image
-                  src="/instagram.png"
-                  alt="Instagram"
-                  width={24}
-                  height={24}
-                  className={styles.contactIcon}
-                />
-                <span className={styles.contactText}>@sadapclinic_kz</span>
-              </a>
-
-              <a href="mailto:support@sadapclinic.kz" className={styles.contactItem}>
-                <Image
-                  src="/mail.png"
-                  alt="Email"
-                  width={24}
-                  height={24}
-                  className={styles.contactIcon}
-                />
-                <span className={styles.contactText}>support@sadapclinic.kz</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer> */}
+      <Footer />
     </div>
   );
 };
 
 export default AppointmentsPage;
-

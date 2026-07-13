@@ -1,35 +1,29 @@
-import { supabaseAdmin } from "@/lib/supabase-server";
+import { sadapFetch } from "@/lib/sadap-api";
 import { NextResponse } from "next/server";
+import { normalize } from "../route";
 
 export async function GET(request, { params }) {
   try {
     const { slug } = await params;
 
-    const { data, error } = await supabaseAdmin
-      .from("doctors")
-      .select("*")
-      .eq("slug", slug)
-      .eq("is_published", true)
-      .single();
-
-    if (error || !data) {
-      console.error("Error fetching doctor:", error);
+    const match = slug.match(/^sadap-(\d+)$/);
+    if (!match) {
       return NextResponse.json(
         { success: false, error: "Врач не найден" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      doctor: data
-    });
+    const sadapId = Number(match[1]);
+    const raw = await sadapFetch("GET", `/public-api/doctors/${sadapId}`);
+    const sd = raw?.doctor || raw;
 
+    return NextResponse.json({ success: true, doctor: normalize(sd) });
   } catch (error) {
-    console.error("Error in get doctor:", error);
+    console.error("SADAP doctor detail error:", error.message);
     return NextResponse.json(
-      { success: false, error: "Внутренняя ошибка сервера" },
-      { status: 500 }
+      { success: false, error: "Врач не найден" },
+      { status: 404 }
     );
   }
 }

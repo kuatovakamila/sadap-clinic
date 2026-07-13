@@ -75,16 +75,12 @@ export default function DoctorDetailPage() {
   /* day picker state */
   const days = useMemo(() => getNextDays(7), []);
   const [selectedDayIdx, setSelectedDayIdx]     = useState(0);
+  const [freeSlots, setFreeSlots]               = useState([]);
 
   const selectedDay = days[selectedDayIdx];
   const selectedDateStr = selectedDay
     ? `${selectedDay.getFullYear()}-${String(selectedDay.getMonth()+1).padStart(2,"0")}-${String(selectedDay.getDate()).padStart(2,"0")}`
     : "";
-
-  const freeSlots = useMemo(
-    () => getFakeSlots(doctorData?.id, selectedDateStr),
-    [doctorData?.id, selectedDateStr]
-  );
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -101,6 +97,27 @@ export default function DoctorDetailPage() {
       .catch(() => router.push("/doctors"))
       .finally(() => setLoading(false));
   }, [params.slug, router]);
+
+  // Fetch real slots from SADAP when a date is selected and doctor has sadap_doctor_id
+  useEffect(() => {
+    if (!selectedDateStr) return;
+
+    const sadapId = doctorData?.sadap_doctor_id;
+    if (sadapId) {
+      fetch(`/api/sadap/doctors/${sadapId}/slots?date=${selectedDateStr}`)
+        .then(r => r.json())
+        .then(res => {
+          const raw = res.success && Array.isArray(res.slots) ? res.slots : null;
+          const slots = raw
+            ? raw.map(s => (typeof s === "string" ? s : s.start_time || "")).filter(Boolean)
+            : null;
+          setFreeSlots(slots ?? getFakeSlots(doctorData?.id, selectedDateStr));
+        })
+        .catch(() => setFreeSlots(getFakeSlots(doctorData?.id, selectedDateStr)));
+    } else {
+      setFreeSlots(getFakeSlots(doctorData?.id, selectedDateStr));
+    }
+  }, [selectedDateStr, doctorData?.sadap_doctor_id, doctorData?.id]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -129,19 +146,31 @@ export default function DoctorDetailPage() {
     setIsSubmitting(true);
     try {
       const fd = new FormData(e.target);
+      const appointmentTime = fd.get("time");
+
+      const body = {
+        userId: currentUser.id,
+        doctorSlug: params.slug,
+        doctorName: doctorData.full_name,
+        patientName: fd.get("name"),
+        patientPhone: fd.get("phone"),
+        appointmentDate: fd.get("date"),
+        appointmentTime,
+        reason: fd.get("reason") || "",
+      };
+
+      // Include SADAP IDs when available so the booking lands in the clinic MIS
+      if (doctorData.sadap_doctor_id) {
+        body.sadapDoctorId = doctorData.sadap_doctor_id;
+      }
+      if (currentUser.sadap_patient_id) {
+        body.sadapPatientId = currentUser.sadap_patient_id;
+      }
+
       const res = await fetch("/api/appointments/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: currentUser.id,
-          doctorSlug: params.slug,
-          doctorName: doctorData.full_name,
-          patientName: fd.get("name"),
-          patientPhone: fd.get("phone"),
-          appointmentDate: fd.get("date"),
-          appointmentTime: fd.get("time"),
-          reason: fd.get("reason") || "",
-        }),
+        body: JSON.stringify(body),
       });
       const result = await res.json();
       if (res.ok && result.success) {
@@ -172,13 +201,27 @@ export default function DoctorDetailPage() {
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroPhoto}>
-            <Image
-              src={doctorData.avatar_url || "/doctor-female.jpg"}
-              alt={doctorData.full_name}
-              fill
-              className={styles.heroPhotoImg}
-              sizes="(max-width: 768px) 100vw, 280px"
-            />
+            {doctorData.avatar_url ? (
+              <Image
+                src={doctorData.avatar_url}
+                alt={doctorData.full_name}
+                fill
+                className={styles.heroPhotoImg}
+                sizes="(max-width: 768px) 100vw, 280px"
+              />
+            ) : (
+              <div style={{
+                width: "100%", height: "100%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "#e8edf4",
+              }}>
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none"
+                  stroke="#90a4b8" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                </svg>
+              </div>
+            )}
           </div>
 
           <div className={styles.heroInfo}>
@@ -274,6 +317,31 @@ export default function DoctorDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Embedded schedule from SADAP */}
+          {doctorData.schedules?.length > 0 && (() => {
+            const DAY_RU = ["", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+            return (
+              <div className={styles.sectionCard} style={{ marginBottom: 16 }}>
+                <h2 className={styles.sectionTitle}>Расписание приёма</h2>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  {doctorData.schedules.map((item, i) => (
+                    <div key={i} style={{
+                      background: "#f0f4ff", borderRadius: 8,
+                      padding: "10px 16px", minWidth: 110, textAlign: "center",
+                    }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "#0c3465", marginBottom: 4 }}>
+                        {DAY_RU[item.day_of_week] || `День ${item.day_of_week}`}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#4b5563" }}>
+                        {item.start_time} – {item.end_time}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Content row: directions + sidebar booking */}
           <div className={styles.contentRow}>

@@ -172,16 +172,53 @@
   padding: 0 40px;
 }
 
+/* ── Slider outer (arrows + scroll wrap) ── */
+.sliderOuter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.arrowBtn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #0c3465;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(12,52,101,0.25);
+}
+
+.arrowBtn:hover {
+  background: #0a2850;
+  transform: scale(1.08);
+}
+
 /* ── Grid scroll wrapper ── */
 .gridScrollWrap {
-  width: 100%;
+  flex: 1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.gridScrollWrap::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Grid ── */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: row;
   gap: 20px;
+  width: max-content;
 }
 
 /* ── Skeleton ── */
@@ -203,6 +240,8 @@
   opacity: 0;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s, box-shadow 0.2s;
+  flex: 0 0 300px;
+  width: 300px;
 }
 
 .card:hover {
@@ -228,6 +267,15 @@
 .cardPhoto {
   object-fit: cover;
   object-position: center 15%;
+}
+
+.cardPhotoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8edf4;
 }
 
 /* ── Card body ── */
@@ -432,6 +480,131 @@
   margin: 0 0 24px;
 }
 
+/* ── Modal patient strip ── */
+.modalPatientStrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eef3fb;
+  border: 1px solid #d9e8f6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #042955;
+}
+
+.modalPatientPhone {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 12px;
+  color: #5a7494;
+}
+
+/* ── Modal slots ── */
+.modalSlotsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modalSlotsLoading {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #6b7280;
+  padding: 8px 0;
+}
+
+.modalSlotsEmpty {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.modalSlotsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modalSlotBtn {
+  padding: 8px 14px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0c3465;
+  background: #fff;
+  border: 1.5px solid #dde3ed;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modalSlotBtn:hover {
+  border-color: #0c3465;
+  background: #eef3fb;
+}
+
+.modalSlotBtnActive {
+  background: #0c3465;
+  border-color: #0c3465;
+  color: #fff;
+}
+
+/* ── Modal error ── */
+.modalError {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #dc2626;
+  margin: 0;
+}
+
+/* ── Modal success ── */
+.modalSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 4px;
+  text-align: center;
+}
+
+.modalSuccessIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.modalSuccessTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #042955;
+  margin: 0;
+}
+
+.modalSuccessText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 340px;
+}
+
 .appointmentForm {
   display: flex;
   flex-direction: column;
@@ -478,7 +651,12 @@
   font-family: var(--font-montserrat), sans-serif;
 }
 
-.formSubmit:hover { background: #0a2850; }
+.formSubmit:hover:not(:disabled) { background: #0a2850; }
+
+.formSubmit:disabled {
+  background: #9cb3cc;
+  cursor: not-allowed;
+}
 
 .filterForm {
   display: flex;
@@ -498,7 +676,6 @@
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
   .heroTitle { font-size: 38px; }
 }
 
@@ -516,20 +693,9 @@
   .chip { flex-shrink: 0; }
   .main { padding: 32px 0 56px; }
   .container { padding: 0; }
-  .gridScrollWrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 4px 20px 16px;
-  }
-  .gridScrollWrap::-webkit-scrollbar { display: none; }
-  .grid {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 14px;
-    width: max-content;
-  }
-  .card { flex: 0 0 72vw; }
+  .sliderOuter { gap: 8px; }
+  .arrowBtn { width: 36px; height: 36px; }
+  .card { flex: 0 0 72vw; width: 72vw; }
   .cardPhotoWrap { height: 260px; }
   .cardBody { padding: 14px 14px 4px; }
   .cardFooter { padding: 12px 14px 16px; }

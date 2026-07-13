@@ -98,12 +98,23 @@ const Doctors = () => {
 
                 {/* Photo cover */}
                 <div className={styles.photoWrap}>
-                  <Image
-                    src={doctor.avatar_url || "/services/doctor.png"}
-                    alt={doctor.full_name}
-                    fill
-                    className={styles.photo}
-                  />
+                  {doctor.avatar_url ? (
+                    <Image
+                      src={doctor.avatar_url}
+                      alt={doctor.full_name}
+                      fill
+                      className={styles.photo}
+                    />
+                  ) : (
+                    <div className={styles.photoPlaceholder}>
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                        stroke="#b0bdd6" strokeWidth="1.2"
+                        strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                      </svg>
+                    </div>
+                  )}
                   {doctor.experience_years && (
                     <span className={styles.expBadge}>
                       Стаж {doctor.experience_years} лет

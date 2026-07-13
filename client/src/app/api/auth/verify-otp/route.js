@@ -104,13 +104,13 @@ export async function POST(request) {
     global.otpStore.delete(cleanPhone);
 
     let user;
+    let is_new = false;
 
     // First, try to find existing user
     user = await findUserByPhone(cleanPhone);
 
     if (user) {
-      console.log("Found existing user:", user.id);
-      // User exists - update profile if needed
+      // User exists — update profile name if this was a registration attempt
       if (storedData.fullName) {
         await supabaseAdmin.from("profiles").upsert({
           id: user.id,
@@ -119,52 +119,26 @@ export async function POST(request) {
           updated_at: new Date().toISOString(),
         });
       }
-      
-      // Fetch the profile data
-      const { data: profileData } = await supabaseAdmin
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      
-      if (profileData) {
-        console.log("Profile data found:", profileData);
-      }
     } else {
-      console.log("Creating new user for phone:", cleanPhone);
-      // Try to create new user
+      is_new = true;
+      // Create new user
       const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
         phone: cleanPhone,
         phone_confirm: true,
-        user_metadata: {
-          full_name: storedData.fullName || "",
-        },
+        user_metadata: { full_name: storedData.fullName || "" },
       });
 
       if (createError) {
-        console.error("Create user error:", createError);
-        
-        // If phone already exists, try to find the user again
         if (createError.code === "phone_exists") {
-          console.log("Phone exists, searching for user again...");
-          // Wait a moment and retry finding the user
           await new Promise(resolve => setTimeout(resolve, 500));
           user = await findUserByPhone(cleanPhone);
-          
-          if (user) {
-            console.log("Found user after phone_exists error:", user.id);
-            // Continue to return success below
-          } else {
-            // Last resort: list all users and log them for debugging
-            const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 100 });
-            console.log("All users phones:", allUsers?.users?.map(u => u.phone));
-            console.log("Looking for:", cleanPhone);
-            
+          if (!user) {
             return NextResponse.json(
               { error: "Ошибка аутентификации. Обратитесь в поддержку." },
               { status: 500 }
             );
           }
+          is_new = false;
         } else {
           return NextResponse.json(
             { error: "Ошибка создания пользователя" },
@@ -173,9 +147,6 @@ export async function POST(request) {
         }
       } else {
         user = newUserData.user;
-        console.log("Created new user:", user.id);
-
-        // Create profile for new user
         await supabaseAdmin.from("profiles").upsert({
           id: user.id,
           phone: cleanPhone,
@@ -185,36 +156,47 @@ export async function POST(request) {
       }
     }
 
-    // Always fetch the latest profile data from database
-    const { data: profileData, error: profileError } = await supabaseAdmin
+    // Fetch latest profile (includes sadap_patient_id)
+    let { data: profileData } = await supabaseAdmin
       .from("profiles")
       .select("*")
-      .eq("phone", cleanPhone)
+      .eq("id", user.id)
       .single();
 
-    if (profileError || !profileData) {
-      console.error("Error fetching profile:", profileError);
-      // Fallback to basic user data
+    // Profile row missing — create it so future updates (sadap link) land correctly
+    if (!profileData) {
+      await supabaseAdmin.from("profiles").upsert({
+        id:         user.id,
+        phone:      cleanPhone,
+        full_name:  user.user_metadata?.full_name || storedData.fullName || "",
+        updated_at: new Date().toISOString(),
+      });
+      const { data: fresh } = await supabaseAdmin
+        .from("profiles").select("*").eq("id", user.id).single();
+      profileData = fresh;
+    }
+
+    if (!profileData) {
       return NextResponse.json({
         success: true,
-        message: "Вход выполнен успешно!",
+        is_new,
         user: {
           id: user.id,
           phone: cleanPhone,
           full_name: user.user_metadata?.full_name || storedData.fullName || "",
+          sadap_patient_id: null,
         },
       });
     }
 
-    console.log("Returning user with profile ID:", profileData.id);
-
     return NextResponse.json({
       success: true,
-      message: "Вход выполнен успешно!",
+      is_new,
       user: {
         id: profileData.id,
-        phone: profileData.phone,
-        full_name: profileData.full_name,
+        phone: profileData.phone || cleanPhone,
+        full_name: profileData.full_name || user.user_metadata?.full_name || "",
+        sadap_patient_id: profileData.sadap_patient_id || null,
       },
     });
 

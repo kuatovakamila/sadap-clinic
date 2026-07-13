@@ -1,63 +1,63 @@
-import { supabaseAdmin } from "@/lib/supabase-server";
+import { sadapFetch } from "@/lib/sadap-api";
 import { NextResponse } from "next/server";
+
+function calcEndTime(start, durationMin = 30) {
+  const [h, m] = start.split(":").map(Number);
+  const total = h * 60 + m + durationMin;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { 
-      userId, 
-      doctorSlug, 
-      doctorName, 
-      patientName, 
-      patientPhone, 
-      appointmentDate, 
-      appointmentTime, 
-      reason 
+    const {
+      sadapDoctorId,
+      sadapPatientId,
+      patientName,
+      patientPhone,
+      appointmentDate,
+      appointmentTime,
+      endTime,
+      serviceId,
+      serviceDuration,
+      reason,
     } = body;
 
-    // Validate required fields
-    if (!userId || !doctorSlug || !doctorName || !patientName || !patientPhone || !appointmentDate || !appointmentTime) {
+    if (!sadapDoctorId || !appointmentDate || !appointmentTime) {
       return NextResponse.json(
-        { error: "Все поля обязательны для заполнения" },
+        { error: "doctor_id, date и start_time обязательны" },
         { status: 400 }
       );
     }
 
-    // Create appointment in database
-    const { data, error } = await supabaseAdmin
-      .from("appointments")
-      .insert({
-        user_id: userId,
-        doctor_slug: doctorSlug,
-        doctor_name: doctorName,
-        patient_name: patientName,
-        patient_phone: patientPhone,
-        appointment_date: appointmentDate,
-        appointment_time: appointmentTime,
-        reason: reason || "",
-        status: "pending"
-      })
-      .select()
-      .single();
+    const end = endTime || calcEndTime(appointmentTime, serviceDuration || 30);
 
-    if (error) {
-      console.error("Error creating appointment:", error);
-      return NextResponse.json(
-        { error: "Ошибка при создании записи" },
-        { status: 500 }
-      );
-    }
+    const payload = {
+      doctor_id:  Number(sadapDoctorId),
+      date:       appointmentDate,
+      start_time: appointmentTime,
+      end_time:   end,
+    };
 
-    return NextResponse.json({ 
-      success: true, 
-      appointment: data 
+    if (sadapPatientId) payload.patient_id    = Number(sadapPatientId);
+    if (patientName)    payload.patient_name  = patientName;
+    if (patientPhone)   payload.patient_phone = patientPhone;
+    if (serviceId)      payload.service_id    = Number(serviceId);
+    if (reason)         payload.notes         = reason;
+
+    const result = await sadapFetch("POST", "/public-api/appointments", payload);
+
+    const appointmentId = result?.id || result?.appointment_id;
+
+    return NextResponse.json({
+      success: true,
+      appointment_id: appointmentId,
+      appointment: result,
     });
-
   } catch (error) {
-    console.error("Error in create appointment:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" },
-      { status: 500 }
+      { error: error.body?.message || error.body?.error || "Ошибка создания записи" },
+      { status: error.status || 500 }
     );
   }
 }

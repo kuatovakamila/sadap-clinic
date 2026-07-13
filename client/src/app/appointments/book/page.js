@@ -1,266 +1,359 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import styles from "./book.module.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 
-// Separate component for the form content that uses useSearchParams
+function calcEndTime(start, durationMin = 30) {
+  const [h, m] = start.split(":").map(Number);
+  const total = h * 60 + m + durationMin;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
 const BookingFormContent = () => {
-  const router = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
-  
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const [loaded, setLoaded]   = useState(false);
+  const [user, setUser]       = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [doctorSlug, setDoctorSlug] = useState("");
-  const [doctorName, setDoctorName] = useState("");
+  const [error, setError]     = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const [doctorName, setDoctorName]         = useState("");
   const [doctorPosition, setDoctorPosition] = useState("");
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    date: "",
-    time: "",
-    reason: ""
-  });
+  const [sadapDoctorId, setSadapDoctorId]   = useState(null);
 
+  const [services, setServices]             = useState([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [selectedServiceId, setSelectedServiceId]       = useState(null);
+  const [selectedServiceDuration, setSelectedServiceDuration] = useState(30);
+  const [serviceSearch, setServiceSearch]   = useState("");
+
+  const [date, setDate]             = useState("");
+  const [slots, setSlots]           = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [reason, setReason]         = useState("");
+
+  // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Check authentication
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
-        setFormData(prev => ({
-          ...prev,
-          name: userData.full_name || userData.name || "",
-          phone: userData.phone || ""
-        }));
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        router.push("/auth");
-        return;
-      }
-    } else {
-      router.push("/auth");
-      return;
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try { setUser(JSON.parse(stored)); } catch {}
     }
 
-    // Get doctor info from URL parameters
-    const doctor = searchParams.get('doctor');
-    const doctorNameParam = searchParams.get('doctorName');
-    const doctorPositionParam = searchParams.get('doctorPosition');
-    
-    if (doctor && doctorNameParam) {
-      setDoctorSlug(doctor);
-      setDoctorName(decodeURIComponent(doctorNameParam));
-      setDoctorPosition(decodeURIComponent(doctorPositionParam || ""));
-    } else {
-      // If no doctor info, redirect to doctors page
-      router.push("/doctors");
-    }
+    const slug    = searchParams.get("doctor");
+    const name    = searchParams.get("doctorName");
+    const pos     = searchParams.get("doctorPosition");
+    const sadapId = searchParams.get("sadapDoctorId");
+
+    if (!slug || !name) { router.push("/doctors"); return; }
+    setDoctorName(decodeURIComponent(name));
+    setDoctorPosition(decodeURIComponent(pos || ""));
+    if (sadapId) setSadapDoctorId(Number(sadapId));
+
+    fetch("/api/services")
+      .then(r => r.json())
+      .then(res => { if (res.success) setServices(res.services || []); })
+      .catch(() => {})
+      .finally(() => setLoadingServices(false));
+
+    setLoaded(true);
   }, [router, searchParams]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // ── Fetch slots when date or service changes ───────────────────────────────
+  useEffect(() => {
+    if (!date || !sadapDoctorId) return;
+    setLoadingSlots(true);
+    setSlots([]);
+    setSelectedSlot(null);
+    fetch(`/api/sadap/doctors/${sadapDoctorId}/slots?date=${date}`)
+      .then(r => r.json())
+      .then(res => {
+        const raw = res.slots;
+        const normalized = Array.isArray(raw)
+          ? raw.map(s => typeof s === "string"
+              ? { start_time: s, end_time: calcEndTime(s, selectedServiceDuration) }
+              : { start_time: s.start_time || s.time, end_time: s.end_time || calcEndTime(s.start_time || s.time, selectedServiceDuration) }
+            ).filter(s => s.start_time)
+          : [];
+        setSlots(normalized);
+      })
+      .catch(() => setSlots([]))
+      .finally(() => setLoadingSlots(false));
+  }, [date, sadapDoctorId, selectedServiceDuration]);
 
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!isAuthenticated || !user) {
-      alert("Сперва войдите в личный кабинет");
-      router.push("/auth");
-      return;
-    }
-
+    setError("");
+    if (!sadapDoctorId) { setError("Врач не найден в системе клиники"); return; }
+    if (!selectedSlot)  { setError("Выберите время приёма"); return; }
     setIsSubmitting(true);
-
     try {
-      const appointmentData = {
-        userId: user.id,
-        doctorSlug: doctorSlug,
-        doctorName: doctorName,
-        patientName: formData.name,
-        patientPhone: formData.phone,
-        appointmentDate: formData.date,
-        appointmentTime: formData.time,
-        reason: formData.reason || ""
-      };
-
-      const response = await fetch("/api/appointments/create", {
+      const res = await fetch("/api/appointments/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(appointmentData)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sadapDoctorId,
+          sadapPatientId:  user?.sadap_patient_id || null,
+          patientName:     user?.full_name || user?.name || "",
+          patientPhone:    user?.phone || "",
+          appointmentDate: date,
+          appointmentTime: selectedSlot.start_time,
+          endTime:         selectedSlot.end_time,
+          serviceId:       selectedServiceId || null,
+          serviceDuration: selectedServiceDuration,
+          reason:          reason || "",
+        }),
       });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        alert("Заявка на запись успешно отправлена!");
-        router.push("/appointments");
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setSuccess(true);
       } else {
-        alert(result.error || "Ошибка при создании записи");
+        setError(result.error || "Ошибка при создании записи");
       }
-    } catch (error) {
-      console.error("Error creating appointment:", error);
-      alert("Произошла ошибка. Попробуйте снова.");
+    } catch {
+      setError("Произошла ошибка. Попробуйте снова.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Generate time slots
-  const timeSlots = [];
-  for (let hour = 9; hour <= 17; hour++) {
-    timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
-    if (hour < 17) {
-      timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
-    }
-  }
-
-  // Get tomorrow's date as minimum
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split('T')[0];
+  const minDate = tomorrow.toISOString().split("T")[0];
 
+  const filteredServices = services.filter(s =>
+    s.name.toLowerCase().includes(serviceSearch.toLowerCase())
+  );
+  const selectedService = services.find(s => s.id === selectedServiceId) || null;
+
+  if (!loaded) return null;
+
+  // ── Not logged in ─────────────────────────────────────────────────────────
+  if (!user) {
+    return (
+      <>
+        <button className={styles.backButton} onClick={() => router.back()}>← Назад</button>
+
+        <div className={styles.doctorInfo}>
+          <h2 className={styles.doctorName}>{doctorName}</h2>
+          {doctorPosition && <p className={styles.doctorPosition}>{doctorPosition}</p>}
+        </div>
+
+        <div className={styles.loginPrompt}>
+          <div className={styles.loginPromptIcon}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+              stroke="#0c3465" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h2 className={styles.loginPromptTitle}>Войдите в личный кабинет</h2>
+          <p className={styles.loginPromptText}>
+            Для записи на приём необходимо войти в личный кабинет.
+            Это займёт меньше минуты.
+          </p>
+          <div className={styles.loginPromptActions}>
+            <Link
+              href={`/auth?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "/doctors")}`}
+              className={styles.loginBtn}
+            >
+              Войти в кабинет
+            </Link>
+            <button className={styles.backLinkBtn} onClick={() => router.back()}>
+              Вернуться к врачу
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ── Success screen ────────────────────────────────────────────────────────
+  if (success) {
+    return (
+      <div className={styles.successCard}>
+        <div className={styles.successIcon}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+            stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+        </div>
+        <h2 className={styles.successTitle}>Запись оформлена!</h2>
+        <p className={styles.successText}>
+          Вы записались к <strong>{doctorName}</strong>
+          {selectedSlot && ` на ${date ? new Date(date).toLocaleDateString("ru-RU", { day:"numeric", month:"long" }) : ""} в ${selectedSlot.start_time}`}.
+        </p>
+        <div className={styles.successActions}>
+          <Link href="/appointments" className={styles.loginBtn}>Мои записи</Link>
+          <button className={styles.backLinkBtn} onClick={() => router.push("/doctors")}>
+            К врачам
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Logged in: booking form ───────────────────────────────────────────────
   return (
     <>
-      <div className={styles.backButton} onClick={() => router.back()}>
-        ← Назад
-      </div>
+      <button className={styles.backButton} onClick={() => router.back()}>← Назад</button>
+      <h1 className={styles.title}>Запись на приём</h1>
 
-      <h1 className={styles.title}>Запись на прием</h1>
-      
       <div className={styles.doctorInfo}>
         <h2 className={styles.doctorName}>{doctorName}</h2>
-        <p className={styles.doctorPosition}>{doctorPosition}</p>
+        {doctorPosition && <p className={styles.doctorPosition}>{doctorPosition}</p>}
+      </div>
+
+      {/* Patient info strip */}
+      <div className={styles.patientStrip}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="#0c3465" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+        <span className={styles.patientStripName}>{user.full_name || user.name || "Пациент"}</span>
+        {user.phone && <span className={styles.patientStripPhone}>{user.phone}</span>}
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
+
+        {/* ── Services ────────────────────────────────────────── */}
         <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="name">
-            Ваше имя *
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className={styles.input}
-            required
-          />
+          <label className={styles.label}>Услуга (необязательно)</label>
+          {loadingServices ? (
+            <div className={styles.servicesLoading}>Загрузка услуг...</div>
+          ) : (
+            <>
+              <div className={styles.serviceSearchWrap}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" placeholder="Поиск услуги..."
+                  value={serviceSearch} onChange={e => setServiceSearch(e.target.value)}
+                  className={styles.serviceSearch} />
+                {serviceSearch && (
+                  <button type="button" className={styles.serviceSearchClear}
+                    onClick={() => setServiceSearch("")}>×</button>
+                )}
+              </div>
+              <div className={styles.servicesList}>
+                <label className={`${styles.serviceItem} ${selectedServiceId === null ? styles.serviceItemActive : ""}`}>
+                  <input type="radio" name="service" value="" checked={selectedServiceId === null}
+                    onChange={() => { setSelectedServiceId(null); setSelectedServiceDuration(30); setSelectedSlot(null); }}
+                    className={styles.radioHidden} />
+                  <span className={styles.radioCustom} />
+                  <span className={styles.serviceName}>Не выбрано</span>
+                </label>
+                {filteredServices.map(s => (
+                  <label key={s.id}
+                    className={`${styles.serviceItem} ${selectedServiceId === s.id ? styles.serviceItemActive : ""}`}>
+                    <input type="radio" name="service" value={s.id} checked={selectedServiceId === s.id}
+                      onChange={() => {
+                        setSelectedServiceId(s.id);
+                        setSelectedServiceDuration(s.duration_minutes || 30);
+                        setSelectedSlot(null);
+                      }}
+                      className={styles.radioHidden} />
+                    <span className={styles.radioCustom} />
+                    <span className={styles.serviceName}>{s.name}</span>
+                    {s.price && (
+                      <span className={styles.servicePrice}>{Number(s.price).toLocaleString("ru-RU")} ₸</span>
+                    )}
+                  </label>
+                ))}
+                {filteredServices.length === 0 && serviceSearch && (
+                  <p className={styles.serviceEmpty}>Услуга не найдена</p>
+                )}
+              </div>
+              {selectedService && (
+                <div className={styles.selectedServiceBadge}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="#065f46" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  {selectedService.name}
+                  {selectedService.price && ` — ${Number(selectedService.price).toLocaleString("ru-RU")} ₸`}
+                </div>
+              )}
+            </>
+          )}
         </div>
 
+        {/* ── Date ──────────────────────────────────────────────── */}
         <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="phone">
-            Телефон *
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            className={styles.input}
-            placeholder="+7 (___) ___-__-__"
-            required
-          />
+          <label className={styles.label} htmlFor="date">Дата приёма *</label>
+          <input type="date" id="date" value={date}
+            onChange={e => { setDate(e.target.value); setSelectedSlot(null); }}
+            className={styles.input} min={minDate} required />
         </div>
 
-        <div className={styles.formRow}>
+        {/* ── Time slots ────────────────────────────────────────── */}
+        {date && (
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="date">
-              Дата приема *
-            </label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              className={styles.input}
-              min={minDate}
-              required
-            />
+            <label className={styles.label}>Время приёма *</label>
+            {!sadapDoctorId ? (
+              <p className={styles.slotsNote}>Врач не привязан к системе клиники</p>
+            ) : loadingSlots ? (
+              <div className={styles.slotsLoading}>
+                <div className={styles.slotsSpinner} />
+                Загрузка расписания...
+              </div>
+            ) : slots.length === 0 ? (
+              <p className={styles.slotsNote}>На выбранную дату нет доступных слотов</p>
+            ) : (
+              <div className={styles.slotsGrid}>
+                {slots.map(s => (
+                  <button key={s.start_time} type="button"
+                    className={`${styles.slotBtn} ${selectedSlot?.start_time === s.start_time ? styles.slotBtnActive : ""}`}
+                    onClick={() => setSelectedSlot(s)}>
+                    {s.start_time}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+        )}
 
-          <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="time">
-              Время приема *
-            </label>
-            <select
-              id="time"
-              name="time"
-              value={formData.time}
-              onChange={handleInputChange}
-              className={styles.select}
-              required
-            >
-              <option value="">Выберите время</option>
-              {timeSlots.map(time => (
-                <option key={time} value={time}>{time}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
+        {/* ── Reason ────────────────────────────────────────────── */}
         <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="reason">
-            Причина обращения (необязательно)
-          </label>
-          <textarea
-            id="reason"
-            name="reason"
-            value={formData.reason}
-            onChange={handleInputChange}
-            className={styles.textarea}
-            rows="4"
-            placeholder="Опишите причину вашего обращения..."
-          />
+          <label className={styles.label} htmlFor="reason">Причина обращения (необязательно)</label>
+          <textarea id="reason" value={reason}
+            onChange={e => setReason(e.target.value)}
+            className={styles.textarea} rows="3"
+            placeholder="Опишите причину вашего обращения..." />
         </div>
 
-        <button 
-          type="submit" 
-          className={styles.submitButton}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Отправка..." : "Записаться на прием"}
+        {error && <div className={styles.formError}>{error}</div>}
+
+        <button type="submit" className={styles.submitButton}
+          disabled={isSubmitting || !selectedSlot}>
+          {isSubmitting ? "Отправка..." : "Записаться на приём"}
         </button>
       </form>
     </>
   );
 };
 
-const BookAppointmentPage = () => {
-  return (
-    <div className={styles.pageWrapper}>
-      <Header 
-        navItems={["Записаться на прием", "Выбрать врача", "О клинике", "Личный кабинет"]}
-        showAccountButton={false}
-        fixed={true}
-      />
-
-      <main className={styles.main}>
-        <div className={styles.container}>
-          <Suspense fallback={<div>Загрузка...</div>}>
-            <BookingFormContent />
-          </Suspense>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
-  );
-};
+const BookAppointmentPage = () => (
+  <div className={styles.pageWrapper}>
+    <Header showAccountButton={false} fixed={true} />
+    <main className={styles.main}>
+      <div className={styles.container}>
+        <Suspense fallback={<div>Загрузка...</div>}>
+          <BookingFormContent />
+        </Suspense>
+      </div>
+    </main>
+    <Footer />
+  </div>
+);
 
 export default BookAppointmentPage;

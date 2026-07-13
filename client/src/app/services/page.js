@@ -5,129 +5,48 @@ import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import styles from "./page.module.css";
 
-const SERVICES = [
-  {
-    id: 1, title: "Педиатрия", slug: "pediatriya",
-    desc: "Здоровье и развитие детей от рождения до 18 лет",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="7" r="4"/>
-        <path d="M4 21v-1a8 8 0 0 1 16 0v1"/>
-        <path d="M10 12h4"/>
-      </svg>
-    ),
-  },
-  {
-    id: 2, title: "Кардиология", slug: "",
-    desc: "Диагностика и лечение заболеваний сердца и сосудов",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-      </svg>
-    ),
-  },
-  {
-    id: 3, title: "Неврология", slug: "",
-    desc: "Диагностика и лечение расстройств нервной системы",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 12h3l2-7 4 14 3-7h3l2-4h3"/>
-      </svg>
-    ),
-  },
-  {
-    id: 4, title: "Гинекология", slug: "ginekologiya",
-    desc: "Женское здоровье на всех этапах жизни",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="5"/>
-        <path d="M12 13v9M9 19h6"/>
-      </svg>
-    ),
-  },
-  {
-    id: 5, title: "Эндокринология", slug: "endokrinologiya",
-    desc: "Гормональные нарушения и лечение желёз",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="2"/>
-        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-      </svg>
-    ),
-  },
-  {
-    id: 6, title: "Урология", slug: "urologiya",
-    desc: "Заболевания почек и мочевыводящих путей",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-        <path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4"/>
-        <path d="M12 16v2"/>
-      </svg>
-    ),
-  },
-  {
-    id: 7, title: "Терапия", slug: "terapiya",
-    desc: "Общая диагностика и лечение внутренних болезней",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
-        <path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"/>
-        <circle cx="20" cy="10" r="2"/>
-      </svg>
-    ),
-  },
-  {
-    id: 8, title: "Дерматология", slug: "dermatologiya",
-    desc: "Кожные заболевания и их лечение",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
-      </svg>
-    ),
-  },
-  {
-    id: 9, title: "Ортопедия", slug: "ortopediya",
-    desc: "Заболевания опорно-двигательного аппарата",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 6a2 2 0 0 0-2-2 2 2 0 0 0-2 2c0 .74.4 1.38 1 1.72V14.28A2 2 0 0 0 14 16a2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 0-1-1.72V7.72A2 2 0 0 0 18 6z"/>
-        <path d="M9 18a2 2 0 0 0 1-1.72V7.72A2 2 0 0 0 8 6a2 2 0 0 0-2 2 2 2 0 0 0 1 1.72V16.28A2 2 0 0 0 6 18a2 2 0 0 0 2 2 2 2 0 0 0 2-2"/>
-        <path d="M10 10h4M10 14h4"/>
-      </svg>
-    ),
-  },
-];
+function serviceIcon(name = "") {
+  const n = name.toLowerCase();
+  if (n.includes("кардио") || n.includes("сердц"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>;
+  if (n.includes("невро") || n.includes("нейро"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h3l2-7 4 14 3-7h3l2-4h3"/></svg>;
+  if (n.includes("гинеко") || n.includes("акушер"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5"/><path d="M12 13v9M9 19h6"/></svg>;
+  if (n.includes("эндокрин") || n.includes("гормон"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>;
+  if (n.includes("уролог") || n.includes("почк"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M12 16v2"/></svg>;
+  if (n.includes("педиатр") || n.includes("дет"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/><path d="M10 12h4"/></svg>;
+  if (n.includes("дерматол") || n.includes("кож"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>;
+  if (n.includes("аллерг") || n.includes("пульмон"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 8a4 4 0 0 1 0 8"/><path d="M12 2v20"/></svg>;
+  if (n.includes("хирург"))
+    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m14.5 12.5-8 8a2.12 2.12 0 0 1-3-3l8-8"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>;
+  // default: stethoscope
+  return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>;
+}
+
+const PAGE_SIZE = 12;
 
 export default function ServicesPage() {
-  const [visible, setVisible]           = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
-  const [gynDoctors, setGynDoctors]     = useState([]);
-  const [heroDoctors, setHeroDoctors]   = useState([]);
-  const gridRef   = useRef(null);
+  const [gynDoctors, setGynDoctors]       = useState([]);
+  const [heroDoctors, setHeroDoctors]     = useState([]);
+  const [services, setServices]           = useState([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [search, setSearch]               = useState("");
+  const [showCount, setShowCount]         = useState(PAGE_SIZE);
   const detailRef = useRef(null);
 
   useEffect(() => {
-    const make = (el, setter) => {
-      if (!el) return null;
-      const obs = new IntersectionObserver(
-        ([e]) => setter(e.isIntersecting),
-        { threshold: 0.1 }
-      );
-      obs.observe(el);
-      return obs;
-    };
-    const o1 = make(gridRef.current, setVisible);
-    const o2 = make(detailRef.current, setDetailVisible);
+    const obs = new IntersectionObserver(
+      ([e]) => setDetailVisible(e.isIntersecting),
+      { threshold: 0.1 }
+    );
+    if (detailRef.current) obs.observe(detailRef.current);
 
     fetch("/api/doctors")
       .then((r) => r.json())
@@ -135,7 +54,7 @@ export default function ServicesPage() {
         const list = Array.isArray(data) ? data : (data.doctors || []);
         const gyn = list
           .filter((d) =>
-            (d.specialization || d.position || "")
+            (d.specialization_title || d.specialization || d.position || "")
               .toLowerCase()
               .includes("гинеколог")
           )
@@ -145,8 +64,20 @@ export default function ServicesPage() {
       })
       .catch(() => {});
 
-    return () => { o1?.disconnect(); o2?.disconnect(); };
+    fetch("/api/services")
+      .then(r => r.json())
+      .then(data => { if (data.success) setServices(data.services || []); })
+      .catch(() => {})
+      .finally(() => setLoadingServices(false));
+
+    return () => obs.disconnect();
   }, []);
+
+  const filtered = services.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const visible = filtered.slice(0, showCount);
+  const hasMore = showCount < filtered.length;
 
   return (
     <div className={styles.page}>
@@ -212,49 +143,80 @@ export default function ServicesPage() {
       {/* Grid */}
       <main className={styles.main}>
         <div className={styles.container}>
-          <div
-            ref={gridRef}
-            className={`${styles.grid} ${visible ? styles.visible : ""}`}
-          >
-            {SERVICES.map((s, i) => {
-              const inner = (
-                <>
-                  <div className={styles.iconBox}>{s.icon}</div>
-                  <div className={styles.cardBody}>
-                    <h3 className={styles.cardTitle}>{s.title}</h3>
-                    <p className={styles.cardDesc}>{s.desc}</p>
-                  </div>
-                  <span className={styles.cardAction}>
-                    Записаться
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                  </span>
-                </>
-              );
 
-              return s.slug ? (
-                <Link
-                  key={s.id}
-                  href={`/services/${s.slug}`}
-                  className={styles.card}
-                  style={{ "--i": i }}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <Link
-                  key={s.id}
-                  href="/doctors"
-                  className={styles.card}
-                  style={{ "--i": i }}
-                >
-                  {inner}
-                </Link>
-              );
-            })}
+          {/* Search */}
+          <div className={styles.searchWrap}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Поиск услуги..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setShowCount(PAGE_SIZE); }}
+              className={styles.searchInput}
+            />
+            {search && (
+              <button type="button" className={styles.searchClear}
+                onClick={() => { setSearch(""); setShowCount(PAGE_SIZE); }}>×</button>
+            )}
           </div>
+
+          {!loadingServices && (
+            <p className={styles.serviceCount}>
+              {filtered.length === services.length
+                ? `${services.length} услуг`
+                : `${filtered.length} из ${services.length}`}
+            </p>
+          )}
+
+          <div className={styles.grid}>
+            {loadingServices
+              ? [...Array(6)].map((_, i) => (
+                  <div key={i} className={styles.cardSkeleton} style={{ "--i": i }} />
+                ))
+              : visible.map((s, i) => (
+                  <Link
+                    key={s.id}
+                    href="/doctors"
+                    className={styles.card}
+                    style={{ "--i": i }}
+                  >
+                    <div className={styles.iconBox}>{serviceIcon(s.name)}</div>
+                    <div className={styles.cardBody}>
+                      <h3 className={styles.cardTitle}>{s.name}</h3>
+                      {s.price && (
+                        <p className={styles.cardDesc}>
+                          {s.price.toLocaleString("ru-RU")} ₸
+                        </p>
+                      )}
+                    </div>
+                    <span className={styles.cardAction}>
+                      Записаться
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </span>
+                  </Link>
+                ))
+            }
+          </div>
+
+          {hasMore && (
+            <div className={styles.showMoreWrap}>
+              <button className={styles.showMoreBtn}
+                onClick={() => setShowCount(c => c + PAGE_SIZE)}>
+                Показать ещё ({filtered.length - showCount})
+              </button>
+            </div>
+          )}
+
+          {!loadingServices && filtered.length === 0 && (
+            <p className={styles.noResults}>Услуга не найдена</p>
+          )}
+
         </div>
       </main>
 
