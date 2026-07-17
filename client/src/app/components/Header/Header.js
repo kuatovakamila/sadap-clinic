@@ -17,6 +17,7 @@ const getNavUrl = (item) => {
     "Тарифы":              "/tariffs",
     "Отзывы":              "/reviews-page",
     "Вакансии":            "/vacancies",
+    "Check-up":            "/tariffs",
   };
   return urlMap[item] || "#";
 };
@@ -65,10 +66,17 @@ const NAV_ICONS = {
       <line x1="10" y1="14" x2="14" y2="14"/>
     </svg>
   ),
+  "Check-up": (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 12l2 2 4-4"/>
+      <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+    </svg>
+  ),
 };
 
 export default function Header({
-  navItems = ["Записаться на прием", "Выбрать врача", "О клинике", "Тарифы", "Отзывы", "Вакансии"],
+  navItems = ["Записаться на прием", "Выбрать врача", "О клинике", "Check-up", "Тарифы", "Отзывы", "Вакансии"],
   fixed = false,
   onAppointmentClick = null,
 }) {

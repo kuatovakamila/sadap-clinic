@@ -43,7 +43,7 @@ const AuthPage = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Ошибка отправки кода");
-      setSuccess("Код отправлен! Проверьте SMS.");
+      setSuccess("Код отправлен в WhatsApp!");
       setStep("verify");
     } catch (err) {
       setError(err.message);
@@ -156,8 +156,8 @@ const AuthPage = () => {
           <div className={styles.formContainer}>
             <h1 className={styles.title}>
               {mode === "login"
-                ? "Введите ваш номер телефона, чтобы получить код"
-                : "Введите ваш номер телефона, чтобы создать ваш аккаунт"}
+                ? "Введите номер телефона — код придёт в WhatsApp"
+                : "Введите номер телефона — код придёт в WhatsApp"}
             </h1>
             <form onSubmit={handleSendOTP} className={styles.form}>
               <div className={styles.inputGroup}>
@@ -196,8 +196,8 @@ const AuthPage = () => {
         {step === "verify" && (
           <div className={styles.formContainer}>
             <h1 className={styles.title}>
-              Введите ваш полученный код,<br />
-              чтобы {mode === "login" ? "войти в ваш аккаунт" : "создать ваш аккаунт"}
+              Введите код из WhatsApp,<br />
+              чтобы {mode === "login" ? "войти в аккаунт" : "создать аккаунт"}
             </h1>
             <form onSubmit={handleVerifyOTP} className={styles.form}>
               <div className={styles.inputGroup}>

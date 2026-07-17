@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Simple in-memory OTP storage (for production, use Redis or database)
-// This is stored in a global variable to persist between requests
 if (!global.otpStore) {
   global.otpStore = new Map();
 }
@@ -11,66 +9,65 @@ export async function POST(request) {
     const { phone, fullName, mode } = await request.json();
 
     if (!phone) {
-      return NextResponse.json(
-        { error: "Номер телефона обязателен" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Номер телефона обязателен" }, { status: 400 });
     }
 
     if (mode === "register" && !fullName) {
-      return NextResponse.json(
-        { error: "ФИО обязательно для регистрации" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ФИО обязательно для регистрации" }, { status: 400 });
     }
 
-    // Clean phone number
     const cleanPhone = phone.startsWith("+") ? phone : `+${phone.replace(/\D/g, "")}`;
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Store OTP with expiration (5 minutes)
     global.otpStore.set(cleanPhone, {
       code: otp,
       fullName: fullName || "",
       mode: mode || "login",
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      expiresAt: Date.now() + 5 * 60 * 1000,
       attempts: 0,
     });
 
-    // Send SMS via SMSC.kz
-    console.log("=== SENDING OTP via SMSC.kz ===");
-    console.log("Phone:", cleanPhone);
+    // ── Send via Wazzup ──────────────────────────────────────────────────────
+    const wazzupApiKey  = process.env.WAZZUP_API_KEY;
+    const wazzupChannel = process.env.WAZZUP_CHANNEL_ID;
+
+    // chatId for Wazzup = phone without leading +
+    const chatId = cleanPhone.replace("+", "");
+
+    console.log("=== SENDING OTP via Wazzup (WhatsApp) ===");
+    console.log("Phone:", cleanPhone, "→ chatId:", chatId);
     console.log("OTP:", otp);
 
-    // SMSC.kz API - using HTTP GET method
-    const smscLogin = process.env.SMSC_LOGIN;
-    const smscPassword = process.env.SMSC_PASSWORD;
-    const message = `Kod podtverzhdeniya SADAP Clinic: ${otp}`;
-    const phoneNumber = cleanPhone.replace("+", "");
+    const wazzupRes = await fetch("https://api.wazzup24.com/v3/message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${wazzupApiKey}`,
+      },
+      body: JSON.stringify({
+        channelId: wazzupChannel,
+        chatId:    chatId,
+        chatType:  "whatsapp",
+        text:      `Ваш код подтверждения SADAP Clinic: *${otp}*\n\nКод действителен 5 минут.`,
+      }),
+    });
 
-    const smscUrl = `https://smsc.kz/sys/send.php?login=${encodeURIComponent(smscLogin)}&psw=${encodeURIComponent(smscPassword)}&phones=${phoneNumber}&mes=${encodeURIComponent(message)}&fmt=3&charset=utf-8`;
+    const wazzupResult = await wazzupRes.json();
+    console.log("Wazzup response:", JSON.stringify(wazzupResult, null, 2));
 
-    console.log("SMSC URL (without password):", smscUrl.replace(smscPassword, "***"));
-
-    const smsResponse = await fetch(smscUrl);
-    const smsResult = await smsResponse.json();
-    
-    console.log("SMSC response:", JSON.stringify(smsResult, null, 2));
-
-    // SMSC.kz returns { id: X, cnt: Y } on success, or { error: "message", error_code: N } on failure
-    if (smsResult.error) {
-      console.error("SMSC error:", smsResult);
+    if (!wazzupRes.ok) {
+      console.error("Wazzup error:", wazzupResult);
       return NextResponse.json(
-        { error: `Ошибка отправки SMS: ${smsResult.error}` },
+        { error: `Ошибка отправки WhatsApp: ${wazzupResult.message || wazzupRes.status}` },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "Код отправлен на ваш телефон",
+      message: "Код отправлен в WhatsApp",
     });
 
   } catch (error) {

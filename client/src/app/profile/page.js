@@ -13,6 +13,7 @@ const IcoProfile   = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" 
 const IcoCalendar  = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
 const IcoClipboard = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>;
 const IcoCard      = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>;
+const IcoStar      = ({ a }) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={a?"#fff":"#0c3465"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function initials(name = "") {
@@ -57,9 +58,10 @@ const ProfilePage = () => {
   const [verifyStatus, setVerifyStatus] = useState(null);
   const [verifyError, setVerifyError]   = useState("");
 
-  const [editing, setEditing]   = useState(false);
-  const [editName, setEditName] = useState("");
-  const [savingName, setSavingName] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editFields, setEditFields]         = useState({ full_name: "", phone: "", email: "" });
+  const [savingProfile, setSavingProfile]   = useState(false);
+  const [saveSuccess, setSaveSuccess]       = useState(false);
 
   const [appointments, setAppointments]               = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
@@ -69,6 +71,8 @@ const ProfilePage = () => {
   const [loadingDiagnoses, setLoadingDiagnoses] = useState(false);
   const [payments, setPayments]           = useState([]);
   const [loadingPayments, setLoadingPayments]   = useState(false);
+  const [bonuses, setBonuses]             = useState(null);
+  const [loadingBonuses, setLoadingBonuses]     = useState(false);
 
   // ── Auth ─────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -99,6 +103,7 @@ const ProfilePage = () => {
 
         setLoading(false);
         loadAppointments(userData.id, pid);
+        loadBonuses(pid);
       } catch {
         router.push("/auth");
       } finally {
@@ -134,6 +139,29 @@ const ProfilePage = () => {
     finally { setLoadingDiagnoses(false); }
   };
 
+  // ── Load bonuses (fake data until API is ready) ───────────────────────────
+  const loadBonuses = async (pid) => {
+    setLoadingBonuses(true);
+    await new Promise(r => setTimeout(r, 600));
+    setBonuses({
+      bonus_points: 1240,
+      balance: 45000,
+      cashback_points: 980,
+      tier: "Серебряная карта",
+      tier_spent: 180000,
+      tier_next: 500000,
+      history: [
+        { id: 1, date: "2026-07-10", label: "Консультация терапевта",     points: +120, type: "earn" },
+        { id: 2, date: "2026-07-05", label: "УЗИ органов брюшной полости", points: +200, type: "earn" },
+        { id: 3, date: "2026-06-28", label: "Списание за приём",           points: -300, type: "spend" },
+        { id: 4, date: "2026-06-20", label: "ЭКГ",                         points: +80,  type: "earn" },
+        { id: 5, date: "2026-06-14", label: "Педиатрия",                   points: +150, type: "earn" },
+        { id: 6, date: "2026-05-30", label: "Списание за анализы",         points: -90,  type: "spend" },
+      ],
+    });
+    setLoadingBonuses(false);
+  };
+
   // ── Load payments ────────────────────────────────────────────────────────
   const loadPayments = async (pid) => {
     if (!pid) return;
@@ -153,6 +181,7 @@ const ProfilePage = () => {
     setActiveSection(sec);
     if (sec === "diagnoses" && diagnoses.length === 0) loadDiagnoses(sadapPatientId);
     if (sec === "payments"  && payments.length  === 0) loadPayments(sadapPatientId);
+    if (sec === "bonuses"   && !bonuses) loadBonuses(sadapPatientId);
   };
 
   // ── Verify patient ───────────────────────────────────────────────────────
@@ -195,32 +224,38 @@ const ProfilePage = () => {
     }
   };
 
-  const startEdit = () => {
-    setEditName(displayName);
-    setEditing(true);
+  const startEditProfile = (name) => {
+    setEditFields({
+      full_name: name,
+      phone: user?.phone || profile?.phone || "",
+      email: user?.email || profile?.email || "",
+    });
+    setEditingProfile(true);
+    setSaveSuccess(false);
   };
 
-  const cancelEdit = () => setEditing(false);
+  const cancelEditProfile = () => setEditingProfile(false);
 
-  const saveName = async () => {
-    if (!editName.trim() || editName.trim() === displayName) { setEditing(false); return; }
-    setSavingName(true);
+  const saveProfile = async () => {
+    setSavingProfile(true);
     try {
       await fetch("/api/profile/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user?.id, full_name: editName.trim() }),
+        body: JSON.stringify({ userId: user?.id, full_name: editFields.full_name.trim() }),
       });
       const stored = localStorage.getItem("user");
       if (stored) {
         const u = JSON.parse(stored);
-        u.full_name = editName.trim();
+        u.full_name = editFields.full_name.trim();
         localStorage.setItem("user", JSON.stringify(u));
       }
-      setProfile(p => ({ ...p, full_name: editName.trim() }));
-      setEditing(false);
+      setProfile(p => ({ ...p, full_name: editFields.full_name.trim() }));
+      setEditingProfile(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch {}
-    finally { setSavingName(false); }
+    finally { setSavingProfile(false); }
   };
 
   const handleLogout = async () => {
@@ -248,11 +283,23 @@ const ProfilePage = () => {
   const displayName = profile?.full_name || user?.full_name || user?.user_metadata?.full_name || "Пользователь";
 
   const sidebarItems = [
-    { key: "profile",    label: "Профиль",   Icon: IcoProfile },
-    { key: "appointments", label: "Записи",  Icon: IcoCalendar, href: "/appointments" },
-    { key: "diagnoses",  label: "Диагнозы",  Icon: IcoClipboard },
-    { key: "payments",   label: "Оплаты",    Icon: IcoCard },
+    { key: "profile",      label: "Профиль",  Icon: IcoProfile },
+    { key: "appointments", label: "Записи",   Icon: IcoCalendar, href: "/appointments" },
+    { key: "diagnoses",    label: "Диагнозы", Icon: IcoClipboard },
+    { key: "payments",     label: "Оплаты",   Icon: IcoCard },
+    { key: "bonuses",      label: "Бонусы",   Icon: IcoStar },
   ];
+
+  // ── Bonus computed values ─────────────────────────────────────────────────
+  const totalSpent     = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+  const bonusPoints    = bonuses?.bonus_points    ?? 0;
+  const accountBalance = bonuses?.balance         ?? null;
+  const cashbackPoints = bonuses?.cashback_points ?? 0;
+  const otherPoints    = Math.max(0, bonusPoints - cashbackPoints);
+  const tierLabel      = bonuses?.tier            ?? "Стандарт";
+  const tierSpent      = bonuses?.tier_spent      ?? totalSpent;
+  const tierNext       = bonuses?.tier_next       ?? 500000;
+  const bonusHistory   = bonuses?.history         ?? [];
 
   return (
     <div className={styles.pageWrapper}>
@@ -288,97 +335,239 @@ const ProfilePage = () => {
             {/* ══ PROFILE SECTION ══════════════════════════════════════════ */}
             {activeSection === "profile" && (
               <>
-                <h1 className={styles.pageGreeting}>
-                  Здравствуйте, {displayName.split(" ")[0]}!
-                </h1>
-
-                {/* Profile card */}
-                <div className={styles.profileCard}>
-                  <div className={styles.avatarCircle}>
-                    {initials(displayName)}
+                {/* ── Bonus banner on top ── */}
+                <div className={styles.bonusBanner} style={{ marginBottom: 20 }}>
+                  <div className={styles.bonusBannerLeft}>
+                    <span className={styles.bonusTierBadge}>{tierLabel}</span>
+                    <div className={styles.bonusSpent}>
+                      <span className={styles.bonusSpentLabel}>Потрачено всего</span>
+                      <span className={styles.bonusSpentNum}>{tierSpent.toLocaleString("ru-RU")} ₸</span>
+                    </div>
+                    <div className={styles.bonusProgress}>
+                      <div className={styles.bonusProgressTrack}>
+                        <div className={styles.bonusProgressFill}
+                          style={{ width: `${Math.min((tierSpent / tierNext) * 100, 100)}%` }} />
+                      </div>
+                      <span className={styles.bonusProgressHint}>
+                        Ещё {(tierNext - tierSpent).toLocaleString("ru-RU")} ₸ до следующего уровня
+                      </span>
+                    </div>
                   </div>
+                  <div className={styles.bonusBannerRight}>
+                    <div className={styles.bonusRingWrap}>
+                      <svg width="110" height="110" viewBox="0 0 110 110">
+                        <circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="12"/>
+                        <circle cx="55" cy="55" r="44" fill="none" stroke="#4ade80" strokeWidth="12"
+                          strokeDasharray={`${bonusPoints > 0 ? Math.min((cashbackPoints / bonusPoints) * 276, 276) : 0} 276`}
+                          strokeLinecap="round" strokeDashoffset="69" transform="rotate(-90 55 55)"/>
+                      </svg>
+                      <div className={styles.bonusRingInner}>
+                        <span className={styles.bonusRingNum}>{bonusPoints.toLocaleString("ru-RU")}</span>
+                        <span className={styles.bonusRingLabel}>баллов</span>
+                      </div>
+                    </div>
+                    <div className={styles.bonusBreakdown}>
+                      <div className={styles.bonusBreakdownRow}>
+                        <span className={styles.bonusDot} style={{ background: "#4ade80" }} />
+                        <span className={styles.bonusBreakdownLabel}>Кэшбэк</span>
+                        <span className={styles.bonusBreakdownVal}>{cashbackPoints.toLocaleString("ru-RU")}</span>
+                      </div>
+                      <div className={styles.bonusBreakdownRow}>
+                        <span className={styles.bonusDot} style={{ background: "rgba(255,255,255,0.4)" }} />
+                        <span className={styles.bonusBreakdownLabel}>Остаток</span>
+                        <span className={styles.bonusBreakdownVal}>{accountBalance != null ? Number(accountBalance).toLocaleString("ru-RU") + " ₸" : "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                  <div className={styles.profileInfo}>
-                    {/* Name row */}
-                    <div className={styles.nameRow}>
-                      {editing ? (
-                        <>
-                          <input
-                            className={styles.nameInput}
-                            value={editName}
-                            onChange={e => setEditName(e.target.value)}
-                            onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") cancelEdit(); }}
-                            autoFocus
-                          />
-                          <button className={styles.nameActionBtn} onClick={saveName} disabled={savingName}>
-                            {savingName ? "..." : "Сохранить"}
-                          </button>
-                          <button className={styles.nameActionBtnGhost} onClick={cancelEdit}>Отмена</button>
-                        </>
-                      ) : (
-                        <>
-                          <h2 className={styles.profileName}>{displayName}</h2>
-                          <button className={styles.editIconBtn} onClick={startEdit} title="Редактировать имя">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </button>
-                        </>
+                {/* ── Top header row ── */}
+                <div className={styles.profileHeaderRow}>
+                  <div>
+                    <h1 className={styles.pageGreeting}>Личные данные</h1>
+                    <p className={styles.pageGreetingSub}>Управляйте своей персональной информацией</p>
+                  </div>
+                  <button onClick={handleLogout} className={styles.logoutButtonSmall}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Выйти
+                  </button>
+                </div>
+
+                {/* ── Profile card ── */}
+                <div className={styles.profileCardNew}>
+
+                  {/* Avatar + name block */}
+                  <div className={styles.profileAvatarBlock}>
+                    <div className={styles.avatarCircleLarge}>
+                      {initials(displayName)}
+                    </div>
+                    <div>
+                      <p className={styles.avatarName}>{displayName}</p>
+                      <p className={styles.avatarSub}>{user?.email || profile?.email || "Пациент"}</p>
+                      {sadapPatientId && (
+                        <span className={styles.clinicBadge}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          Привязан к клинике
+                        </span>
                       )}
                     </div>
-
-                    {/* Fields grid */}
-                    <div className={styles.profileFields}>
-                      <span className={styles.fieldLabel}>Телефон</span>
-                      <span className={styles.fieldValue}>{user?.phone || profile?.phone || "—"}</span>
-                      <span className={styles.fieldLabel}>Email</span>
-                      <span className={styles.fieldValue}>{user?.email || profile?.email || "—"}</span>
-                    </div>
-
-                    {/* Clinic link — quiet inline */}
-                    {sadapPatientId ? (
-                      <div className={styles.clinicLinkedInline}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M20 6L9 17l-5-5"/>
+                    {!editingProfile && (
+                      <button
+                        className={styles.editProfileBtn}
+                        onClick={() => startEditProfile(displayName)}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
-                        Привязан к базе клиники
-                      </div>
-                    ) : (
-                      <button className={styles.linkClinicInlineBtn} onClick={() => {}}>
-                        Привязать к базе клиники →
+                        Редактировать
                       </button>
                     )}
                   </div>
 
-                  <button onClick={handleLogout} className={styles.logoutButtonSmall}>
-                    Выйти
-                  </button>
+                  <div className={styles.profileDivider} />
+
+                  {/* Fields */}
+                  <div className={styles.profileFieldsList}>
+
+                    <div className={styles.profileFieldRow}>
+                      <div className={styles.profileFieldMeta}>
+                        <span className={styles.profileFieldLabel}>Полное имя</span>
+                        <span className={styles.profileFieldHint}>Как к вам обращаться</span>
+                      </div>
+                      {editingProfile ? (
+                        <input
+                          className={styles.profileFieldInput}
+                          value={editFields.full_name}
+                          onChange={e => setEditFields(f => ({ ...f, full_name: e.target.value }))}
+                          placeholder="Введите полное имя"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className={styles.profileFieldValue}>{displayName}</span>
+                      )}
+                    </div>
+
+                    <div className={styles.profileFieldRow}>
+                      <div className={styles.profileFieldMeta}>
+                        <span className={styles.profileFieldLabel}>Телефон</span>
+                        <span className={styles.profileFieldHint}>Для связи и записей</span>
+                      </div>
+                      {editingProfile ? (
+                        <input
+                          className={styles.profileFieldInput}
+                          value={editFields.phone}
+                          onChange={e => setEditFields(f => ({ ...f, phone: e.target.value }))}
+                          placeholder="+7 (___) ___-__-__"
+                          type="tel"
+                        />
+                      ) : (
+                        <span className={styles.profileFieldValue}>{user?.phone || profile?.phone || "—"}</span>
+                      )}
+                    </div>
+
+                    <div className={styles.profileFieldRow}>
+                      <div className={styles.profileFieldMeta}>
+                        <span className={styles.profileFieldLabel}>Email</span>
+                        <span className={styles.profileFieldHint}>Для уведомлений</span>
+                      </div>
+                      {editingProfile ? (
+                        <input
+                          className={styles.profileFieldInput}
+                          value={editFields.email}
+                          onChange={e => setEditFields(f => ({ ...f, email: e.target.value }))}
+                          placeholder="email@example.com"
+                          type="email"
+                          disabled
+                        />
+                      ) : (
+                        <span className={styles.profileFieldValue}>{user?.email || profile?.email || "—"}</span>
+                      )}
+                    </div>
+
+                    <div className={styles.profileFieldRow}>
+                      <div className={styles.profileFieldMeta}>
+                        <span className={styles.profileFieldLabel}>Статус клиники</span>
+                        <span className={styles.profileFieldHint}>Привязка к базе Sadap</span>
+                      </div>
+                      {sadapPatientId ? (
+                        <span className={styles.profileStatusGreen}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          Привязан · ID {sadapPatientId}
+                        </span>
+                      ) : (
+                        <span className={styles.profileStatusGray}>Не привязан</span>
+                      )}
+                    </div>
+
+                  </div>
+
+                  {/* Save / Cancel */}
+                  {editingProfile && (
+                    <div className={styles.profileEditActions}>
+                      <button className={styles.profileSaveBtn} onClick={saveProfile} disabled={savingProfile}>
+                        {savingProfile ? "Сохранение..." : "Сохранить изменения"}
+                      </button>
+                      <button className={styles.profileCancelBtn} onClick={cancelEditProfile}>
+                        Отмена
+                      </button>
+                    </div>
+                  )}
+
+                  {saveSuccess && (
+                    <div className={styles.profileSaveSuccess}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                      Данные успешно сохранены
+                    </div>
+                  )}
                 </div>
 
                 {/* Clinic link form — only when not linked */}
                 {!sadapPatientId && (
                   <div className={styles.clinicLinkCard}>
-                    <h2 className={styles.clinicLinkTitle}>Привязать к базе клиники</h2>
-                    <p className={styles.clinicLinkDesc}>
-                      Введите ваши данные, чтобы видеть записи, диагнозы и историю оплат прямо из базы клиники.
-                    </p>
+                    <div className={styles.clinicLinkIcon}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0c3465" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                      </svg>
+                    </div>
+                    <div className={styles.clinicLinkText}>
+                      <h2 className={styles.clinicLinkTitle}>Привязать к базе клиники</h2>
+                      <p className={styles.clinicLinkDesc}>
+                        Введите данные, чтобы видеть записи, диагнозы и историю оплат из базы клиники.
+                      </p>
+                    </div>
                     <form onSubmit={handleVerify} className={styles.clinicLinkForm}>
                       <div className={styles.clinicInputRow}>
-                        <input type="text" placeholder="ИИН (12 цифр)"
-                          value={verifyForm.iin}
-                          onChange={e => setVerifyForm(p => ({ ...p, iin: e.target.value }))}
-                          className={styles.clinicInput} maxLength={12} pattern="\d{12}" required />
-                        <input type="tel" placeholder="Телефон"
-                          value={verifyForm.phone}
-                          onChange={e => setVerifyForm(p => ({ ...p, phone: e.target.value }))}
-                          className={styles.clinicInput} required />
-                        <input type="text" placeholder="Фамилия"
-                          value={verifyForm.lastname}
-                          onChange={e => setVerifyForm(p => ({ ...p, lastname: e.target.value }))}
-                          className={styles.clinicInput} required />
+                        <div className={styles.clinicInputGroup}>
+                          <label className={styles.clinicInputLabel}>ИИН</label>
+                          <input type="text" placeholder="123456789012"
+                            value={verifyForm.iin}
+                            onChange={e => setVerifyForm(p => ({ ...p, iin: e.target.value }))}
+                            className={styles.clinicInput} maxLength={12} pattern="\d{12}" required />
+                        </div>
+                        <div className={styles.clinicInputGroup}>
+                          <label className={styles.clinicInputLabel}>Телефон</label>
+                          <input type="tel" placeholder="+7 (___) ___-__-__"
+                            value={verifyForm.phone}
+                            onChange={e => setVerifyForm(p => ({ ...p, phone: e.target.value }))}
+                            className={styles.clinicInput} required />
+                        </div>
+                        <div className={styles.clinicInputGroup}>
+                          <label className={styles.clinicInputLabel}>Фамилия</label>
+                          <input type="text" placeholder="Иванов"
+                            value={verifyForm.lastname}
+                            onChange={e => setVerifyForm(p => ({ ...p, lastname: e.target.value }))}
+                            className={styles.clinicInput} required />
+                        </div>
                       </div>
                       {verifyStatus === "error" && (
                         <p className={styles.clinicError}>{verifyError}</p>
@@ -392,7 +581,7 @@ const ProfilePage = () => {
                 )}
 
                 {/* Upcoming appointments preview */}
-                <h2 className={styles.sectionTitle}>Ближайшие записи</h2>
+                <h2 className={styles.sectionTitle} style={{ marginTop: 8 }}>Ближайшие записи</h2>
                 {loadingAppointments ? (
                   <div className={styles.appointmentsLoading}>
                     <div className={styles.spinner} />
@@ -559,6 +748,110 @@ const ProfilePage = () => {
                     ))}
                   </div>
                 )}
+              </>
+            )}
+
+
+            {/* ══ BONUSES SECTION ══════════════════════════════════════════ */}
+            {activeSection === "bonuses" && (
+              <>
+                <h1 className={styles.pageTitle}>Бонусы и баланс</h1>
+
+                {/* Banner */}
+                <div className={styles.bonusBanner} style={{ marginBottom: 20 }}>
+                  <div className={styles.bonusBannerLeft}>
+                    <span className={styles.bonusTierBadge}>{tierLabel}</span>
+                    <div className={styles.bonusSpent}>
+                      <span className={styles.bonusSpentLabel}>Потрачено всего</span>
+                      <span className={styles.bonusSpentNum}>{tierSpent.toLocaleString("ru-RU")} ₸</span>
+                    </div>
+                    <div className={styles.bonusProgress}>
+                      <div className={styles.bonusProgressTrack}>
+                        <div className={styles.bonusProgressFill}
+                          style={{ width: `${Math.min((tierSpent / tierNext) * 100, 100)}%` }} />
+                      </div>
+                      <span className={styles.bonusProgressHint}>
+                        Ещё {(tierNext - tierSpent).toLocaleString("ru-RU")} ₸ до следующего уровня
+                      </span>
+                    </div>
+                  </div>
+                  <div className={styles.bonusBannerRight}>
+                    <div className={styles.bonusRingWrap}>
+                      <svg width="110" height="110" viewBox="0 0 110 110">
+                        <circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="12"/>
+                        <circle cx="55" cy="55" r="44" fill="none" stroke="#4ade80" strokeWidth="12"
+                          strokeDasharray={`${bonusPoints > 0 ? Math.min((cashbackPoints / bonusPoints) * 276, 276) : 0} 276`}
+                          strokeLinecap="round" strokeDashoffset="69" transform="rotate(-90 55 55)"/>
+                      </svg>
+                      <div className={styles.bonusRingInner}>
+                        <span className={styles.bonusRingNum}>{bonusPoints.toLocaleString("ru-RU")}</span>
+                        <span className={styles.bonusRingLabel}>баллов</span>
+                      </div>
+                    </div>
+                    <div className={styles.bonusBreakdown}>
+                      <div className={styles.bonusBreakdownRow}>
+                        <span className={styles.bonusDot} style={{ background: "#4ade80" }} />
+                        <span className={styles.bonusBreakdownLabel}>Кэшбэк</span>
+                        <span className={styles.bonusBreakdownVal}>{cashbackPoints.toLocaleString("ru-RU")}</span>
+                      </div>
+                      <div className={styles.bonusBreakdownRow}>
+                        <span className={styles.bonusDot} style={{ background: "rgba(255,255,255,0.4)" }} />
+                        <span className={styles.bonusBreakdownLabel}>Остаток</span>
+                        <span className={styles.bonusBreakdownVal}>{accountBalance != null ? Number(accountBalance).toLocaleString("ru-RU") + " ₸" : "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                <div className={styles.bonusStatsRow}>
+                  <div className={styles.bonusStatCard}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c3465" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+                    </svg>
+                    <span className={styles.bonusStatLabel}>Остаток на счёте</span>
+                    <span className={styles.bonusStatNum}>{accountBalance != null ? Number(accountBalance).toLocaleString("ru-RU") + " ₸" : "—"}</span>
+                  </div>
+                  <div className={styles.bonusStatCard}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c3465" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    <span className={styles.bonusStatLabel}>Потрачено</span>
+                    <span className={styles.bonusStatNum}>{tierSpent.toLocaleString("ru-RU")} ₸</span>
+                  </div>
+                  <div className={styles.bonusStatCard}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c3465" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span className={styles.bonusStatLabel}>Визитов</span>
+                    <span className={styles.bonusStatNum}>{appointments.length || 0}</span>
+                  </div>
+                  <div className={styles.bonusStatCard}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0c3465" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    <span className={styles.bonusStatLabel}>Бонусных баллов</span>
+                    <span className={styles.bonusStatNum}>{bonusPoints.toLocaleString("ru-RU")}</span>
+                  </div>
+                </div>
+
+                {/* Full history */}
+                <h2 className={styles.sectionTitle} style={{ marginTop: 24 }}>История бонусов</h2>
+                <div className={styles.bonusHistoryList}>
+                  {bonusHistory.map(item => (
+                    <div key={item.id} className={styles.bonusHistoryRow}>
+                      <div className={`${styles.bonusHistoryDot} ${item.type === "earn" ? styles.bonusHistoryEarn : styles.bonusHistorySpend}`} />
+                      <div className={styles.bonusHistoryInfo}>
+                        <span className={styles.bonusHistoryLabel}>{item.label}</span>
+                        <span className={styles.bonusHistoryDate}>{formatDate(item.date)}</span>
+                      </div>
+                      <span className={`${styles.bonusHistoryPoints} ${item.type === "earn" ? styles.bonusHistoryEarnText : styles.bonusHistorySpendText}`}>
+                        {item.points > 0 ? "+" : ""}{item.points} б
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 

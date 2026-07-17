@@ -148,28 +148,67 @@ button.sidebarItem {
   margin-bottom: 30px;
 }
 
-/* Profile greeting */
+/* ── Profile header row ── */
+.profileHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
 .pageGreeting {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   color: #042955;
-  margin-bottom: 20px;
-  letter-spacing: 0.02em;
+  margin: 0 0 4px;
+  letter-spacing: 0.01em;
 }
 
-/* Profile Card */
-.profileCard {
+.pageGreetingSub {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ── New profile card ── */
+.profileCardNew {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 24px 28px;
+  border-radius: 14px;
+  border: 1px solid #eaeff6;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Avatar block */
+.profileAvatarBlock {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  border: 1px solid #eaeff6;
+  gap: 16px;
+  padding: 24px 28px;
+  position: relative;
 }
 
+.avatarCircleLarge {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0c3465, #1556a8);
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(12, 52, 101, 0.25);
+}
+
+/* keep old avatarCircle for loading state */
 .avatarCircle {
   width: 52px;
   height: 52px;
@@ -184,118 +223,274 @@ button.sidebarItem {
   justify-content: center;
   letter-spacing: 0.05em;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(12, 52, 101, 0.2);
 }
 
-.profileInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Name row with edit */
-.nameRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.profileName {
+.avatarName {
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
   font-size: 15px;
   color: #042955;
+  margin: 0 0 3px;
+}
+
+.avatarSub {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0 0 6px;
+}
+
+.clinicBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #d1fae5;
+  color: #065f46;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.editProfileBtn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f4f6fb;
+  border: 1px solid #dde6f4;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c3465;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.editProfileBtn:hover {
+  background: #e8effc;
+  border-color: #b8cef0;
+}
+
+.profileDivider {
+  height: 1px;
+  background: #f0f4fa;
   margin: 0;
 }
 
-.editIconBtn {
-  background: none;
-  border: none;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 4px;
+/* Fields list */
+.profileFieldsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.profileFieldRow {
   display: flex;
   align-items: center;
-  border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid #f0f4fa;
+  gap: 24px;
+}
+
+.profileFieldRow:last-child {
+  border-bottom: none;
+}
+
+.profileFieldMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 140px;
   flex-shrink: 0;
 }
 
-.editIconBtn:hover {
-  color: #0c3465;
-  background: #eef3fb;
-}
-
-.nameInput {
+.profileFieldLabel {
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #042955;
-  border: 1.5px solid #0c3465;
-  border-radius: 6px;
-  padding: 4px 10px;
-  outline: none;
-  flex: 1;
-  min-width: 0;
-  max-width: 260px;
-}
-
-.nameActionBtn {
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  background: #0c3465;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 5px 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-
-.nameActionBtn:hover { background: #052954; }
-.nameActionBtn:disabled { opacity: 0.5; }
-
-.nameActionBtnGhost {
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  background: none;
-  color: #9ca3af;
-  border: none;
-  cursor: pointer;
-  padding: 5px 4px;
-  transition: color 0.15s;
-}
-
-.nameActionBtnGhost:hover { color: #374151; }
-
-/* Fields — CSS grid for aligned labels */
-.profileFields {
-  display: grid;
-  grid-template-columns: 68px 1fr;
-  gap: 6px 10px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.fieldLabel {
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  color: #9ca3af;
-  letter-spacing: 0.03em;
-}
-
-.fieldValue {
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
-  font-weight: 500;
   color: #374151;
 }
 
-/* Inline clinic status */
+.profileFieldHint {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.profileFieldValue {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 500;
+  text-align: right;
+}
+
+.profileFieldInput {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #042955;
+  background: #f8faff;
+  border: 1.5px solid #c8d9f0;
+  border-radius: 8px;
+  padding: 9px 14px;
+  outline: none;
+  width: 280px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.profileFieldInput:focus {
+  border-color: #0c3465;
+  box-shadow: 0 0 0 3px rgba(12, 52, 101, 0.08);
+}
+
+.profileFieldInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profileStatusGreen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #065f46;
+}
+
+.profileStatusGray {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Edit actions */
+.profileEditActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 28px;
+  background: #f8faff;
+  border-top: 1px solid #eaeff6;
+}
+
+.profileSaveBtn {
+  background: linear-gradient(135deg, #0c3465, #1556a8);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.15s;
+  box-shadow: 0 2px 10px rgba(12, 52, 101, 0.2);
+}
+
+.profileSaveBtn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.profileSaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profileCancelBtn {
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.profileCancelBtn:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.profileSaveSuccess {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 28px;
+  background: #f0fdf4;
+  color: #065f46;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  border-top: 1px solid #d1fae5;
+}
+
+/* Clinic link card — redesigned */
+.clinicLinkCard {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #eaeff6;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+
+.clinicLinkIcon {
+  width: 40px;
+  height: 40px;
+  background: #eef3fb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.clinicLinkText {
+  margin-bottom: 20px;
+}
+
+.clinicLinkTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0c3465;
+  margin: 0 0 6px;
+}
+
+.clinicLinkDesc {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.clinicInputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.clinicInputLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.03em;
+}
+
+/* Inline clinic status (keep for compatibility) */
 .clinicLinkedInline {
   display: inline-flex;
   align-items: center;
@@ -1255,5 +1450,297 @@ button.sidebarItem {
   border-radius: 20px;
   padding: 3px 10px;
   margin-top: 6px;
+}
+
+/* ══ BONUSES ══════════════════════════════════════════════════════════════ */
+.bonusBanner {
+  background: linear-gradient(135deg, #0c3465 0%, #1556a8 60%, #0e4a94 100%);
+  border-radius: 16px;
+  padding: 32px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(12, 52, 101, 0.25);
+}
+
+.bonusBannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.bonusTierBadge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.bonusSpent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bonusSpentLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.04em;
+}
+
+.bonusSpentNum {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.bonusProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bonusProgressTrack {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 340px;
+}
+
+.bonusProgressFill {
+  height: 100%;
+  background: #4ade80;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.bonusProgressHint {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Right side — ring + breakdown */
+.bonusBannerRight {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.bonusRingWrap {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+}
+
+.bonusRingInner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.bonusRingNum {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.bonusRingLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.bonusBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bonusBreakdownRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bonusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bonusBreakdownLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 60px;
+}
+
+.bonusBreakdownVal {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Stats row */
+.bonusStatsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.bonusStatCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #eaeff6;
+  transition: box-shadow 0.2s;
+}
+
+.bonusStatCard:hover {
+  box-shadow: 0 4px 16px rgba(12, 52, 101, 0.08);
+}
+
+.bonusStatLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.bonusStatNum {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #042955;
+  line-height: 1;
+}
+
+/* ── Bonus history ── */
+.bonusHistoryList {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eaeff6;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.bonusHistoryRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f4fa;
+  transition: background 0.15s;
+}
+
+.bonusHistoryRow:last-child {
+  border-bottom: none;
+}
+
+.bonusHistoryRow:hover {
+  background: #f8faff;
+}
+
+.bonusHistoryDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bonusHistoryEarn  { background: #4ade80; }
+.bonusHistorySpend { background: #f87171; }
+
+.bonusHistoryInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bonusHistoryLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bonusHistoryDate {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.bonusHistoryPoints {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bonusHistoryEarnText  { color: #16a34a; }
+.bonusHistorySpendText { color: #dc2626; }
+
+@media (max-width: 1024px) {
+  .bonusStatsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .bonusBanner {
+    flex-direction: column;
+    padding: 24px 20px;
+  }
+
+  .bonusBannerRight {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bonusStatsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bonusSpentNum {
+    font-size: 22px;
+  }
 }
 
