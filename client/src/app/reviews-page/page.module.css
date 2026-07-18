@@ -15,6 +15,31 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 64px 40px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.heroText {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroImageWrap {
+  flex-shrink: 0;
+  width: 320px;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(12, 52, 101, 0.14);
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .eyebrow {
@@ -105,6 +130,63 @@
   margin: 0 0 24px;
 }
 
+/* ── 2GIS reviews ── */
+.gisSectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.gisSectionHead .sectionTitle { margin: 0; }
+
+.gisAllLink {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #12a866;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.gisAllLink:hover { opacity: 0.75; }
+
+.gisLogo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 28px;
+  border-radius: 8px;
+  background: #12a866;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: -0.01em;
+}
+
+.gisBadge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: #12a866;
+  background: rgba(18, 168, 102, 0.1);
+  border-radius: 20px;
+  padding: 2px 8px;
+  margin-top: 3px;
+}
+
 /* ── Review cards ── */
 .grid {
   display: grid;
@@ -122,6 +204,8 @@
   flex-direction: column;
   gap: 14px;
   transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .card:hover {
@@ -263,19 +347,25 @@
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .heroTitle { font-size: 36px; }
+  .heroImageWrap { width: 260px; }
 }
 
 @media (max-width: 768px) {
-  .heroInner { padding: 48px 20px 40px; }
+  .heroInner { padding: 48px 20px 40px; flex-direction: column; text-align: center; }
   .heroTitle { font-size: 28px; }
-  .heroSub { font-size: 14px; }
+  .heroSub { font-size: 14px; margin-left: auto; margin-right: auto; }
+  .heroStats { justify-content: center; }
+  .heroImageWrap { width: 220px; order: -1; }
   .heroStat { padding: 0 20px; }
   .heroStatNum { font-size: 26px; }
   .container { padding: 0 20px; }
   .grid { grid-template-columns: 1fr; }
+  .gisSectionHead { flex-direction: column; align-items: flex-start; gap: 12px; }
   .cta { flex-direction: column; padding: 28px 24px; gap: 20px; }
-  .ctaBtns { width: 100%; }
-  .ctaBtn { flex: 1; text-align: center; }
+  .ctaBtns { width: 100%; flex-wrap: wrap; }
+  .ctaBtn { flex: 1; text-align: center; min-width: 100px; }
+  .gisBanner { padding: 18px 20px; gap: 14px; }
+  .gisLogo { width: 52px; height: 38px; font-size: 12px; }
 }
 
 @media (max-width: 480px) {
