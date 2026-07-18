@@ -98,26 +98,31 @@ export default function DoctorDetailPage() {
       .finally(() => setLoading(false));
   }, [params.slug, router]);
 
+  // Slots track whichever date is actually active: the modal's own date picker
+  // while the modal is open (it can pick any date, not just the 7 quick-picker days),
+  // otherwise the quick-picker date shown on the page.
+  const activeDateStr = (showModal && appointmentDate) ? appointmentDate : selectedDateStr;
+
   // Fetch real slots from SADAP when a date is selected and doctor has sadap_doctor_id
   useEffect(() => {
-    if (!selectedDateStr) return;
+    if (!activeDateStr) return;
 
     const sadapId = doctorData?.sadap_doctor_id;
     if (sadapId) {
-      fetch(`/api/sadap/doctors/${sadapId}/slots?date=${selectedDateStr}`)
+      fetch(`/api/sadap/doctors/${sadapId}/slots?date=${activeDateStr}`)
         .then(r => r.json())
         .then(res => {
           const raw = res.success && Array.isArray(res.slots) ? res.slots : null;
           const slots = raw
             ? raw.map(s => (typeof s === "string" ? s : s.start_time || "")).filter(Boolean)
             : null;
-          setFreeSlots(slots ?? getFakeSlots(doctorData?.id, selectedDateStr));
+          setFreeSlots(slots ?? getFakeSlots(doctorData?.id, activeDateStr));
         })
-        .catch(() => setFreeSlots(getFakeSlots(doctorData?.id, selectedDateStr)));
+        .catch(() => setFreeSlots(getFakeSlots(doctorData?.id, activeDateStr)));
     } else {
-      setFreeSlots(getFakeSlots(doctorData?.id, selectedDateStr));
+      setFreeSlots(getFakeSlots(doctorData?.id, activeDateStr));
     }
-  }, [selectedDateStr, doctorData?.sadap_doctor_id, doctorData?.id]);
+  }, [activeDateStr, doctorData?.sadap_doctor_id, doctorData?.id]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -516,15 +521,20 @@ export default function DoctorDetailPage() {
             <p className={styles.modalDoctor}>Врач: {doctorData.full_name}</p>
             <form onSubmit={handleSubmit} className={styles.form}>
               <input className={styles.formInput} type="text" name="name"
-                placeholder="Ваше ФИО" required disabled={isSubmitting} />
+                placeholder="Ваше ФИО" defaultValue={currentUser?.full_name || ""}
+                required disabled={isSubmitting} />
               <input className={styles.formInput} type="tel" name="phone"
-                placeholder="Телефон" required disabled={isSubmitting} />
+                placeholder="Телефон" defaultValue={currentUser?.phone || ""}
+                required disabled={isSubmitting} />
               <RussianDatePicker name="date" value={appointmentDate}
                 onChange={setAppointmentDate} disabled={isSubmitting} required />
-              <select className={styles.formSelect} name="time" required disabled={isSubmitting}
+              <select className={styles.formSelect} name="time" required
+                disabled={isSubmitting || freeSlots.length === 0}
                 defaultValue={prefilledTime}>
-                <option value="">Выберите время</option>
-                {ALL_SLOTS.map(s => (
+                <option value="">
+                  {freeSlots.length ? "Выберите время" : "Нет свободных окошек на эту дату"}
+                </option>
+                {freeSlots.map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
