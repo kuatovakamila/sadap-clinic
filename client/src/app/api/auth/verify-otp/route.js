@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sadapFetch } from "@/lib/sadap-api";
 
-// Access the OTP store
-if (!global.otpStore) {
-  global.otpStore = new Map();
+// Access the fullName/mode carried over from send-otp
+if (!global.otpMeta) {
+  global.otpMeta = new Map();
 }
 
 // Create Supabase admin client (uses service role key)
@@ -62,46 +63,19 @@ export async function POST(request) {
     // Clean phone number
     const cleanPhone = phone.startsWith("+") ? phone : `+${phone.replace(/\D/g, "")}`;
 
-    // Get stored OTP
-    const storedData = global.otpStore.get(cleanPhone);
-
-    if (!storedData) {
+    // Verify the code against the SADAP portal API
+    try {
+      await sadapFetch("POST", "/public-api/portal/verify-otp", { phone: cleanPhone, code });
+    } catch (verifyErr) {
       return NextResponse.json(
-        { error: "Код не найден. Запросите новый код." },
-        { status: 400 }
+        { error: verifyErr.body?.error || verifyErr.body?.message || "Неверный код. Попробуйте снова." },
+        { status: verifyErr.status || 400 }
       );
     }
 
-    // Check expiration
-    if (Date.now() > storedData.expiresAt) {
-      global.otpStore.delete(cleanPhone);
-      return NextResponse.json(
-        { error: "Код истёк. Запросите новый код." },
-        { status: 400 }
-      );
-    }
-
-    // Check attempts (max 3)
-    if (storedData.attempts >= 3) {
-      global.otpStore.delete(cleanPhone);
-      return NextResponse.json(
-        { error: "Слишком много попыток. Запросите новый код." },
-        { status: 400 }
-      );
-    }
-
-    // Verify code
-    if (storedData.code !== code) {
-      storedData.attempts += 1;
-      global.otpStore.set(cleanPhone, storedData);
-      return NextResponse.json(
-        { error: "Неверный код. Попробуйте снова." },
-        { status: 400 }
-      );
-    }
-
-    // Code is correct - delete it
-    global.otpStore.delete(cleanPhone);
+    // Code is correct - consume the carried-over registration metadata
+    const storedData = global.otpMeta.get(cleanPhone) || { fullName: "", mode: "login" };
+    global.otpMeta.delete(cleanPhone);
 
     let user;
     let is_new = false;

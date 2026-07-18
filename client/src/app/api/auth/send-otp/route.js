@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { sadapFetch } from "@/lib/sadap-api";
 
-if (!global.otpStore) {
-  global.otpStore = new Map();
+// Carries fullName/mode from the send-otp step through to verify-otp.
+// The OTP code itself is generated, stored and validated by the SADAP API.
+if (!global.otpMeta) {
+  global.otpMeta = new Map();
 }
 
 export async function POST(request) {
@@ -18,63 +21,23 @@ export async function POST(request) {
 
     const cleanPhone = phone.startsWith("+") ? phone : `+${phone.replace(/\D/g, "")}`;
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    global.otpStore.set(cleanPhone, {
-      code: otp,
+    global.otpMeta.set(cleanPhone, {
       fullName: fullName || "",
       mode: mode || "login",
-      expiresAt: Date.now() + 5 * 60 * 1000,
-      attempts: 0,
     });
 
-    // ── Send via Wazzup ──────────────────────────────────────────────────────
-    const wazzupApiKey  = process.env.WAZZUP_API_KEY;
-    const wazzupChannel = process.env.WAZZUP_CHANNEL_ID;
-
-    // chatId for Wazzup = phone without leading +
-    const chatId = cleanPhone.replace("+", "");
-
-    console.log("=== SENDING OTP via Wazzup (WhatsApp) ===");
-    console.log("Phone:", cleanPhone, "→ chatId:", chatId);
-    console.log("OTP:", otp);
-
-    const wazzupRes = await fetch("https://api.wazzup24.com/v3/message", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${wazzupApiKey}`,
-      },
-      body: JSON.stringify({
-        channelId: wazzupChannel,
-        chatId:    chatId,
-        chatType:  "whatsapp",
-        text:      `Ваш код подтверждения SADAP Clinic: *${otp}*\n\nКод действителен 5 минут.`,
-      }),
-    });
-
-    const wazzupResult = await wazzupRes.json();
-    console.log("Wazzup response:", JSON.stringify(wazzupResult, null, 2));
-
-    if (!wazzupRes.ok) {
-      console.error("Wazzup error:", wazzupResult);
-      return NextResponse.json(
-        { error: `Ошибка отправки WhatsApp: ${wazzupResult.message || wazzupRes.status}` },
-        { status: 500 }
-      );
-    }
+    await sadapFetch("POST", "/public-api/portal/send-otp", { phone: cleanPhone });
 
     return NextResponse.json({
       success: true,
-      message: "Код отправлен в WhatsApp",
+      message: "Код отправлен",
     });
 
   } catch (error) {
     console.error("Send OTP error:", error);
     return NextResponse.json(
-      { error: "Произошла ошибка. Попробуйте позже." },
-      { status: 500 }
+      { error: error.body?.error || error.body?.message || "Произошла ошибка. Попробуйте позже." },
+      { status: error.status || 500 }
     );
   }
 }
