@@ -1,0 +1,178 @@
+/* ── Page ── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
+}
+
+/* ── Hero ── */
+.hero {
+  background: #fff;
+  padding-top: 76px;
+}
+
+.heroInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 72px 40px 64px;
+}
+
+.eyebrow {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0c3465;
+  opacity: 0.5;
+  margin: 0 0 16px;
+}
+
+.heroTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 48px;
+  color: #0f1f3d;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0 0 18px;
+}
+
+.heroSub {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 560px;
+}
+
+/* ── Shared ── */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ── Map section ── */
+.mapSection {
+  padding: 56px 0 80px;
+}
+
+.mapGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+.mapWrap {
+  border-radius: 20px;
+  overflow: hidden;
+  height: 420px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* ── Contacts panel ── */
+.contactsPanel {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contactRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.contactIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: #f0f4fb;
+  color: #0c3465;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contactBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.contactLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.contactValue {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f1f3d;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+a.contactValue:hover { color: #0c3465; }
+
+.ctaBtn {
+  display: block;
+  background: #0c3465;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 14px 24px;
+  border-radius: 16px;
+  text-decoration: none;
+  text-align: center;
+  margin-top: 8px;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 4px 16px rgba(12, 52, 101, 0.25);
+}
+
+.ctaBtn:hover {
+  background: #0a2850;
+  box-shadow: 0 6px 24px rgba(12, 52, 101, 0.35);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .mapGrid { grid-template-columns: 1fr; }
+  .contactsPanel { max-width: 100%; }
+  .heroTitle { font-size: 40px; }
+}
+
+@media (max-width: 768px) {
+  .heroInner { padding: 56px 24px 48px; }
+  .heroTitle { font-size: 32px; }
+  .heroSub { font-size: 14px; }
+  .container { padding: 0 20px; }
+  .mapSection { padding: 40px 0 56px; }
+  .mapWrap { height: 300px; }
+}
+
+@media (max-width: 560px) {
+  .heroTitle { font-size: 28px; }
+}

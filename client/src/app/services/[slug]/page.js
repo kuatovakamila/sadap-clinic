@@ -283,7 +283,7 @@ const ServicePage = () => {
                 <strong>Адрес:</strong> г. Актау, микрорайон 11А, 3
               </div>
               <div className={styles.locationItem}>
-                <strong>Телефон:</strong> +7 702 301 2796
+                <strong>Телефон:</strong> +7 700 020 1820
               </div>
               <div className={styles.locationItem}>
                 <strong>Часы работы:</strong> Пн-Пт: 8:00 - 20:00, Сб: 9:00 - 18:00

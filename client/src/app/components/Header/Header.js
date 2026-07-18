@@ -14,10 +14,11 @@ const getNavUrl = (item) => {
     "О клинике":           "/reviews",
     "О нас":               "/aboutUs",
     "Записаться на прием": "/services",
-    "Тарифы":              "/tariffs",
+    "Программы":              "/tariffs",
     "Отзывы":              "/reviews-page",
     "Вакансии":            "/vacancies",
     "Check-up":            "/tariffs",
+    "Контакты":            "/contacts",
   };
   return urlMap[item] || "#";
 };
@@ -44,7 +45,7 @@ const NAV_ICONS = {
       <path d="M12 8v4M12 16h.01"/>
     </svg>
   ),
-  "Тарифы": (
+  "Программы": (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -73,10 +74,17 @@ const NAV_ICONS = {
       <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
     </svg>
   ),
+  "Контакты": (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  ),
 };
 
 export default function Header({
-  navItems = ["Записаться на прием", "Выбрать врача", "О клинике", "Check-up", "Тарифы", "Отзывы", "Вакансии"],
+  navItems = ["Записаться на прием", "Выбрать врача", "О клинике", "Check-up", "Программы", "Отзывы", "Вакансии", "Контакты"],
   fixed = false,
   onAppointmentClick = null,
 }) {

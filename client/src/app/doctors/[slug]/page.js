@@ -481,7 +481,7 @@ export default function DoctorDetailPage() {
                   </svg>
                   <div>
                     <p className={styles.bookCardContactText}>Или позвоните нам</p>
-                    <a href="tel:+77023012796" className={styles.bookCardPhone}>+7 702 301-27-96</a>
+                    <a href="tel:+77000201820" className={styles.bookCardPhone}>+7 700 020-18-20</a>
                   </div>
                 </div>
               </div>
