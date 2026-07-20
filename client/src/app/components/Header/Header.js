@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import styles from "./Header.module.css";
 
 const getNavUrl = (item) => {
@@ -89,6 +90,7 @@ export default function Header({
   onAppointmentClick = null,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu  = () => setIsOpen(false);
@@ -133,11 +135,13 @@ export default function Header({
         {/* Nav */}
         <nav className={`${styles.nav} ${isOpen ? styles.navOpen : ""}`}>
           <ul className={styles.navList}>
-            {navItems.map((item, index) => (
+            {navItems.map((item, index) => {
+              const isActive = pathname === getNavUrl(item);
+              return (
               <li key={index} className={styles.navItem}>
                 <Link
                   href={getNavUrl(item)}
-                  className={styles.navLink}
+                  className={`${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
                   onClick={(e) => handleNavClick(item, e)}
                 >
                   {NAV_ICONS[item] && (
@@ -146,7 +150,8 @@ export default function Header({
                   {item}
                 </Link>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </nav>
 
