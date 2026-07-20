@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import RussianDatePicker from "../../components/RussianDatePicker/RussianDatePicker";
 
 const ALL_SLOTS = [
   "09:00","09:30","10:00","10:30","11:00","11:30",
@@ -65,12 +64,7 @@ export default function DoctorDetailPage() {
   const [doctorData, setDoctorData]             = useState(null);
   const [loading, setLoading]                   = useState(true);
   const [isAuthenticated, setIsAuthenticated]   = useState(false);
-  const [currentUser, setCurrentUser]           = useState(null);
-  const [showModal, setShowModal]               = useState(false);
   const [selectedCert, setSelectedCert]         = useState(null);
-  const [isSubmitting, setIsSubmitting]         = useState(false);
-  const [appointmentDate, setAppointmentDate]   = useState("");
-  const [prefilledTime, setPrefilledTime]       = useState("");
 
   /* day picker state */
   const days = useMemo(() => getNextDays(7), []);
@@ -85,7 +79,7 @@ export default function DoctorDetailPage() {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      try { const u = JSON.parse(user); setIsAuthenticated(true); setCurrentUser(u); } catch {}
+      try { JSON.parse(user); setIsAuthenticated(true); } catch {}
     }
   }, []);
 
@@ -98,37 +92,32 @@ export default function DoctorDetailPage() {
       .finally(() => setLoading(false));
   }, [params.slug, router]);
 
-  // Slots track whichever date is actually active: the modal's own date picker
-  // while the modal is open (it can pick any date, not just the 7 quick-picker days),
-  // otherwise the quick-picker date shown on the page.
-  const activeDateStr = (showModal && appointmentDate) ? appointmentDate : selectedDateStr;
-
   // Fetch real slots from SADAP when a date is selected and doctor has sadap_doctor_id
   useEffect(() => {
-    if (!activeDateStr) return;
+    if (!selectedDateStr) return;
 
     const sadapId = doctorData?.sadap_doctor_id;
     if (sadapId) {
-      fetch(`/api/sadap/doctors/${sadapId}/slots?date=${activeDateStr}`)
+      fetch(`/api/sadap/doctors/${sadapId}/slots?date=${selectedDateStr}`)
         .then(r => r.json())
         .then(res => {
           const raw = res.success && Array.isArray(res.slots) ? res.slots : null;
           const slots = raw
             ? raw.map(s => (typeof s === "string" ? s : s.start_time || "")).filter(Boolean)
             : null;
-          setFreeSlots(slots ?? getFakeSlots(doctorData?.id, activeDateStr));
+          setFreeSlots(slots ?? getFakeSlots(doctorData?.id, selectedDateStr));
         })
-        .catch(() => setFreeSlots(getFakeSlots(doctorData?.id, activeDateStr)));
+        .catch(() => setFreeSlots(getFakeSlots(doctorData?.id, selectedDateStr)));
     } else {
-      setFreeSlots(getFakeSlots(doctorData?.id, activeDateStr));
+      setFreeSlots(getFakeSlots(doctorData?.id, selectedDateStr));
     }
-  }, [activeDateStr, doctorData?.sadap_doctor_id, doctorData?.id]);
+  }, [selectedDateStr, doctorData?.sadap_doctor_id, doctorData?.id]);
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") { setShowModal(false); setSelectedCert(null); }
+      if (e.key === "Escape") setSelectedCert(null);
     };
-    if (showModal || selectedCert) {
+    if (selectedCert) {
       document.addEventListener("keydown", onKey);
       document.body.style.overflow = "hidden";
     }
@@ -136,57 +125,22 @@ export default function DoctorDetailPage() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [showModal, selectedCert]);
+  }, [selectedCert]);
 
-  const openModal = (time = "") => {
+  // Booking now happens on the full /appointments/book form (service selection,
+  // price, and online payment) instead of the old on-page modal.
+  const goToBooking = (time = "") => {
     if (!isAuthenticated) { alert("Сперва войдите в личный кабинет"); router.push("/auth"); return; }
-    setPrefilledTime(time);
-    if (selectedDateStr) setAppointmentDate(selectedDateStr);
-    setShowModal(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!isAuthenticated || !currentUser) { alert("Сперва войдите в личный кабинет"); return; }
-    setIsSubmitting(true);
-    try {
-      const fd = new FormData(e.target);
-      const appointmentTime = fd.get("time");
-
-      const body = {
-        userId: currentUser.id,
-        doctorSlug: params.slug,
-        doctorName: doctorData.full_name,
-        patientName: fd.get("name"),
-        patientPhone: fd.get("phone"),
-        appointmentDate: fd.get("date"),
-        appointmentTime,
-        reason: fd.get("reason") || "",
-      };
-
-      // Include SADAP IDs when available so the booking lands in the clinic MIS
-      if (doctorData.sadap_doctor_id) {
-        body.sadapDoctorId = doctorData.sadap_doctor_id;
-      }
-      if (currentUser.sadap_patient_id) {
-        body.sadapPatientId = currentUser.sadap_patient_id;
-      }
-
-      const res = await fetch("/api/appointments/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        alert("Заявка успешно отправлена!");
-        setShowModal(false);
-        e.target.reset();
-      } else {
-        alert(result.error || "Ошибка при создании записи");
-      }
-    } catch { alert("Произошла ошибка. Попробуйте снова."); }
-    finally { setIsSubmitting(false); }
+    const qs = new URLSearchParams({
+      doctor: params.slug,
+      doctorName: doctorData.full_name,
+    });
+    const position = doctorData.specialty || doctorData.specialization_title;
+    if (position) qs.set("doctorPosition", position);
+    if (doctorData.sadap_doctor_id) qs.set("sadapDoctorId", String(doctorData.sadap_doctor_id));
+    if (selectedDateStr) qs.set("date", selectedDateStr);
+    if (time) qs.set("time", time);
+    router.push(`/appointments/book?${qs.toString()}`);
   };
 
   if (loading) return <div className={styles.loading}>Загрузка...</div>;
@@ -260,7 +214,7 @@ export default function DoctorDetailPage() {
               </div>
             </div>
 
-            <button className={styles.heroBtn} onClick={() => openModal()}>
+            <button className={styles.heroBtn} onClick={() => goToBooking()}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -317,7 +271,7 @@ export default function DoctorDetailPage() {
               <p className={styles.infoCardTitle}>Свободно завтра</p>
               <div className={styles.slotsList}>
                 {freeSlots.slice(0, 5).map(s => (
-                  <button key={s} className={styles.slotChip} onClick={() => openModal(s)}>{s}</button>
+                  <button key={s} className={styles.slotChip} onClick={() => goToBooking(s)}>{s}</button>
                 ))}
               </div>
             </div>
@@ -463,7 +417,7 @@ export default function DoctorDetailPage() {
                   {freeSlots.length > 0 ? (
                     <div className={styles.bookCardSlotsRow}>
                       {freeSlots.map(s => (
-                        <button key={s} className={styles.bookCardSlot} onClick={() => openModal(s)}>{s}</button>
+                        <button key={s} className={styles.bookCardSlot} onClick={() => goToBooking(s)}>{s}</button>
                       ))}
                     </div>
                   ) : (
@@ -475,7 +429,7 @@ export default function DoctorDetailPage() {
 
                 <div className={styles.bookCardDivider} />
 
-                <button className={styles.bookBtn} onClick={() => openModal()}>
+                <button className={styles.bookBtn} onClick={() => goToBooking()}>
                   Записаться на приём
                 </button>
 
@@ -512,41 +466,6 @@ export default function DoctorDetailPage() {
         </div>
       )}
 
-      {/* Appointment modal */}
-      {showModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={() => setShowModal(false)}>×</button>
-            <h2 className={styles.modalTitle}>Записаться на приём</h2>
-            <p className={styles.modalDoctor}>Врач: {doctorData.full_name}</p>
-            <form onSubmit={handleSubmit} className={styles.form}>
-              <input className={styles.formInput} type="text" name="name"
-                placeholder="Ваше ФИО" defaultValue={currentUser?.full_name || ""}
-                required disabled={isSubmitting} />
-              <input className={styles.formInput} type="tel" name="phone"
-                placeholder="Телефон" defaultValue={currentUser?.phone || ""}
-                required disabled={isSubmitting} />
-              <RussianDatePicker name="date" value={appointmentDate}
-                onChange={setAppointmentDate} disabled={isSubmitting} required />
-              <select className={styles.formSelect} name="time" required
-                disabled={isSubmitting || freeSlots.length === 0}
-                defaultValue={prefilledTime}>
-                <option value="">
-                  {freeSlots.length ? "Выберите время" : "Нет свободных окошек на эту дату"}
-                </option>
-                {freeSlots.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              <textarea className={styles.formTextarea} name="reason"
-                placeholder="Причина обращения (необязательно)" disabled={isSubmitting} />
-              <button type="submit" className={styles.formSubmit} disabled={isSubmitting}>
-                {isSubmitting ? "Отправка..." : "Записаться"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

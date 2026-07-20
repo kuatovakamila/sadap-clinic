@@ -114,7 +114,7 @@ const Hero = () => {
             Более 20 направлений под одной крышей — от терапии до узкой специализации
           </p>
 
-          <Link href="/appointments/book" className={styles.heroButton}>
+          <Link href="/doctors" className={styles.heroButton}>
             Записаться на приём
           </Link>
         </div>

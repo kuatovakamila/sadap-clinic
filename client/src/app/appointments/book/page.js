@@ -21,6 +21,10 @@ const BookingFormContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]     = useState("");
   const [success, setSuccess] = useState(false);
+  const [createdAppointmentId, setCreatedAppointmentId] = useState(null);
+
+  const [paying, setPaying]     = useState(false);
+  const [payError, setPayError] = useState("");
 
   const [doctorName, setDoctorName]         = useState("");
   const [doctorPosition, setDoctorPosition] = useState("");
@@ -37,6 +41,7 @@ const BookingFormContent = () => {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [reason, setReason]         = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
 
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -54,6 +59,11 @@ const BookingFormContent = () => {
     setDoctorName(decodeURIComponent(name));
     setDoctorPosition(decodeURIComponent(pos || ""));
     if (sadapId) setSadapDoctorId(Number(sadapId));
+
+    const prefDate = searchParams.get("date");
+    const prefTime = searchParams.get("time");
+    if (prefDate) setDate(prefDate);
+    if (prefTime) setPreferredTime(prefTime);
 
     fetch("/api/services")
       .then(r => r.json())
@@ -81,6 +91,11 @@ const BookingFormContent = () => {
             ).filter(s => s.start_time)
           : [];
         setSlots(normalized);
+        if (preferredTime) {
+          const match = normalized.find(s => s.start_time === preferredTime);
+          if (match) setSelectedSlot(match);
+          setPreferredTime("");
+        }
       })
       .catch(() => setSlots([]))
       .finally(() => setLoadingSlots(false));
@@ -112,6 +127,7 @@ const BookingFormContent = () => {
       });
       const result = await res.json();
       if (res.ok && result.success) {
+        setCreatedAppointmentId(result.appointment_id || null);
         setSuccess(true);
       } else {
         setError(result.error || "Ошибка при создании записи");
@@ -120,6 +136,41 @@ const BookingFormContent = () => {
       setError("Произошла ошибка. Попробуйте снова.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // ── Pay online ────────────────────────────────────────────────────────────
+  const handlePay = async () => {
+    if (!selectedService?.price) return;
+    setPaying(true);
+    setPayError("");
+    try {
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appointmentId: createdAppointmentId,
+          amount:        selectedService.price,
+          description:   selectedService.name,
+          phone:         user?.phone,
+          email:         user?.email,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setPayError(data.error || "Оплата временно недоступна");
+        return;
+      }
+      // Gateway is configured and we have a fresh access token + invoiceId — this is
+      // as far as this can go without a verified widget script/call signature from
+      // the merchant dashboard (epayment.kz's docs site didn't yield reliable content
+      // for that page). Wire up the actual `halyk.pay({...})` widget call here once
+      // that's confirmed against the real account.
+      setPayError("Платёжный шлюз настроен, но вызов формы оплаты ещё не подключён.");
+    } catch {
+      setPayError("Произошла ошибка. Попробуйте позже.");
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -190,6 +241,19 @@ const BookingFormContent = () => {
           Вы записались к <strong>{doctorName}</strong>
           {selectedSlot && ` на ${date ? new Date(date).toLocaleDateString("ru-RU", { day:"numeric", month:"long" }) : ""} в ${selectedSlot.start_time}`}.
         </p>
+
+        {selectedService?.price && (
+          <div className={styles.paymentBlock}>
+            <p className={styles.paymentAmount}>
+              К оплате: {Number(selectedService.price).toLocaleString("ru-RU")} ₸
+            </p>
+            {payError && <p className={styles.formError}>{payError}</p>}
+            <button type="button" className={styles.loginBtn} onClick={handlePay} disabled={paying}>
+              {paying ? "Подготовка оплаты..." : "Оплатить онлайн"}
+            </button>
+          </div>
+        )}
+
         <div className={styles.successActions}>
           <Link href="/appointments" className={styles.loginBtn}>Мои записи</Link>
           <button className={styles.backLinkBtn} onClick={() => router.push("/doctors")}>

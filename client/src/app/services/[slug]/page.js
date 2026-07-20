@@ -160,7 +160,7 @@ const ServicePage = () => {
             <div className={styles.introContent}>
               <h1 className={styles.pageTitle}>{service.title}</h1>
               <p className={styles.introDescription}>{service.description}</p>
-              <Link href="/appointments/book" className={styles.ctaButton}>
+              <Link href="/doctors" className={styles.ctaButton}>
                 <span className={styles.ctaButtonText}>Записаться на прием</span>
               </Link>
             </div>
