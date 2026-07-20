@@ -49,8 +49,8 @@ const CONTACTS = [
       </svg>
     ),
     label: "Instagram",
-    value: "@sadapclinic_kz",
-    href: "https://instagram.com/sadapclinic_kz",
+    value: "@sadap_clinic",
+    href: "https://instagram.com/sadap_clinic",
   },
 ];
 

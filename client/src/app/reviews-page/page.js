@@ -168,7 +168,7 @@ export default function ReviewsPage() {
                 className={styles.ctaBtn}>
                 2ГИС
               </a>
-              <a href="https://instagram.com/sadapclinic_kz" target="_blank" rel="noopener noreferrer"
+              <a href="https://instagram.com/sadap_clinic" target="_blank" rel="noopener noreferrer"
                 className={`${styles.ctaBtn} ${styles.ctaBtnOutline}`}>
                 Instagram
               </a>

@@ -53,7 +53,7 @@ const Footer = () => {
                 +7 700 020 1820
               </a>
 
-              <a href="https://instagram.com/sadapclinic_kz" target="_blank" rel="noopener noreferrer" className={styles.contactItem}>
+              <a href="https://instagram.com/sadap_clinic" target="_blank" rel="noopener noreferrer" className={styles.contactItem}>
                 <span className={styles.contactIcon}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -62,7 +62,7 @@ const Footer = () => {
                     <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
                   </svg>
                 </span>
-                @sadapclinic_kz
+                @sadap_clinic
               </a>
 
               <a href="mailto:support@sadapclinic.kz" className={styles.contactItem}>
