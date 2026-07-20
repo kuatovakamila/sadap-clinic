@@ -1742,5 +1742,95 @@ button.sidebarItem {
   .bonusSpentNum {
     font-size: 22px;
   }
+
+  /* ── Profile header / card ── */
+  .profileHeaderRow {
+    flex-wrap: wrap;
+  }
+
+  .profileAvatarBlock {
+    flex-wrap: wrap;
+    padding: 20px;
+  }
+
+  .editProfileBtn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profileFieldRow {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 14px 20px;
+  }
+
+  .profileFieldMeta {
+    min-width: 0;
+  }
+
+  .profileFieldValue {
+    text-align: left;
+  }
+
+  .profileFieldInput {
+    width: 100%;
+  }
+
+  .profileEditActions {
+    flex-direction: column;
+  }
+
+  .profileSaveBtn,
+  .profileCancelBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Clinic link card ── */
+  .clinicLinkCard {
+    padding: 20px;
+  }
+
+  .clinicInputRow {
+    flex-direction: column;
+  }
+
+  .clinicInputGroup {
+    min-width: 0;
+  }
+
+  .clinicVerifyBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Bonus history ── */
+  .bonusHistoryRow {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bonusBannerRight {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .bonusBreakdown {
+    width: 100%;
+  }
+
+  .bonusStatsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarCircleLarge {
+    width: 52px;
+    height: 52px;
+    font-size: 17px;
+  }
 }
 
